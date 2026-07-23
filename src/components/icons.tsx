@@ -93,6 +93,15 @@ export function IconLayoutGrid(props: IconProps) {
   );
 }
 
+export function IconSparkles(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M12 3.5 13.6 9l5.4 1.6-5.4 1.6L12 17.7l-1.6-5.5L5 10.6 10.4 9Z" />
+      <path d="M18.5 15v3.5M16.75 16.75h3.5" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>

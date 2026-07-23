@@ -6,7 +6,7 @@ import { CreatePostPanel } from "@/components/calendar/CreatePostPanel";
 import { DEFAULT_CALENDAR_FILTERS, FiltersBar, type CalendarFilters } from "@/components/calendar/FiltersBar";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { PostDetailPanel } from "@/components/calendar/PostDetailPanel";
-import { posts } from "@/lib/demo-data";
+import { usePostsSession } from "@/lib/posts-store";
 import type { ScheduledPost } from "@/types/dashboard";
 
 const MONTH_NAMES = [
@@ -25,6 +25,7 @@ const MONTH_NAMES = [
 ];
 
 export function CalendarView() {
+  const { posts } = usePostsSession();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -40,7 +41,7 @@ export function CalendarView() {
       if (filters.status !== "all" && post.status !== filters.status) return false;
       return true;
     });
-  }, [filters]);
+  }, [filters, posts]);
 
   function goToPrevMonth() {
     if (month === 0) {

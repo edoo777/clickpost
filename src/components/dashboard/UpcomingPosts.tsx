@@ -1,6 +1,8 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { posts } from "@/lib/demo-data";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { usePostsSession } from "@/lib/posts-store";
 
 const MAX_UPCOMING = 5;
 
@@ -12,6 +14,7 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 
 export function UpcomingPosts() {
+  const { posts } = usePostsSession();
   const now = new Date();
   const upcoming = posts
     .filter((post) => new Date(post.scheduledFor) >= now)

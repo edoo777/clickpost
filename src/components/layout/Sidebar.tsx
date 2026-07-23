@@ -10,6 +10,7 @@ import {
   IconLayoutGrid,
   IconLogoMark,
   IconSend,
+  IconSparkles,
   IconUsers,
 } from "@/components/icons";
 
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Calendrier éditorial", href: "/calendrier-editorial", icon: IconLayoutGrid },
+  { label: "Générateur d'idées", href: "/generateur-idees", icon: IconSparkles },
   { label: "Publications", href: "/publications", icon: IconSend },
   { label: "Marques", href: "/marques", icon: IconBriefcase },
   { label: "Comptes", href: "/comptes", icon: IconUsers },

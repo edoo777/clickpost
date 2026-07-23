@@ -1,4 +1,6 @@
-import { posts } from "@/lib/demo-data";
+"use client";
+
+import { usePostsSession } from "@/lib/posts-store";
 
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const MONTH_NAMES = [
@@ -27,6 +29,7 @@ function buildMonthGrid(year: number, month: number) {
 }
 
 export function CalendarPreview() {
+  const { posts } = usePostsSession();
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
