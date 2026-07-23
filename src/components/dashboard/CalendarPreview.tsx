@@ -1,4 +1,4 @@
-import { upcomingPosts } from "@/lib/demo-data";
+import { posts } from "@/lib/demo-data";
 
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 const MONTH_NAMES = [
@@ -33,7 +33,7 @@ export function CalendarPreview() {
   const cells = buildMonthGrid(year, month);
 
   const postDays = new Set(
-    upcomingPosts
+    posts
       .map((post) => new Date(post.scheduledFor))
       .filter((date) => date.getFullYear() === year && date.getMonth() === month)
       .map((date) => date.getDate())

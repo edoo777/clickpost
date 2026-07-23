@@ -1,18 +1,8 @@
 import { platformIcons } from "@/components/icons";
-import { upcomingPosts } from "@/lib/demo-data";
-import type { PostStatus } from "@/types/dashboard";
+import { posts } from "@/lib/demo-data";
+import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 
-const STATUS_LABEL: Record<PostStatus, string> = {
-  scheduled: "Planifié",
-  draft: "Brouillon",
-  pending_approval: "En attente d'approbation",
-};
-
-const STATUS_STYLE: Record<PostStatus, string> = {
-  scheduled: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
-  draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-  pending_approval: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-};
+const MAX_UPCOMING = 5;
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   day: "2-digit",
@@ -22,13 +12,19 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 
 export function UpcomingPosts() {
+  const now = new Date();
+  const upcoming = posts
+    .filter((post) => new Date(post.scheduledFor) >= now)
+    .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime())
+    .slice(0, MAX_UPCOMING);
+
   return (
     <section className="rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">
         Publications à venir
       </h2>
       <ul className="flex flex-col divide-y divide-black/[.06] dark:divide-white/[.06]">
-        {upcomingPosts.map((post) => {
+        {upcoming.map((post) => {
           const Icon = platformIcons[post.platform];
           return (
             <li key={post.id} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0">

@@ -1,0 +1,107 @@
+"use client";
+
+import { connectedAccounts } from "@/lib/demo-data";
+import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import type { PostStatus, SocialPlatform } from "@/types/dashboard";
+
+export interface CalendarFilters {
+  brand: string | "all";
+  accountId: string | "all";
+  platform: SocialPlatform | "all";
+  status: PostStatus | "all";
+}
+
+export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
+  brand: "all",
+  accountId: "all",
+  platform: "all",
+  status: "all",
+};
+
+const PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
+const STATUSES: PostStatus[] = ["scheduled", "draft", "pending_approval"];
+
+const SELECT_CLASS =
+  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+
+interface FiltersBarProps {
+  filters: CalendarFilters;
+  onChange: (filters: CalendarFilters) => void;
+}
+
+export function FiltersBar({ filters, onChange }: FiltersBarProps) {
+  const brands = Array.from(new Set(connectedAccounts.map((account) => account.brand)));
+  const isDefault =
+    filters.brand === "all" &&
+    filters.accountId === "all" &&
+    filters.platform === "all" &&
+    filters.status === "all";
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <select
+        className={SELECT_CLASS}
+        value={filters.brand}
+        onChange={(event) => onChange({ ...filters, brand: event.target.value })}
+      >
+        <option value="all">Toutes les marques</option>
+        {brands.map((brand) => (
+          <option key={brand} value={brand}>
+            {brand}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className={SELECT_CLASS}
+        value={filters.accountId}
+        onChange={(event) => onChange({ ...filters, accountId: event.target.value })}
+      >
+        <option value="all">Tous les comptes</option>
+        {connectedAccounts.map((account) => (
+          <option key={account.id} value={account.id}>
+            {account.handle}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className={SELECT_CLASS}
+        value={filters.platform}
+        onChange={(event) =>
+          onChange({ ...filters, platform: event.target.value as SocialPlatform | "all" })
+        }
+      >
+        <option value="all">Tous les réseaux</option>
+        {PLATFORMS.map((platform) => (
+          <option key={platform} value={platform}>
+            {PLATFORM_LABEL[platform]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className={SELECT_CLASS}
+        value={filters.status}
+        onChange={(event) => onChange({ ...filters, status: event.target.value as PostStatus | "all" })}
+      >
+        <option value="all">Tous les statuts</option>
+        {STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {STATUS_LABEL[status]}
+          </option>
+        ))}
+      </select>
+
+      {!isDefault && (
+        <button
+          type="button"
+          onClick={() => onChange(DEFAULT_CALENDAR_FILTERS)}
+          className="text-sm font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+        >
+          Réinitialiser
+        </button>
+      )}
+    </div>
+  );
+}
