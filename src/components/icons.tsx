@@ -82,6 +82,17 @@ export function IconBriefcase(props: IconProps) {
   );
 }
 
+export function IconLayoutGrid(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>

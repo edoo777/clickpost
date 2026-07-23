@@ -7,6 +7,7 @@ import {
   IconCalendar,
   IconChartBar,
   IconDashboard,
+  IconLayoutGrid,
   IconLogoMark,
   IconSend,
   IconUsers,
@@ -15,6 +16,7 @@ import {
 const NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
+  { label: "Calendrier éditorial", href: "/calendrier-editorial", icon: IconLayoutGrid },
   { label: "Publications", href: "/publications", icon: IconSend },
   { label: "Marques", href: "/marques", icon: IconBriefcase },
   { label: "Comptes", href: "/comptes", icon: IconUsers },
@@ -34,7 +36,8 @@ export function Sidebar() {
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-3">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          const isActive =
+            href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}
