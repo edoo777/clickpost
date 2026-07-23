@@ -1,0 +1,157 @@
+import type { ComponentType, ReactNode, SVGProps } from "react";
+import type { SocialPlatform } from "@/types/dashboard";
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function Base({ children, ...props }: IconProps & { children: ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {children}
+    </svg>
+  );
+}
+
+export function IconDashboard(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </Base>
+  );
+}
+
+export function IconCalendar(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4.5" width="18" height="16" rx="2" />
+      <line x1="3" y1="9.5" x2="21" y2="9.5" />
+      <line x1="8" y1="2.5" x2="8" y2="6.5" />
+      <line x1="16" y1="2.5" x2="16" y2="6.5" />
+    </Base>
+  );
+}
+
+export function IconSend(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M21 3 3 10.5l7.5 3L14 21 21 3Z" />
+      <path d="M10.5 13.5 21 3" />
+    </Base>
+  );
+}
+
+export function IconUsers(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <circle cx="17.5" cy="9" r="2.5" />
+      <path d="M15.5 14.2c2.6.4 4.5 2.7 4.5 5.8" />
+    </Base>
+  );
+}
+
+export function IconChartBar(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="4" y1="20" x2="20" y2="20" />
+      <rect x="6" y="12" width="3" height="8" />
+      <rect x="11" y="7" width="3" height="13" />
+      <rect x="16" y="10" width="3" height="10" />
+    </Base>
+  );
+}
+
+export function IconLogoMark(props: IconProps) {
+  return (
+    <Base {...props} strokeWidth={2}>
+      <path d="M12 3 4 8v8l8 5 8-5V8Z" />
+      <path d="M12 12v9" />
+      <path d="M4 8l8 4 8-4" />
+    </Base>
+  );
+}
+
+export function IconArrowUp(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M12 19V5" />
+      <path d="M6 11l6-6 6 6" />
+    </Base>
+  );
+}
+
+export function IconArrowDown(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M12 5v14" />
+      <path d="M18 13l-6 6-6-6" />
+    </Base>
+  );
+}
+
+export function IconInstagram(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
+    </Base>
+  );
+}
+
+export function IconFacebook(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M14 21v-7h2.5l.5-3H14V8.8c0-.9.3-1.6 1.7-1.6H17V4.3C16.6 4.2 15.7 4 14.7 4 12.5 4 11 5.3 11 7.8V11H8.5v3H11v7Z" />
+    </Base>
+  );
+}
+
+export function IconLinkedin(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2.5" />
+      <line x1="7.5" y1="10" x2="7.5" y2="17" />
+      <circle cx="7.5" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
+      <path d="M11.5 17v-4.5c0-1.4 1-2.5 2.4-2.5s2.1 1 2.1 2.6V17" />
+      <line x1="11.5" y1="10" x2="11.5" y2="17" />
+    </Base>
+  );
+}
+
+export function IconTiktok(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M14 3v10.5a3 3 0 1 1-3-3" />
+      <path d="M14 3c0 3 2.2 5.2 5 5.2" />
+    </Base>
+  );
+}
+
+export function IconX(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="5" y1="5" x2="19" y2="19" />
+      <line x1="19" y1="5" x2="5" y2="19" />
+    </Base>
+  );
+}
+
+export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
+  instagram: IconInstagram,
+  facebook: IconFacebook,
+  linkedin: IconLinkedin,
+  tiktok: IconTiktok,
+  x: IconX,
+};
