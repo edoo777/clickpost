@@ -72,6 +72,16 @@ export function IconChartBar(props: IconProps) {
   );
 }
 
+export function IconBriefcase(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5.5C8 4.7 8.7 4 9.5 4h5c.8 0 1.5.7 1.5 1.5V7" />
+      <line x1="3" y1="12.5" x2="21" y2="12.5" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>

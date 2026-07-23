@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  IconBriefcase,
   IconCalendar,
   IconChartBar,
   IconDashboard,
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Publications", href: "/publications", icon: IconSend },
+  { label: "Marques", href: "/marques", icon: IconBriefcase },
   { label: "Comptes", href: "/comptes", icon: IconUsers },
   { label: "Performances", href: "/performances", icon: IconChartBar },
 ];
@@ -32,7 +34,7 @@ export function Sidebar() {
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-3">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-          const isActive = pathname === href;
+          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}
