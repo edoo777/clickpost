@@ -5,6 +5,7 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { Publication, PublicationMedia, PublicationStatus } from "@/types/publication";
 
@@ -20,6 +21,7 @@ const ALL_STATUSES: PublicationStatus[] = [
   "scheduled",
   "published",
   "failed",
+  "rejected",
 ];
 
 const TIME_ZONES = [
@@ -184,6 +186,7 @@ interface PublicationFormProps {
 
 export function PublicationForm({ publication, editable, onChange }: PublicationFormProps) {
   const { accounts } = useAccountsSession();
+  const { members } = useTeamSession();
 
   function set<K extends keyof Publication>(key: K, value: Publication[K]) {
     onChange({ ...publication, [key]: value });
@@ -215,6 +218,25 @@ export function PublicationForm({ publication, editable, onChange }: Publication
       account.brand === publication.brand &&
       (account.status === "connected" || account.id === publication.accountId)
   );
+
+  const membersForBrand = members.filter(
+    (member) => member.status === "active" && member.brands.includes(publication.brand)
+  );
+
+  function memberOptions(currentValue: string) {
+    const currentIsExternal = currentValue !== "" && !membersForBrand.some((member) => member.name === currentValue);
+    return (
+      <>
+        <option value="">Non assigné</option>
+        {currentIsExternal && <option value={currentValue}>{currentValue} (hors accès marque)</option>}
+        {membersForBrand.map((member) => (
+          <option key={member.id} value={member.name}>
+            {member.name}
+          </option>
+        ))}
+      </>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -383,13 +405,29 @@ export function PublicationForm({ publication, editable, onChange }: Publication
           </select>
         </label>
 
-        <TextField label="Responsable" value={publication.owner} editable={editable} onChange={(v) => set("owner", v)} />
-        <TextField
-          label="Approbateur"
-          value={publication.approver}
-          editable={editable}
-          onChange={(v) => set("approver", v)}
-        />
+        <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Responsable
+          <select
+            disabled={!editable}
+            value={publication.owner}
+            onChange={(event) => set("owner", event.target.value)}
+            className={INPUT_CLASS}
+          >
+            {memberOptions(publication.owner)}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Approbateur
+          <select
+            disabled={!editable}
+            value={publication.approver}
+            onChange={(event) => set("approver", event.target.value)}
+            className={INPUT_CLASS}
+          >
+            {memberOptions(publication.approver)}
+          </select>
+        </label>
 
         <div className="md:col-span-2">
           <TextField

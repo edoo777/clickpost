@@ -10,12 +10,29 @@ export type PublicationStatus =
   | "approved"
   | "scheduled"
   | "published"
-  | "failed";
+  | "failed"
+  | "rejected";
 
 export interface PublicationMedia {
   id: string;
   type: "image" | "video";
   label: string;
+}
+
+export interface PublicationComment {
+  id: string;
+  authorName: string;
+  audience: "internal" | "client";
+  text: string;
+  createdAt: string;
+}
+
+export interface PublicationHistoryEntry {
+  id: string;
+  action: string;
+  actorName: string;
+  createdAt: string;
+  note?: string;
 }
 
 export interface Publication {
@@ -38,4 +55,6 @@ export interface Publication {
   owner: string;
   approver: string;
   internalNotes: string;
+  comments: PublicationComment[];
+  history: PublicationHistoryEntry[];
 }

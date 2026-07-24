@@ -103,6 +103,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-2",
@@ -124,6 +126,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-3",
@@ -148,6 +152,24 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "En attente de validation des droits image de l'équipe.",
+    comments: [
+      {
+        id: "post-3-comment-1",
+        authorName: "Camille Dubois",
+        audience: "internal",
+        text: "@Julien Marchand peux-tu valider les droits image de l'équipe avant publication ?",
+        createdAt: "2026-07-06T11:20:00",
+      },
+    ],
+    history: [
+      { id: "post-3-history-1", action: "Créée", actorName: "Camille Dubois", createdAt: "2026-07-05T09:00:00" },
+      {
+        id: "post-3-history-2",
+        action: "Envoyée en révision",
+        actorName: "Camille Dubois",
+        createdAt: "2026-07-06T11:15:00",
+      },
+    ],
   },
   {
     id: "post-4",
@@ -169,6 +191,8 @@ export const posts: Publication[] = [
     owner: "Léa Fontaine",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-5",
@@ -190,6 +214,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-6",
@@ -211,6 +237,24 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "En attente de retour client sur la formulation du sondage.",
+    comments: [
+      {
+        id: "post-6-comment-1",
+        authorName: "Sami Nasri",
+        audience: "client",
+        text: "@Nadia Kader voici le sondage proposé pour la prochaine étude sectorielle, qu'en pensez-vous ?",
+        createdAt: "2026-07-14T10:00:00",
+      },
+    ],
+    history: [
+      { id: "post-6-history-1", action: "Créée", actorName: "Sami Nasri", createdAt: "2026-07-12T09:00:00" },
+      {
+        id: "post-6-history-2",
+        action: "Envoyée au client",
+        actorName: "Sami Nasri",
+        createdAt: "2026-07-14T10:00:00",
+      },
+    ],
   },
   {
     id: "post-7",
@@ -235,6 +279,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-8",
@@ -256,6 +302,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "Montage vidéo en cours chez le prestataire.",
+    comments: [],
+    history: [],
   },
   {
     id: "post-9",
@@ -277,6 +325,8 @@ export const posts: Publication[] = [
     owner: "Léa Fontaine",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-10",
@@ -298,6 +348,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-11",
@@ -319,6 +371,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-12",
@@ -340,6 +394,24 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [
+      {
+        id: "post-12-comment-1",
+        authorName: "Sami Nasri",
+        audience: "internal",
+        text: "@Nadia Kader l'offre est prête à être relue avant diffusion, dites-moi si le ton vous convient.",
+        createdAt: "2026-07-23T09:30:00",
+      },
+    ],
+    history: [
+      { id: "post-12-history-1", action: "Créée", actorName: "Sami Nasri", createdAt: "2026-07-22T09:00:00" },
+      {
+        id: "post-12-history-2",
+        action: "Envoyée en révision",
+        actorName: "Sami Nasri",
+        createdAt: "2026-07-23T09:30:00",
+      },
+    ],
   },
   {
     id: "post-13",
@@ -361,6 +433,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-14",
@@ -382,6 +456,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-15",
@@ -403,6 +479,8 @@ export const posts: Publication[] = [
     owner: "Léa Fontaine",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-16",
@@ -424,6 +502,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-17",
@@ -448,6 +528,8 @@ export const posts: Publication[] = [
     owner: "Léa Fontaine",
     approver: "Julien Marchand",
     internalNotes: "Échec de publication : dimensions du carrousel non conformes, à reformater.",
+    comments: [],
+    history: [],
   },
   {
     id: "post-18",
@@ -469,6 +551,8 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-19",
@@ -490,6 +574,8 @@ export const posts: Publication[] = [
     owner: "Sami Nasri",
     approver: "Nadia Kader",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
   {
     id: "post-20",
@@ -511,5 +597,7 @@ export const posts: Publication[] = [
     owner: "Camille Dubois",
     approver: "Julien Marchand",
     internalNotes: "",
+    comments: [],
+    history: [],
   },
 ];

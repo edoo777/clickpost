@@ -30,6 +30,7 @@ const STATUSES: PublicationStatus[] = [
   "scheduled",
   "published",
   "failed",
+  "rejected",
 ];
 
 const SELECT_CLASS =

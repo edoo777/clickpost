@@ -116,6 +116,8 @@ export function IdeaGeneratorView() {
         owner: "",
         approver: "",
         internalNotes: "",
+        comments: [],
+        history: [],
       };
     });
 

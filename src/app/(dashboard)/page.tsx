@@ -1,5 +1,7 @@
 import { CalendarPreview } from "@/components/dashboard/CalendarPreview";
 import { ConnectedAccounts } from "@/components/dashboard/ConnectedAccounts";
+import { MyTasksWidget } from "@/components/dashboard/MyTasksWidget";
+import { NeedsActionWidget } from "@/components/dashboard/NeedsActionWidget";
 import { PerformanceOverview } from "@/components/dashboard/PerformanceOverview";
 import { UpcomingPosts } from "@/components/dashboard/UpcomingPosts";
 
@@ -29,6 +31,11 @@ export default function DashboardPage() {
       </div>
 
       <UpcomingPosts />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <NeedsActionWidget />
+        <MyTasksWidget />
+      </div>
     </>
   );
 }

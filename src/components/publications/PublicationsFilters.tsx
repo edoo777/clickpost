@@ -18,6 +18,7 @@ const ALL_STATUSES: PublicationStatus[] = [
   "scheduled",
   "published",
   "failed",
+  "rejected",
 ];
 
 export type ViewMode = "cards" | "table";

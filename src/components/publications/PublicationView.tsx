@@ -4,14 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
+import { ApprovalActions } from "@/components/publications/ApprovalActions";
+import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
+import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
 import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { approvePublication, rejectPublication, requestChanges } from "@/lib/approval";
 import { brandProfiles } from "@/lib/brand-profiles";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import { useTeamSession } from "@/lib/team-store";
 import type { SocialAccount } from "@/types/dashboard";
-import type { Publication } from "@/types/publication";
+import type { Publication, PublicationHistoryEntry } from "@/types/publication";
 
 function buildBlankPublication(accounts: SocialAccount[]): Publication {
   const brand = brandProfiles[0];
@@ -39,6 +44,8 @@ function buildBlankPublication(accounts: SocialAccount[]): Publication {
     owner: "",
     approver: "",
     internalNotes: "",
+    comments: [],
+    history: [],
   };
 }
 
@@ -51,6 +58,8 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const router = useRouter();
   const { posts, addPosts, updatePost } = usePostsSession();
   const { accounts } = useAccountsSession();
+  const { members, currentUserId } = useTeamSession();
+  const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
 
@@ -83,8 +92,54 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       router.push(`/publications/${newPublication.id}`);
       return;
     }
-    updatePost(draft.id, draft);
+    const historyEntry: PublicationHistoryEntry = {
+      id: crypto.randomUUID(),
+      action: "Modifiée",
+      actorName: currentUserName,
+      createdAt: new Date().toISOString(),
+    };
+    const updated: Publication = { ...draft, history: [...draft.history, historyEntry] };
+    updatePost(updated.id, updated);
     setIsEditing(false);
+  }
+
+  function handleAddComment(audience: "internal" | "client", text: string) {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const updated: Publication = {
+      ...existing,
+      comments: [
+        ...existing.comments,
+        { id: crypto.randomUUID(), authorName: currentUserName, audience, text, createdAt: now },
+      ],
+      history: [
+        ...existing.history,
+        { id: crypto.randomUUID(), action: "Commentaire ajouté", actorName: currentUserName, createdAt: now },
+      ],
+    };
+    updatePost(updated.id, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleApprove() {
+    if (!existing) return;
+    const updated = approvePublication(existing, currentUserName);
+    updatePost(updated.id, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleRequestChanges(note: string) {
+    if (!existing) return;
+    const updated = requestChanges(existing, note, currentUserName);
+    updatePost(updated.id, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleReject(reason: string) {
+    if (!existing) return;
+    const updated = rejectPublication(existing, reason, currentUserName);
+    updatePost(updated.id, updated);
+    if (isEditing) setDraft(updated);
   }
 
   function handleCancel() {
@@ -189,8 +244,25 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="flex flex-col gap-6 lg:col-span-2">
           <PublicationForm publication={displayed} editable={isEditing} onChange={setDraft} />
+          {existing && (
+            <>
+              <ApprovalActions
+                publication={existing}
+                onApprove={handleApprove}
+                onRequestChanges={handleRequestChanges}
+                onReject={handleReject}
+              />
+              <CollaborationPanel
+                publication={displayed}
+                members={members}
+                currentUserName={currentUserName}
+                onAddComment={handleAddComment}
+              />
+              <HistoryTimeline history={displayed.history} />
+            </>
+          )}
         </div>
         <div className="lg:col-span-1">
           <PublicationPreview publication={displayed} />

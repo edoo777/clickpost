@@ -102,6 +102,26 @@ export function IconSparkles(props: IconProps) {
   );
 }
 
+export function IconIdBadge(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="5" y="3" width="14" height="18" rx="2.5" />
+      <circle cx="12" cy="10" r="2.5" />
+      <path d="M8.5 16.5c.5-2 2-3 3.5-3s3 1 3.5 3" />
+    </Base>
+  );
+}
+
+export function IconClipboardCheck(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="5" y="4.5" width="14" height="16" rx="2" />
+      <path d="M9 4.5V3.8C9 3.3 9.4 3 9.8 3h4.4c.4 0 .8.3.8.8v.7" />
+      <path d="M9 13l2.2 2.2L15.5 11" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>
