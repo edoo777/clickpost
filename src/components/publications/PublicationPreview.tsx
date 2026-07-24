@@ -1,5 +1,5 @@
 import { platformIcons } from "@/components/icons";
-import { connectedAccounts } from "@/lib/demo-data";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { FORMAT_LABEL } from "@/lib/editorial-constants";
 import { platformColors } from "@/lib/platform-colors";
 import type { Publication } from "@/types/publication";
@@ -11,9 +11,10 @@ interface PublicationPreviewProps {
 }
 
 export function PublicationPreview({ publication }: PublicationPreviewProps) {
+  const { accounts } = useAccountsSession();
   const color = platformColors[publication.platform];
   const Icon = platformIcons[publication.platform];
-  const account = connectedAccounts.find((candidate) => candidate.id === publication.accountId);
+  const account = accounts.find((candidate) => candidate.id === publication.accountId);
   const mediaAspect = VERTICAL_FORMATS.has(publication.format) ? "aspect-[9/16]" : "aspect-square";
   const hashtags = publication.hashtags.filter((tag) => tag.trim().length > 0);
 

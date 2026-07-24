@@ -178,10 +178,20 @@ export function IconX(props: IconProps) {
   );
 }
 
+export function IconYoutube(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="2.5" y="5.5" width="19" height="13" rx="3.5" />
+      <path d="M10.5 9.5v5l4.5-2.5Z" fill="currentColor" stroke="none" />
+    </Base>
+  );
+}
+
 export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
   instagram: IconInstagram,
   facebook: IconFacebook,
   linkedin: IconLinkedin,
   tiktok: IconTiktok,
   x: IconX,
+  youtube: IconYoutube,
 };

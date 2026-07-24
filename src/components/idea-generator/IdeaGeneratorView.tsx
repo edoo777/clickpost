@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { IdeaCard } from "@/components/idea-generator/IdeaCard";
 import { IdeaGeneratorForm, type IdeaGeneratorFormValue } from "@/components/idea-generator/IdeaGeneratorForm";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
-import { connectedAccounts } from "@/lib/demo-data";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { generateIdeas, getPeriodDates, regenerateIdea, toISODate } from "@/lib/idea-generator";
 import { usePostsSession } from "@/lib/posts-store";
@@ -24,6 +24,7 @@ function buildInitialFormValue(): IdeaGeneratorFormValue {
 
 export function IdeaGeneratorView() {
   const { addPosts } = usePostsSession();
+  const { accounts } = useAccountsSession();
   const [formValue, setFormValue] = useState<IdeaGeneratorFormValue>(buildInitialFormValue);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -91,8 +92,9 @@ export function IdeaGeneratorView() {
 
     const newPosts: Publication[] = selected.map((idea) => {
       const account =
-        connectedAccounts.find((a) => a.brand === brand.name && a.platform === idea.platform) ??
-        connectedAccounts.find((a) => a.brand === brand.name);
+        accounts.find(
+          (a) => a.brand === brand.name && a.platform === idea.platform && a.status === "connected"
+        ) ?? accounts.find((a) => a.brand === brand.name && a.status === "connected");
 
       return {
         id: crypto.randomUUID(),

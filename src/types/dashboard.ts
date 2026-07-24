@@ -1,13 +1,16 @@
-export type SocialPlatform = "instagram" | "facebook" | "linkedin" | "tiktok" | "x";
+export type SocialPlatform = "instagram" | "facebook" | "linkedin" | "tiktok" | "x" | "youtube";
 
-export type AccountStatus = "connected" | "reconnect_needed";
+export type AccountStatus = "connected" | "disconnected" | "expired" | "error" | "syncing";
 
 export interface SocialAccount {
   id: string;
   platform: SocialPlatform;
   brand: string;
+  accountName: string;
   handle: string;
   status: AccountStatus;
+  lastSyncedAt: string | null;
+  permissions: string[];
 }
 
 export interface PerformanceMetric {

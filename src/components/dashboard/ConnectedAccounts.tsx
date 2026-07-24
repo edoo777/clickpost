@@ -1,16 +1,20 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { connectedAccounts } from "@/lib/demo-data";
+import { ACCOUNT_STATUS_DOT, ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
+import { useAccountsSession } from "@/lib/accounts-store";
 
 export function ConnectedAccounts() {
+  const { accounts } = useAccountsSession();
+
   return (
     <section className="rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">
         Comptes sociaux connectés
       </h2>
       <ul className="flex flex-col gap-3">
-        {connectedAccounts.map((account) => {
+        {accounts.map((account) => {
           const Icon = platformIcons[account.platform];
-          const isConnected = account.status === "connected";
           return (
             <li key={account.id} className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
@@ -25,10 +29,8 @@ export function ConnectedAccounts() {
                 </span>
               </div>
               <span
-                className={`h-2 w-2 shrink-0 rounded-full ${
-                  isConnected ? "bg-emerald-500" : "bg-amber-500"
-                }`}
-                title={isConnected ? "Connecté" : "Reconnexion requise"}
+                className={`h-2 w-2 shrink-0 rounded-full ${ACCOUNT_STATUS_DOT[account.status]}`}
+                title={ACCOUNT_STATUS_LABEL[account.status]}
               />
             </li>
           );

@@ -1,5 +1,5 @@
 import { platformIcons } from "@/components/icons";
-import { connectedAccounts } from "@/lib/demo-data";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { platformColors } from "@/lib/platform-colors";
 import { PLATFORM_LABEL, STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
@@ -18,9 +18,10 @@ interface PostDetailPanelProps {
 }
 
 export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
+  const { accounts } = useAccountsSession();
   const color = platformColors[post.platform];
   const Icon = platformIcons[post.platform];
-  const account = connectedAccounts.find((candidate) => candidate.id === post.accountId);
+  const account = accounts.find((candidate) => candidate.id === post.accountId);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

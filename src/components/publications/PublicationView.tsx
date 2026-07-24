@@ -6,15 +6,18 @@ import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
-import { connectedAccounts } from "@/lib/demo-data";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import type { SocialAccount } from "@/types/dashboard";
 import type { Publication } from "@/types/publication";
 
-function buildBlankPublication(): Publication {
+function buildBlankPublication(accounts: SocialAccount[]): Publication {
   const brand = brandProfiles[0];
-  const account = connectedAccounts.find((candidate) => candidate.brand === brand.name);
+  const account =
+    accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
+    accounts.find((candidate) => candidate.brand === brand.name);
 
   return {
     id: "",
@@ -47,10 +50,11 @@ interface PublicationViewProps {
 export function PublicationView({ mode, id }: PublicationViewProps) {
   const router = useRouter();
   const { posts, addPosts, updatePost } = usePostsSession();
+  const { accounts } = useAccountsSession();
 
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
 
-  const [draft, setDraft] = useState<Publication>(() => existing ?? buildBlankPublication());
+  const [draft, setDraft] = useState<Publication>(() => existing ?? buildBlankPublication(accounts));
   const [isEditing, setIsEditing] = useState(mode === "create");
 
   if (mode === "edit" && !existing) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { connectedAccounts } from "@/lib/demo-data";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { PublicationStatus } from "@/types/publication";
@@ -41,7 +41,8 @@ interface FiltersBarProps {
 }
 
 export function FiltersBar({ filters, onChange }: FiltersBarProps) {
-  const brands = Array.from(new Set(connectedAccounts.map((account) => account.brand)));
+  const { accounts } = useAccountsSession();
+  const brands = Array.from(new Set(accounts.map((account) => account.brand)));
   const isDefault =
     filters.brand === "all" &&
     filters.accountId === "all" &&
@@ -69,7 +70,7 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
         onChange={(event) => onChange({ ...filters, accountId: event.target.value })}
       >
         <option value="all">Tous les comptes</option>
-        {connectedAccounts.map((account) => (
+        {accounts.map((account) => (
           <option key={account.id} value={account.id}>
             {account.handle}
           </option>

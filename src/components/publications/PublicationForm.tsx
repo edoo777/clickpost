@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
-import { connectedAccounts } from "@/lib/demo-data";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -183,12 +183,16 @@ interface PublicationFormProps {
 }
 
 export function PublicationForm({ publication, editable, onChange }: PublicationFormProps) {
+  const { accounts } = useAccountsSession();
+
   function set<K extends keyof Publication>(key: K, value: Publication[K]) {
     onChange({ ...publication, [key]: value });
   }
 
   function handleBrandChange(brandName: string) {
-    const firstAccount = connectedAccounts.find((account) => account.brand === brandName);
+    const firstAccount =
+      accounts.find((account) => account.brand === brandName && account.status === "connected") ??
+      accounts.find((account) => account.brand === brandName);
     onChange({
       ...publication,
       brand: brandName,
@@ -198,7 +202,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
   }
 
   function handleAccountChange(accountId: string) {
-    const account = connectedAccounts.find((candidate) => candidate.id === accountId);
+    const account = accounts.find((candidate) => candidate.id === accountId);
     onChange({
       ...publication,
       accountId,
@@ -206,7 +210,11 @@ export function PublicationForm({ publication, editable, onChange }: Publication
     });
   }
 
-  const accountsForBrand = connectedAccounts.filter((account) => account.brand === publication.brand);
+  const accountsForBrand = accounts.filter(
+    (account) =>
+      account.brand === publication.brand &&
+      (account.status === "connected" || account.id === publication.accountId)
+  );
 
   return (
     <div className="flex flex-col gap-4">

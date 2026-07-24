@@ -1,4 +1,4 @@
-import { connectedAccounts } from "@/lib/demo-data";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 
 const INPUT_CLASS =
@@ -9,6 +9,8 @@ interface CreatePostPanelProps {
 }
 
 export function CreatePostPanel({ onClose }: CreatePostPanelProps) {
+  const { accounts } = useAccountsSession();
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
@@ -41,7 +43,7 @@ export function CreatePostPanel({ onClose }: CreatePostPanelProps) {
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Compte social
             <select disabled className={INPUT_CLASS}>
-              {connectedAccounts.map((account) => (
+              {accounts.map((account) => (
                 <option key={account.id}>
                   {account.handle} · {PLATFORM_LABEL[account.platform]}
                 </option>

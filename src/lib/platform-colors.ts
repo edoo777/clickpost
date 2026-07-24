@@ -38,4 +38,10 @@ export const platformColors: Record<SocialPlatform, PlatformColor> = {
     border: "border-zinc-300 dark:border-zinc-500/20",
     dot: "bg-zinc-600 dark:bg-zinc-400",
   },
+  youtube: {
+    bg: "bg-red-50 dark:bg-red-500/10",
+    text: "text-red-700 dark:text-red-400",
+    border: "border-red-200 dark:border-red-500/20",
+    dot: "bg-red-600",
+  },
 };

@@ -8,12 +8,74 @@ export const performanceMetrics: PerformanceMetric[] = [
   { id: "clicks", label: "Clics sur les liens", value: "3 210", change: -2.3 },
 ];
 
+const STANDARD_PERMISSIONS = [
+  "Lecture du profil",
+  "Publication de contenu",
+  "Lecture des statistiques",
+  "Gestion des commentaires",
+];
+
 export const connectedAccounts: SocialAccount[] = [
-  { id: "acc-1", platform: "instagram", brand: "Nova Cosmetics", handle: "@novacosmetics", status: "connected" },
-  { id: "acc-2", platform: "facebook", brand: "Le Comptoir Bio", handle: "Le Comptoir Bio", status: "connected" },
-  { id: "acc-3", platform: "linkedin", brand: "Atlas Consulting", handle: "Atlas Consulting", status: "connected" },
-  { id: "acc-4", platform: "tiktok", brand: "Nova Cosmetics", handle: "@novacosmetics", status: "reconnect_needed" },
-  { id: "acc-5", platform: "x", brand: "Atlas Consulting", handle: "@atlasconsulting", status: "connected" },
+  {
+    id: "acc-1",
+    platform: "instagram",
+    brand: "Nova Cosmetics",
+    accountName: "Nova Cosmetics",
+    handle: "@novacosmetics",
+    status: "connected",
+    lastSyncedAt: "2026-07-23T08:00:00",
+    permissions: STANDARD_PERMISSIONS,
+  },
+  {
+    id: "acc-2",
+    platform: "facebook",
+    brand: "Le Comptoir Bio",
+    accountName: "Le Comptoir Bio",
+    handle: "lecomptoirbio",
+    status: "connected",
+    lastSyncedAt: "2026-07-22T14:30:00",
+    permissions: STANDARD_PERMISSIONS,
+  },
+  {
+    id: "acc-3",
+    platform: "linkedin",
+    brand: "Atlas Consulting",
+    accountName: "Atlas Consulting",
+    handle: "company/atlas-consulting",
+    status: "syncing",
+    lastSyncedAt: "2026-07-24T07:15:00",
+    permissions: ["Lecture du profil", "Publication de contenu"],
+  },
+  {
+    id: "acc-4",
+    platform: "tiktok",
+    brand: "Nova Cosmetics",
+    accountName: "Nova Cosmetics",
+    handle: "@novacosmetics",
+    status: "expired",
+    lastSyncedAt: "2026-07-10T09:00:00",
+    permissions: ["Lecture du profil", "Publication de contenu", "Lecture des statistiques"],
+  },
+  {
+    id: "acc-5",
+    platform: "x",
+    brand: "Atlas Consulting",
+    accountName: "Atlas Consulting",
+    handle: "@atlasconsulting",
+    status: "error",
+    lastSyncedAt: "2026-07-20T16:45:00",
+    permissions: ["Lecture du profil", "Publication de contenu"],
+  },
+  {
+    id: "acc-6",
+    platform: "youtube",
+    brand: "Nova Cosmetics",
+    accountName: "Nova Cosmetics",
+    handle: "@NovaCosmeticsOfficial",
+    status: "disconnected",
+    lastSyncedAt: null,
+    permissions: [],
+  },
 ];
 
 const NOVA_HASHTAGS = ["#NovaCosmetics", "#SkincareRoutine", "#BeautéNaturelle"];

@@ -31,4 +31,5 @@ export const PLATFORM_LABEL: Record<SocialPlatform, string> = {
   linkedin: "LinkedIn",
   tiktok: "TikTok",
   x: "X",
+  youtube: "YouTube",
 };

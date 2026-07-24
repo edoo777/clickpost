@@ -1,0 +1,133 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { AccountCard } from "@/components/accounts/AccountCard";
+import { AccountDetailPanel } from "@/components/accounts/AccountDetailPanel";
+import {
+  AccountsFilters,
+  DEFAULT_ACCOUNTS_FILTERS,
+  type AccountsFiltersValue,
+} from "@/components/accounts/AccountsFilters";
+import { AddAccountPanel, type NewAccountInput } from "@/components/accounts/AddAccountPanel";
+import { useAccountsSession } from "@/lib/accounts-store";
+import { usePostsSession } from "@/lib/posts-store";
+
+const SYNC_DELAY_MS = 1200;
+
+export function AccountsListView() {
+  const { accounts, addAccount, updateAccount, removeAccount } = useAccountsSession();
+  const { posts } = usePostsSession();
+  const [filters, setFilters] = useState<AccountsFiltersValue>(DEFAULT_ACCOUNTS_FILTERS);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter((account) => {
+      if (filters.brand !== "all" && account.brand !== filters.brand) return false;
+      if (filters.platform !== "all" && account.platform !== filters.platform) return false;
+      if (filters.status !== "all" && account.status !== filters.status) return false;
+      return true;
+    });
+  }, [accounts, filters]);
+
+  function getScheduledPostsCount(accountId: string) {
+    return posts.filter((post) => post.accountId === accountId && post.status === "scheduled").length;
+  }
+
+  const selectedAccount = accounts.find((account) => account.id === selectedAccountId) ?? null;
+
+  function handleReconnect(id: string) {
+    updateAccount(id, { status: "syncing" });
+    setTimeout(() => {
+      updateAccount(id, { status: "connected", lastSyncedAt: new Date().toISOString() });
+    }, SYNC_DELAY_MS);
+  }
+
+  function handleDisconnect(id: string) {
+    updateAccount(id, { status: "disconnected" });
+  }
+
+  function handleDelete(id: string) {
+    removeAccount(id);
+    setSelectedAccountId(null);
+  }
+
+  function handleConnectNew(input: NewAccountInput) {
+    const id = crypto.randomUUID();
+    addAccount({
+      id,
+      brand: input.brand,
+      platform: input.platform,
+      accountName: input.accountName,
+      handle: input.handle,
+      status: "syncing",
+      lastSyncedAt: null,
+      permissions: [],
+    });
+    setIsAddOpen(false);
+    setTimeout(() => {
+      updateAccount(id, {
+        status: "connected",
+        lastSyncedAt: new Date().toISOString(),
+        permissions: ["Lecture du profil", "Publication de contenu", "Lecture des statistiques"],
+      });
+    }, SYNC_DELAY_MS);
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+            Comptes sociaux connectés
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {filteredAccounts.length} compte{filteredAccounts.length > 1 ? "s" : ""} affiché
+            {filteredAccounts.length > 1 ? "s" : ""}
+          </p>
+        </header>
+        <button
+          type="button"
+          onClick={() => setIsAddOpen(true)}
+          className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        >
+          + Ajouter un compte
+        </button>
+      </div>
+
+      <AccountsFilters value={filters} onChange={setFilters} />
+
+      {filteredAccounts.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+          Aucun compte ne correspond à ces critères.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredAccounts.map((account) => (
+            <AccountCard
+              key={account.id}
+              account={account}
+              scheduledPostsCount={getScheduledPostsCount(account.id)}
+              onClick={() => setSelectedAccountId(account.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedAccount && (
+        <AccountDetailPanel
+          account={selectedAccount}
+          scheduledPostsCount={getScheduledPostsCount(selectedAccount.id)}
+          onClose={() => setSelectedAccountId(null)}
+          onReconnect={() => handleReconnect(selectedAccount.id)}
+          onDisconnect={() => handleDisconnect(selectedAccount.id)}
+          onDelete={() => handleDelete(selectedAccount.id)}
+        />
+      )}
+
+      {isAddOpen && (
+        <AddAccountPanel onClose={() => setIsAddOpen(false)} onConnect={handleConnectNew} />
+      )}
+    </div>
+  );
+}
