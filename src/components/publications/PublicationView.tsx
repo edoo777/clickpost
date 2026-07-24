@@ -14,15 +14,25 @@ import { approvePublication, rejectPublication, requestChanges } from "@/lib/app
 import { brandProfiles } from "@/lib/brand-profiles";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Publication, PublicationHistoryEntry } from "@/types/publication";
+import type { AgencySettings } from "@/types/settings";
+import type { TeamMember } from "@/types/team";
 
-function buildBlankPublication(accounts: SocialAccount[]): Publication {
+function buildBlankPublication(
+  accounts: SocialAccount[],
+  settings: AgencySettings,
+  members: TeamMember[]
+): Publication {
   const brand = brandProfiles[0];
   const account =
     accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
     accounts.find((candidate) => candidate.brand === brand.name);
+
+  const defaultOwner = members.find((member) => member.id === settings.workflow.defaultOwnerId)?.name ?? "";
+  const defaultApprover = members.find((member) => member.id === settings.workflow.defaultApproverId)?.name ?? "";
 
   return {
     id: "",
@@ -40,9 +50,9 @@ function buildBlankPublication(accounts: SocialAccount[]): Publication {
     hashtags: [],
     firstComment: "",
     media: [],
-    status: "draft",
-    owner: "",
-    approver: "",
+    status: settings.workflow.initialStatus,
+    owner: defaultOwner,
+    approver: defaultApprover,
     internalNotes: "",
     comments: [],
     history: [],
@@ -59,11 +69,14 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { posts, addPosts, updatePost } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { members, currentUserId } = useTeamSession();
+  const { settings } = useSettingsSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
 
-  const [draft, setDraft] = useState<Publication>(() => existing ?? buildBlankPublication(accounts));
+  const [draft, setDraft] = useState<Publication>(
+    () => existing ?? buildBlankPublication(accounts, settings, members)
+  );
   const [isEditing, setIsEditing] = useState(mode === "create");
 
   if (mode === "edit" && !existing) {

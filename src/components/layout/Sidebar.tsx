@@ -12,6 +12,7 @@ import {
   IconLayoutGrid,
   IconLogoMark,
   IconSend,
+  IconSettingsGear,
   IconSparkles,
   IconUsers,
 } from "@/components/icons";
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { label: "Comptes", href: "/comptes", icon: IconUsers },
   { label: "Équipe", href: "/equipe", icon: IconIdBadge },
   { label: "Performances", href: "/performances", icon: IconChartBar },
+  { label: "Paramètres", href: "/parametres", icon: IconSettingsGear },
 ];
 
 export function Sidebar() {
