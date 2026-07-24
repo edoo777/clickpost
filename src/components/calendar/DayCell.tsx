@@ -1,13 +1,13 @@
 import { PostChip } from "@/components/calendar/PostChip";
-import type { ScheduledPost } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 const MAX_VISIBLE = 3;
 
 interface DayCellProps {
   day: number | null;
   isToday: boolean;
-  posts: ScheduledPost[];
-  onSelectPost: (post: ScheduledPost) => void;
+  posts: Publication[];
+  onSelectPost: (post: Publication) => void;
 }
 
 export function DayCell({ day, isToday, posts, onSelectPost }: DayCellProps) {

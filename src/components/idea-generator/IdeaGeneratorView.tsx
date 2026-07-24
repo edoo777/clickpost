@@ -8,8 +8,8 @@ import { connectedAccounts } from "@/lib/demo-data";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { generateIdeas, getPeriodDates, regenerateIdea, toISODate } from "@/lib/idea-generator";
 import { usePostsSession } from "@/lib/posts-store";
-import type { ScheduledPost } from "@/types/dashboard";
 import type { ContentIdea } from "@/types/idea-generator";
+import type { Publication } from "@/types/publication";
 
 function buildInitialFormValue(): IdeaGeneratorFormValue {
   const brand = brandProfiles[0];
@@ -89,7 +89,7 @@ export function IdeaGeneratorView() {
     const selected = ideas.filter((idea) => selectedIds.has(idea.id));
     if (selected.length === 0) return;
 
-    const newPosts: ScheduledPost[] = selected.map((idea) => {
+    const newPosts: Publication[] = selected.map((idea) => {
       const account =
         connectedAccounts.find((a) => a.brand === brand.name && a.platform === idea.platform) ??
         connectedAccounts.find((a) => a.brand === brand.name);
@@ -99,10 +99,21 @@ export function IdeaGeneratorView() {
         accountId: account?.id ?? "unassigned",
         platform: idea.platform,
         brand: brand.name,
-        excerpt: idea.subject,
-        content: `${idea.angle} — ${idea.objective}`,
         scheduledFor: `${idea.slot.date}T09:00:00`,
+        timeZone: "America/Toronto",
+        theme: idea.slot.themeLabel,
+        format: idea.format,
+        objective: idea.objective,
+        excerpt: idea.subject,
+        text: `${idea.angle} — ${idea.objective}`,
+        cta: idea.cta,
+        hashtags: [],
+        firstComment: "",
+        media: [],
         status: "draft",
+        owner: "",
+        approver: "",
+        internalNotes: "",
       };
     });
 

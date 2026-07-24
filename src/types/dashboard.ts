@@ -10,19 +10,6 @@ export interface SocialAccount {
   status: AccountStatus;
 }
 
-export type PostStatus = "scheduled" | "draft" | "pending_approval";
-
-export interface ScheduledPost {
-  id: string;
-  accountId: string;
-  platform: SocialPlatform;
-  brand: string;
-  excerpt: string;
-  content: string;
-  scheduledFor: string;
-  status: PostStatus;
-}
-
 export interface PerformanceMetric {
   id: string;
   label: string;

@@ -2,7 +2,7 @@ import { platformIcons } from "@/components/icons";
 import { connectedAccounts } from "@/lib/demo-data";
 import { platformColors } from "@/lib/platform-colors";
 import { PLATFORM_LABEL, STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
-import type { ScheduledPost } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
@@ -13,7 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 
 interface PostDetailPanelProps {
-  post: ScheduledPost;
+  post: Publication;
   onClose: () => void;
 }
 
@@ -66,7 +66,7 @@ export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
           </p>
         </div>
 
-        <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{post.content}</p>
+        <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{post.text}</p>
 
         <div className="mt-auto flex gap-3 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
           <button

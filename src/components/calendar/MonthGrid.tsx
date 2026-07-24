@@ -1,5 +1,5 @@
 import { DayCell } from "@/components/calendar/DayCell";
-import type { ScheduledPost } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -16,8 +16,8 @@ function buildMonthGrid(year: number, month: number) {
 interface MonthGridProps {
   year: number;
   month: number;
-  posts: ScheduledPost[];
-  onSelectPost: (post: ScheduledPost) => void;
+  posts: Publication[];
+  onSelectPost: (post: Publication) => void;
 }
 
 export function MonthGrid({ year, month, posts, onSelectPost }: MonthGridProps) {
@@ -25,7 +25,7 @@ export function MonthGrid({ year, month, posts, onSelectPost }: MonthGridProps) 
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
-  const postsByDay = new Map<number, ScheduledPost[]>();
+  const postsByDay = new Map<number, Publication[]>();
   for (const post of posts) {
     const date = new Date(post.scheduledFor);
     if (date.getFullYear() !== year || date.getMonth() !== month) continue;

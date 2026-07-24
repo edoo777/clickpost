@@ -7,7 +7,7 @@ import { DEFAULT_CALENDAR_FILTERS, FiltersBar, type CalendarFilters } from "@/co
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { PostDetailPanel } from "@/components/calendar/PostDetailPanel";
 import { usePostsSession } from "@/lib/posts-store";
-import type { ScheduledPost } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 const MONTH_NAMES = [
   "Janvier",
@@ -30,7 +30,7 @@ export function CalendarView() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_CALENDAR_FILTERS);
-  const [selectedPost, setSelectedPost] = useState<ScheduledPost | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Publication | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const filteredPosts = useMemo(() => {

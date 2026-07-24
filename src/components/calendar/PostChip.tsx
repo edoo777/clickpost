@@ -1,8 +1,8 @@
 import { platformColors } from "@/lib/platform-colors";
-import type { ScheduledPost } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 interface PostChipProps {
-  post: ScheduledPost;
+  post: Publication;
   onClick: () => void;
 }
 

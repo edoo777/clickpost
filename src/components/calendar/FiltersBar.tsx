@@ -2,13 +2,14 @@
 
 import { connectedAccounts } from "@/lib/demo-data";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
-import type { PostStatus, SocialPlatform } from "@/types/dashboard";
+import type { SocialPlatform } from "@/types/dashboard";
+import type { PublicationStatus } from "@/types/publication";
 
 export interface CalendarFilters {
   brand: string | "all";
   accountId: string | "all";
   platform: SocialPlatform | "all";
-  status: PostStatus | "all";
+  status: PublicationStatus | "all";
 }
 
 export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
@@ -19,7 +20,17 @@ export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
 };
 
 const PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
-const STATUSES: PostStatus[] = ["scheduled", "draft", "pending_approval"];
+const STATUSES: PublicationStatus[] = [
+  "idea",
+  "draft",
+  "in_production",
+  "in_review",
+  "pending_client",
+  "approved",
+  "scheduled",
+  "published",
+  "failed",
+];
 
 const SELECT_CLASS =
   "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
@@ -83,7 +94,9 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
       <select
         className={SELECT_CLASS}
         value={filters.status}
-        onChange={(event) => onChange({ ...filters, status: event.target.value as PostStatus | "all" })}
+        onChange={(event) =>
+          onChange({ ...filters, status: event.target.value as PublicationStatus | "all" })
+        }
       >
         <option value="all">Tous les statuts</option>
         {STATUSES.map((status) => (
