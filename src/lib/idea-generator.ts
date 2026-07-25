@@ -1,4 +1,5 @@
 import { CONTENT_FORMATS } from "@/lib/editorial-constants";
+import { toISODate } from "@/lib/date-utils";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { BrandProfile } from "@/types/brand";
 import type { EditorialWeekPlan, Weekday } from "@/types/editorial-calendar";
@@ -30,13 +31,6 @@ const SUBJECT_PATTERNS: Array<(theme: string, item: string) => string> = [
 ];
 
 const FALLBACK_CTAS = ["Découvrez-en plus", "Contactez-nous", "Partagez votre avis"];
-
-export function toISODate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 function getWeekdayForDate(date: Date): Weekday {
   return JS_DAY_TO_WEEKDAY[date.getDay()];

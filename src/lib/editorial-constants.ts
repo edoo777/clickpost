@@ -28,4 +28,5 @@ export const FORMAT_LABEL: Record<ContentFormat, string> = {
   image: "Image",
   short_video: "Vidéo courte",
   story: "Story",
+  article: "Article ou contenu long",
 };

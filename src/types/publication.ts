@@ -8,6 +8,7 @@ export type PublicationStatus =
   | "in_review"
   | "pending_client"
   | "approved"
+  | "ready_to_schedule"
   | "scheduled"
   | "published"
   | "failed"

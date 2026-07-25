@@ -1,6 +1,6 @@
 import { PUBLICATION_PERFORMANCE, generateDailySeries } from "@/lib/analytics-data";
 import { brandProfiles } from "@/lib/brand-profiles";
-import { toISODate } from "@/lib/idea-generator";
+import { toISODate } from "@/lib/date-utils";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 import type { DailyMetricPoint, PublicationPerformance } from "@/types/analytics";
@@ -249,6 +249,7 @@ const FORMAT_TO_LABEL_KEY: Record<ContentFormat, string> = {
   image: "Image",
   short_video: "Vidéo courte",
   story: "Story",
+  article: "Article ou contenu long",
 };
 
 export interface RecommendationInput {

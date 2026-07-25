@@ -1,4 +1,4 @@
-import { toISODate } from "@/lib/idea-generator";
+import { toISODate } from "@/lib/date-utils";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { DailyMetricPoint, PublicationPerformance } from "@/types/analytics";
 

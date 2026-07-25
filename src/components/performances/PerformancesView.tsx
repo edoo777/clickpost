@@ -29,7 +29,7 @@ import {
   getTopPublications,
   type PerformanceFilters,
 } from "@/lib/analytics-report";
-import { toISODate } from "@/lib/idea-generator";
+import { toISODate } from "@/lib/date-utils";
 import { usePostsSession } from "@/lib/posts-store";
 
 const periodDateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" });

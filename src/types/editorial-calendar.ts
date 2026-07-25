@@ -9,7 +9,7 @@ export type Weekday =
   | "saturday"
   | "sunday";
 
-export type ContentFormat = "text" | "carousel" | "image" | "short_video" | "story";
+export type ContentFormat = "text" | "carousel" | "image" | "short_video" | "story" | "article";
 
 export interface EditorialTheme {
   id: string;
