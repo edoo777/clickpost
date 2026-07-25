@@ -14,6 +14,7 @@ import {
   IconSend,
   IconSettingsGear,
   IconSparkles,
+  IconTag,
   IconUsers,
 } from "@/components/icons";
 import { useTeamSession } from "@/lib/team-store";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Calendrier éditorial", href: "/calendrier-editorial", icon: IconLayoutGrid },
+  { label: "Thématiques", href: "/thematiques", icon: IconTag },
   { label: "Générateur d'idées", href: "/generateur-idees", icon: IconSparkles },
   { label: "Publications", href: "/publications", icon: IconSend },
   { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },

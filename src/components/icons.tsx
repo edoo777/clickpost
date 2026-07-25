@@ -131,6 +131,15 @@ export function IconSettingsGear(props: IconProps) {
   );
 }
 
+export function IconTag(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M11.5 3.5H6.5a2 2 0 0 0-2 2v5l9.6 9.6a1.5 1.5 0 0 0 2.1 0l4.9-4.9a1.5 1.5 0 0 0 0-2.1Z" />
+      <circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>
