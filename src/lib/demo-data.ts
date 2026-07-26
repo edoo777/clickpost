@@ -1,6 +1,21 @@
 import type { PerformanceMetric, SocialAccount } from "@/types/dashboard";
 import type { Publication } from "@/types/publication";
 
+const CREATED_OFFSET_DAYS = 5;
+
+function daysBefore(isoDateTime: string, days: number): string {
+  const [datePart, timePart] = isoDateTime.split("T");
+  const date = new Date(`${datePart}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() - days);
+  return `${date.toISOString().slice(0, 10)}T${timePart}`;
+}
+
+const CAMPAIGN_BY_POST_ID: Record<string, string> = {
+  "post-11": "campaign-nova-summer-launch",
+  "post-18": "campaign-nova-summer-sale",
+  "post-19": "campaign-atlas-roundtable-q3",
+};
+
 export const performanceMetrics: PerformanceMetric[] = [
   { id: "impressions", label: "Impressions", value: "128 400", change: 12.4 },
   { id: "engagement", label: "Taux d'engagement", value: "4.8%", change: 1.6 },
@@ -82,7 +97,7 @@ const NOVA_HASHTAGS = ["#NovaCosmetics", "#SkincareRoutine", "#BeautéNaturelle"
 const ATLAS_HASHTAGS = ["#AtlasConsulting", "#TransformationDigitale", "#Retail"];
 const COMPTOIR_HASHTAGS = ["#LeComptoirBio", "#Bio", "#ProduitsLocaux"];
 
-export const posts: Publication[] = [
+const rawPosts: Publication[] = [
   {
     id: "post-1",
     accountId: "acc-3",
@@ -601,3 +616,14 @@ export const posts: Publication[] = [
     history: [],
   },
 ];
+
+export const posts: Publication[] = rawPosts.map((post) => ({
+  ...post,
+  source: "manual",
+  campaignId: CAMPAIGN_BY_POST_ID[post.id],
+  createdAt: daysBefore(post.scheduledFor, CREATED_OFFSET_DAYS),
+  updatedAt:
+    post.history.length > 0
+      ? post.history[post.history.length - 1].createdAt
+      : daysBefore(post.scheduledFor, CREATED_OFFSET_DAYS),
+}));

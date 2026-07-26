@@ -3,6 +3,8 @@ import type { PublicationStatus } from "@/types/publication";
 
 export const STATUS_LABEL: Record<PublicationStatus, string> = {
   idea: "Idée",
+  to_develop: "À développer",
+  content_generated: "Contenu généré",
   draft: "Brouillon",
   in_production: "En production",
   in_review: "En révision",
@@ -17,6 +19,8 @@ export const STATUS_LABEL: Record<PublicationStatus, string> = {
 
 export const STATUS_STYLE: Record<PublicationStatus, string> = {
   idea: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+  to_develop: "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400",
+  content_generated: "bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-500/10 dark:text-fuchsia-400",
   draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
   in_production: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
   in_review: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400",

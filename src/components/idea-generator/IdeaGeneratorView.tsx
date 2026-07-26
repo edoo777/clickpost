@@ -109,6 +109,7 @@ export function IdeaGeneratorView() {
         theme: idea.slot.themeLabel,
         format: idea.format,
         objective: idea.objective,
+        angle: idea.angle,
         excerpt: idea.subject,
         text: `${idea.angle} — ${idea.objective}`,
         cta: idea.cta,
@@ -121,6 +122,7 @@ export function IdeaGeneratorView() {
         internalNotes: "",
         comments: [],
         history: [],
+        source: "generated",
       };
     });
 
