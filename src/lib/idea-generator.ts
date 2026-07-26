@@ -4,6 +4,7 @@ import type { SocialPlatform } from "@/types/dashboard";
 import type { BrandProfile } from "@/types/brand";
 import type { EditorialWeekPlan, Weekday } from "@/types/editorial-calendar";
 import type { ContentIdea, IdeaSlot, PeriodType } from "@/types/idea-generator";
+import type { Theme } from "@/types/theme";
 
 const JS_DAY_TO_WEEKDAY: Weekday[] = [
   "sunday",
@@ -54,21 +55,27 @@ export function getPeriodDates(periodType: PeriodType, startDate: Date): Date[] 
 export function buildIdeaSlots(
   weekPlan: EditorialWeekPlan,
   dates: Date[],
-  selectedPlatforms: SocialPlatform[]
+  selectedPlatforms: SocialPlatform[],
+  themes: Theme[]
 ): IdeaSlot[] {
   const slots: IdeaSlot[] = [];
 
   for (const date of dates) {
     const weekday = getWeekdayForDate(date);
     const dayPlan = weekPlan.days.find((day) => day.day === weekday);
-    if (!dayPlan || !dayPlan.enabled || dayPlan.themes.length === 0) continue;
+    if (!dayPlan || !dayPlan.enabled) continue;
+
+    const dayThemes = dayPlan.themeIds
+      .map((themeId) => themes.find((theme) => theme.id === themeId))
+      .filter((theme): theme is Theme => theme !== undefined && theme.active);
+    if (dayThemes.length === 0) continue;
 
     const platforms = dayPlan.platforms.filter((platform) => selectedPlatforms.includes(platform));
     if (platforms.length === 0) continue;
 
     const formats = dayPlan.formats.length > 0 ? dayPlan.formats : CONTENT_FORMATS;
 
-    for (const theme of dayPlan.themes) {
+    for (const theme of dayThemes) {
       slots.push({
         date: toISODate(date),
         day: weekday,
@@ -113,9 +120,10 @@ export function generateIdeas(
   weekPlan: EditorialWeekPlan,
   dates: Date[],
   selectedPlatforms: SocialPlatform[],
-  count: number
+  count: number,
+  themes: Theme[]
 ): ContentIdea[] {
-  const slots = buildIdeaSlots(weekPlan, dates, selectedPlatforms);
+  const slots = buildIdeaSlots(weekPlan, dates, selectedPlatforms, themes);
   if (slots.length === 0) return [];
 
   return Array.from({ length: count }, (_, i) => {

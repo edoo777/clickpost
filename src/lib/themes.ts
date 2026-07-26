@@ -9,6 +9,10 @@ export function getActiveThemesForWeekday(themes: Theme[], brandId: string, day:
   return getThemesForBrand(themes, brandId).filter((theme) => theme.active && theme.weekdays.includes(day));
 }
 
+export function getActiveThemesForBrand(themes: Theme[], brandId: string): Theme[] {
+  return getThemesForBrand(themes, brandId).filter((theme) => theme.active);
+}
+
 export function nextOrder(themes: Theme[], brandId: string): number {
   const brandThemes = getThemesForBrand(themes, brandId);
   if (brandThemes.length === 0) return 0;

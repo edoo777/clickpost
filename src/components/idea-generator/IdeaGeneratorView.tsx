@@ -9,6 +9,7 @@ import { toISODate } from "@/lib/date-utils";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { generateIdeas, getPeriodDates, regenerateIdea } from "@/lib/idea-generator";
 import { usePostsSession } from "@/lib/posts-store";
+import { useThemesSession } from "@/lib/themes-store";
 import type { ContentIdea } from "@/types/idea-generator";
 import type { Publication } from "@/types/publication";
 
@@ -26,6 +27,7 @@ function buildInitialFormValue(): IdeaGeneratorFormValue {
 export function IdeaGeneratorView() {
   const { addPosts } = usePostsSession();
   const { accounts } = useAccountsSession();
+  const { themes } = useThemesSession();
   const [formValue, setFormValue] = useState<IdeaGeneratorFormValue>(buildInitialFormValue);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -51,7 +53,7 @@ export function IdeaGeneratorView() {
 
     const weekPlan = calendar.weekPlans[0];
     const dates = getPeriodDates(formValue.periodType, new Date(`${formValue.startDate}T00:00:00`));
-    const newIdeas = generateIdeas(brand, weekPlan, dates, formValue.platforms, formValue.count);
+    const newIdeas = generateIdeas(brand, weekPlan, dates, formValue.platforms, formValue.count, themes);
     setIdeas(newIdeas);
     setSelectedIds(new Set());
   }

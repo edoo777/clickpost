@@ -11,16 +11,10 @@ export type Weekday =
 
 export type ContentFormat = "text" | "carousel" | "image" | "short_video" | "story" | "article";
 
-export interface EditorialTheme {
-  id: string;
-  label: string;
-  objective: string;
-}
-
 export interface EditorialDayPlan {
   day: Weekday;
   enabled: boolean;
-  themes: EditorialTheme[];
+  themeIds: string[];
   platforms: SocialPlatform[];
   formats: ContentFormat[];
   frequency: number;

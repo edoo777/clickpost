@@ -1,7 +1,7 @@
 import type { BrandEditorialCalendar, EditorialDayPlan } from "@/types/editorial-calendar";
 
 function emptyDay(day: EditorialDayPlan["day"]): EditorialDayPlan {
-  return { day, enabled: false, themes: [], platforms: [], formats: [], frequency: 0 };
+  return { day, enabled: false, themeIds: [], platforms: [], formats: [], frequency: 0 };
 }
 
 export const brandEditorialCalendars: BrandEditorialCalendar[] = [
@@ -15,13 +15,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "monday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-mon-1",
-                label: "Conseils pratiques",
-                objective: "Créer de la proximité et de l'utilité perçue au quotidien",
-              },
-            ],
+            themeIds: ["theme-nova-1"],
             platforms: ["instagram", "tiktok"],
             formats: ["image", "short_video"],
             frequency: 1,
@@ -29,13 +23,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "tuesday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-tue-1",
-                label: "Contenu éducatif",
-                objective: "Renforcer l'expertise perçue sur les ingrédients et la formulation",
-              },
-            ],
+            themeIds: ["theme-nova-2"],
             platforms: ["instagram"],
             formats: ["carousel", "text"],
             frequency: 1,
@@ -43,13 +31,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "wednesday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-wed-1",
-                label: "Opinion ou expertise",
-                objective: "Humaniser la marque à travers un point de vue assumé",
-              },
-            ],
+            themeIds: ["theme-nova-3"],
             platforms: ["instagram", "tiktok"],
             formats: ["text", "short_video"],
             frequency: 1,
@@ -57,13 +39,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "thursday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-thu-1",
-                label: "Démonstration ou étude de cas",
-                objective: "Prouver l'efficacité produit par la preuve sociale",
-              },
-            ],
+            themeIds: ["theme-nova-4"],
             platforms: ["tiktok", "instagram"],
             formats: ["short_video", "carousel"],
             frequency: 1,
@@ -71,13 +47,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "friday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-fri-1",
-                label: "Offre et appel à l'action",
-                objective: "Générer des ventes directes sur la gamme du moment",
-              },
-            ],
+            themeIds: ["theme-nova-5"],
             platforms: ["instagram"],
             formats: ["story", "image"],
             frequency: 2,
@@ -93,7 +63,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "monday",
             enabled: true,
-            themes: [{ id: "nova-sale-mon-1", label: "Teasing soldes", objective: "Créer de l'attente avant le lancement" }],
+            themeIds: ["theme-nova-6"],
             platforms: ["instagram", "tiktok"],
             formats: ["story"],
             frequency: 1,
@@ -101,13 +71,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "tuesday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-sale-tue-1",
-                label: "Focus produit soldé",
-                objective: "Mettre en avant un produit phare en promotion",
-              },
-            ],
+            themeIds: ["theme-nova-7"],
             platforms: ["instagram"],
             formats: ["carousel"],
             frequency: 1,
@@ -115,9 +79,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "wednesday",
             enabled: true,
-            themes: [
-              { id: "nova-sale-wed-1", label: "Témoignage client", objective: "Rassurer via la preuve sociale" },
-            ],
+            themeIds: ["theme-nova-8"],
             platforms: ["instagram", "tiktok"],
             formats: ["short_video"],
             frequency: 1,
@@ -125,7 +87,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "thursday",
             enabled: true,
-            themes: [{ id: "nova-sale-thu-1", label: "Compte à rebours", objective: "Créer de l'urgence avant la fin des soldes" }],
+            themeIds: ["theme-nova-9"],
             platforms: ["instagram"],
             formats: ["story", "image"],
             frequency: 2,
@@ -133,13 +95,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "friday",
             enabled: true,
-            themes: [
-              {
-                id: "nova-sale-fri-1",
-                label: "Dernier jour de soldes",
-                objective: "Maximiser les ventes sur la dernière ligne droite",
-              },
-            ],
+            themeIds: ["theme-nova-10"],
             platforms: ["instagram", "tiktok"],
             formats: ["story", "short_video"],
             frequency: 2,
@@ -147,7 +103,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "saturday",
             enabled: true,
-            themes: [{ id: "nova-sale-sat-1", label: "Bilan des soldes", objective: "Remercier la communauté" }],
+            themeIds: ["theme-nova-11"],
             platforms: ["instagram"],
             formats: ["image"],
             frequency: 1,
@@ -167,9 +123,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "monday",
             enabled: true,
-            themes: [
-              { id: "atlas-mon-1", label: "Actualité du secteur", objective: "Positionner le cabinet en veille active" },
-            ],
+            themeIds: ["theme-atlas-1"],
             platforms: ["linkedin"],
             formats: ["text"],
             frequency: 1,
@@ -177,13 +131,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "tuesday",
             enabled: true,
-            themes: [
-              {
-                id: "atlas-tue-1",
-                label: "Étude de cas client",
-                objective: "Démontrer la valeur ajoutée du conseil sur un cas concret",
-              },
-            ],
+            themeIds: ["theme-atlas-2"],
             platforms: ["linkedin"],
             formats: ["carousel"],
             frequency: 1,
@@ -192,9 +140,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "thursday",
             enabled: true,
-            themes: [
-              { id: "atlas-thu-1", label: "Point de vue d'expert", objective: "Asseoir la crédibilité des consultants" },
-            ],
+            themeIds: ["theme-atlas-3"],
             platforms: ["linkedin", "x"],
             formats: ["text"],
             frequency: 1,
@@ -202,13 +148,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "friday",
             enabled: true,
-            themes: [
-              {
-                id: "atlas-fri-1",
-                label: "Recrutement / vie du cabinet",
-                objective: "Attirer des talents et humaniser la marque",
-              },
-            ],
+            themeIds: ["theme-atlas-4"],
             platforms: ["linkedin"],
             formats: ["image"],
             frequency: 1,
@@ -229,7 +169,7 @@ export const brandEditorialCalendars: BrandEditorialCalendar[] = [
           {
             day: "monday",
             enabled: true,
-            themes: [{ id: "comptoir-mon-1", label: "Produit du moment", objective: "" }],
+            themeIds: ["theme-comptoir-1"],
             platforms: ["facebook"],
             formats: ["image"],
             frequency: 1,

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { WeekGrid } from "@/components/editorial-calendar/WeekGrid";
 import { brandProfiles } from "@/lib/brand-profiles";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
+import { getActiveThemesForBrand } from "@/lib/themes";
+import { useThemesSession } from "@/lib/themes-store";
 import type { BrandEditorialCalendar, EditorialDayPlan, EditorialWeekPlan } from "@/types/editorial-calendar";
 
 function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
@@ -11,7 +13,7 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
     ...plan,
     days: plan.days.map((day) => ({
       ...day,
-      themes: day.themes.map((theme) => ({ ...theme })),
+      themeIds: [...day.themeIds],
       platforms: [...day.platforms],
       formats: [...day.formats],
     })),
@@ -19,6 +21,7 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
 }
 
 export function EditorialCalendarView() {
+  const { themes } = useThemesSession();
   const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() =>
     brandEditorialCalendars.map((calendar) => ({
       ...calendar,
@@ -34,6 +37,7 @@ export function EditorialCalendarView() {
   const currentPlan =
     currentCalendar.weekPlans.find((p) => p.id === selectedPlanId) ?? currentCalendar.weekPlans[0];
   const displayedPlan = isEditing && draftPlan ? draftPlan : currentPlan;
+  const brandThemes = getActiveThemesForBrand(themes, selectedBrandId);
 
   function handleSelectBrand(brandId: string) {
     setSelectedBrandId(brandId);
@@ -208,7 +212,7 @@ export function EditorialCalendarView() {
         </div>
       )}
 
-      <WeekGrid plan={displayedPlan} editable={isEditing} onChangeDay={handleChangeDay} />
+      <WeekGrid plan={displayedPlan} themes={brandThemes} editable={isEditing} onChangeDay={handleChangeDay} />
     </div>
   );
 }

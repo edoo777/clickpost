@@ -1,9 +1,9 @@
-import { ThemeEditor } from "@/components/editorial-calendar/ThemeEditor";
 import { platformIcons } from "@/components/icons";
 import { CONTENT_FORMATS, FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
-import type { ContentFormat, EditorialDayPlan, EditorialTheme } from "@/types/editorial-calendar";
+import type { ContentFormat, EditorialDayPlan } from "@/types/editorial-calendar";
+import type { Theme } from "@/types/theme";
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
 
@@ -17,11 +17,12 @@ function toggleClass(isSelected: boolean, editable: boolean): string {
 
 interface DayCardProps {
   plan: EditorialDayPlan;
+  themes: Theme[];
   editable: boolean;
   onChange: (plan: EditorialDayPlan) => void;
 }
 
-export function DayCard({ plan, editable, onChange }: DayCardProps) {
+export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
   function toggleEnabled() {
     if (!editable) return;
     onChange({ ...plan, enabled: !plan.enabled });
@@ -47,18 +48,13 @@ export function DayCard({ plan, editable, onChange }: DayCardProps) {
     });
   }
 
-  function updateTheme(id: string, theme: EditorialTheme) {
-    onChange({ ...plan, themes: plan.themes.map((t) => (t.id === id ? theme : t)) });
-  }
-
-  function removeTheme(id: string) {
-    onChange({ ...plan, themes: plan.themes.filter((t) => t.id !== id) });
-  }
-
-  function addTheme() {
+  function toggleTheme(themeId: string) {
+    if (!editable) return;
     onChange({
       ...plan,
-      themes: [...plan.themes, { id: crypto.randomUUID(), label: "", objective: "" }],
+      themeIds: plan.themeIds.includes(themeId)
+        ? plan.themeIds.filter((id) => id !== themeId)
+        : [...plan.themeIds, themeId],
     });
   }
 
@@ -95,28 +91,34 @@ export function DayCard({ plan, editable, onChange }: DayCardProps) {
         <p className="text-xs text-zinc-400 dark:text-zinc-600">Jour désactivé</p>
       ) : (
         <>
-          <div className="flex flex-col gap-2">
-            {plan.themes.map((theme) => (
-              <ThemeEditor
-                key={theme.id}
-                theme={theme}
-                editable={editable}
-                onChange={(t) => updateTheme(theme.id, t)}
-                onRemove={() => removeTheme(theme.id)}
-              />
-            ))}
-            {plan.themes.length === 0 && !editable && (
-              <p className="text-xs text-zinc-400 dark:text-zinc-600">Aucune thématique définie.</p>
-            )}
-            {editable && (
-              <button
-                type="button"
-                onClick={addTheme}
-                className="w-fit rounded-lg border border-dashed border-black/[.16] px-2.5 py-1 text-xs font-medium text-zinc-500 hover:border-black/[.3] dark:border-white/[.16] dark:text-zinc-400"
-              >
-                + Ajouter une thématique
-              </button>
-            )}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Thématiques</span>
+            <div className="flex flex-wrap gap-1.5">
+              {themes.map((theme) => {
+                const isSelected = plan.themeIds.includes(theme.id);
+                if (!editable && !isSelected) return null;
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    disabled={!editable}
+                    onClick={() => toggleTheme(theme.id)}
+                    title={theme.objective || undefined}
+                    className={toggleClass(isSelected, editable)}
+                  >
+                    {theme.label || "Sans titre"}
+                  </button>
+                );
+              })}
+              {themes.length === 0 && (
+                <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                  Aucune thématique active pour cette marque — gérez-les dans « Thématiques ».
+                </span>
+              )}
+              {themes.length > 0 && !editable && plan.themeIds.length === 0 && (
+                <span className="text-xs text-zinc-400 dark:text-zinc-600">—</span>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
