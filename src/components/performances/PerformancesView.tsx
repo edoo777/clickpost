@@ -111,10 +111,10 @@ export function PerformancesView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           Performances et rapports
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           Analyse des marques, comptes et publications pour identifier ce qui fonctionne le mieux.
         </p>
       </header>

@@ -53,23 +53,23 @@ export function AssistantPreparationView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           Assistant IA de préparation
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           Un parcours guidé, en simulation déterministe (aucune IA réelle), pour préparer rapidement le
           contenu d&apos;une marque à partir de son calendrier éditorial.
         </p>
       </header>
 
-      <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-zinc-400 dark:text-zinc-600">
+      <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground ">
         {STEP_LABELS.map(({ key, label }) => (
           <li
             key={key}
             className={`rounded-full px-3 py-1 ${
               step === key
                 ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "border border-zinc-200 dark:border-white/[.08]"
+                : "border border-border "
             }`}
           >
             {label}
@@ -84,15 +84,15 @@ export function AssistantPreparationView() {
               key={candidate.id}
               type="button"
               onClick={() => handleSelectBrand(candidate.id)}
-              className="flex flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-5 text-left hover:border-zinc-400 dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16]"
+              className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5 text-left hover:border-zinc-400   dark:hover:border-white/[.16]"
             >
-              <span className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{candidate.name}</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">{candidate.industry}</span>
-              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+              <span className="text-sm font-semibold text-foreground ">{candidate.name}</span>
+              <span className="text-xs text-muted-foreground ">{candidate.industry}</span>
+              <span className="text-xs text-muted-foreground ">
                 {candidate.toneOfVoice || "Aucun ton défini"}
               </span>
               {candidate.communicationGoals.length > 0 && (
-                <ul className="flex flex-col gap-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground ">
                   {candidate.communicationGoals.slice(0, 2).map((goal) => (
                     <li key={goal}>· {goal}</li>
                   ))}
@@ -104,12 +104,12 @@ export function AssistantPreparationView() {
       )}
 
       {step === "calendar" && brand && (
-        <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+            <h2 className="text-sm font-semibold text-foreground ">
               Étape 2 · Calendrier de {brand.name}
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground ">
               {weekPlan ? `Plan « ${weekPlan.label} »` : "Aucun calendrier éditorial trouvé pour cette marque."}
             </p>
           </div>
@@ -131,16 +131,16 @@ export function AssistantPreparationView() {
               {activeDays.map((day) => (
                 <li
                   key={day.day}
-                  className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 px-3 py-2 text-sm dark:border-white/[.06]"
+                  className="flex flex-wrap items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm "
                 >
                   <span className="font-medium text-zinc-800 dark:text-zinc-200">{WEEKDAY_LABEL[day.day]}</span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="text-xs text-muted-foreground ">
                     {day.themeIds
                       .map((id) => brandThemes.find((theme) => theme.id === id)?.label)
                       .filter(Boolean)
                       .join(", ") || "Sans thématique"}
                   </span>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                  <span className="text-xs text-muted-foreground ">
                     {day.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") || "Aucun réseau"} ·{" "}
                     {day.formats.map((format) => FORMAT_LABEL[format]).join(", ") || "Aucun format"} · {day.frequency}
                     /jour
@@ -150,11 +150,11 @@ export function AssistantPreparationView() {
             </ul>
           )}
 
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-white/[.06]">
+          <div className="flex items-center justify-between border-t border-border pt-3 ">
             <button
               type="button"
               onClick={() => setStep("brand")}
-              className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Retour
             </button>
@@ -194,14 +194,14 @@ export function AssistantPreparationView() {
             </Link>
             <Link
               href="/calendrier"
-              className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Voir le Calendrier
             </Link>
             <button
               type="button"
               onClick={handleRestart}
-              className="text-sm font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+              className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
             >
               Préparer une autre marque
             </button>

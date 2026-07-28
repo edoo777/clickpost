@@ -43,14 +43,14 @@ export function CalendarPreview() {
   );
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+        <h2 className="text-sm font-semibold text-foreground ">
           {MONTH_NAMES[month]} {year}
         </h2>
-        <span className="text-xs text-zinc-400 dark:text-zinc-600">Aperçu du calendrier</span>
+        <span className="text-xs text-muted-foreground ">Aperçu du calendrier</span>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-zinc-400 dark:text-zinc-600">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground ">
         {WEEKDAYS.map((day, i) => (
           <span key={`weekday-${i}`} className="py-1">
             {day}

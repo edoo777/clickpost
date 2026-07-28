@@ -9,10 +9,10 @@ export function FormatPerformanceChart({ data }: FormatPerformanceChartProps) {
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Formats les plus performants</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">Formats les plus performants</h2>
       {data.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {data.map((item) => (
@@ -20,7 +20,7 @@ export function FormatPerformanceChart({ data }: FormatPerformanceChartProps) {
               <span className="w-28 shrink-0 text-xs font-medium text-zinc-600 dark:text-zinc-400">
                 {FORMAT_LABEL[item.key as ContentFormat] ?? item.key}
               </span>
-              <div className="h-3 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-900">
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-muted ">
                 <div
                   className="h-full rounded-full bg-blue-500"
                   style={{ width: `${(item.engagementRate / maxRate) * 100}%` }}

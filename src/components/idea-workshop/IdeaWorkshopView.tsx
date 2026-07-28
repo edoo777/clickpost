@@ -46,7 +46,7 @@ const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "t
 const ALL_PRIORITIES: ContentPriority[] = ["low", "medium", "high"];
 
 const FIELD_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
+  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800   dark:text-zinc-200";
 
 function TextField({
   label,
@@ -116,7 +116,7 @@ function MediaField({
       {value.map((media) => (
         <div
           key={media.id}
-          className="flex items-center gap-2 rounded-lg border border-zinc-200 p-2 dark:border-white/[.08]"
+          className="flex items-center gap-2 rounded-lg border border-border p-2 "
         >
           <select
             value={media.type}
@@ -144,7 +144,7 @@ function MediaField({
       <button
         type="button"
         onClick={add}
-        className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:border-zinc-500 dark:border-white/[.16] dark:text-zinc-400"
+        className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
       >
         + Ajouter un média (placeholder, pas de téléversement réel)
       </button>
@@ -180,11 +180,11 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
       <div className="flex flex-col gap-4">
         <Link
           href="/banque-idees"
-          className="w-fit text-sm font-medium text-zinc-500 hover:underline dark:text-zinc-400"
+          className="w-fit text-sm font-medium text-muted-foreground hover:underline "
         >
           ← Retour à la banque d&apos;idées
         </Link>
-        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Idée introuvable.
         </p>
       </div>
@@ -345,17 +345,17 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     <div className="flex flex-col gap-6">
       <Link
         href="/banque-idees"
-        className="w-fit text-sm font-medium text-zinc-500 hover:underline dark:text-zinc-400"
+        className="w-fit text-sm font-medium text-muted-foreground hover:underline "
       >
         ← Retour à la banque d&apos;idées
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground ">
             {idea.title || "Sans titre"}
           </h1>
-          <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground ">
             <span>{brand?.name ?? idea.brandId}</span>
             {theme && <span>· {theme.label}</span>}
           </div>
@@ -363,7 +363,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
         {idea.publicationId ? (
           <Link
             href={`/publications/${idea.publicationId}`}
-            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Voir la publication
           </Link>
@@ -378,7 +378,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
               Créer une publication
             </button>
             {!idea.platform && (
-              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+              <span className="text-xs text-muted-foreground ">
                 Sélectionnez un réseau dans les détails avant de créer une publication.
               </span>
             )}

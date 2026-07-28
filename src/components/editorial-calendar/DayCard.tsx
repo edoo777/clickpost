@@ -11,7 +11,7 @@ function toggleClass(isSelected: boolean, editable: boolean): string {
   return `flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
     isSelected
       ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-      : "border-zinc-200 text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+      : "border-border text-zinc-600  dark:text-zinc-400"
   } ${editable ? "cursor-pointer" : "cursor-default"}`;
 }
 
@@ -62,12 +62,12 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
     <div
       className={`flex min-w-0 flex-col gap-3 rounded-xl border p-4 ${
         plan.enabled
-          ? "border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
-          : "border-zinc-100 bg-zinc-50 dark:border-white/[.06] dark:bg-zinc-900/40"
+          ? "border-border bg-surface  "
+          : "border-border bg-zinc-50  dark:bg-zinc-900/40"
       }`}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+        <h3 className="text-sm font-semibold text-foreground ">
           {WEEKDAY_LABEL[plan.day]}
         </h3>
         <button
@@ -88,11 +88,11 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
       </div>
 
       {!plan.enabled ? (
-        <p className="text-xs text-zinc-400 dark:text-zinc-600">Jour désactivé</p>
+        <p className="text-xs text-muted-foreground ">Jour désactivé</p>
       ) : (
         <>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Thématiques</span>
+            <span className="text-xs font-medium text-muted-foreground ">Thématiques</span>
             <div className="flex flex-wrap gap-1.5">
               {themes.map((theme) => {
                 const isSelected = plan.themeIds.includes(theme.id);
@@ -111,18 +111,18 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
                 );
               })}
               {themes.length === 0 && (
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                <span className="text-xs text-muted-foreground ">
                   Aucune thématique active pour cette marque — gérez-les dans « Thématiques ».
                 </span>
               )}
               {themes.length > 0 && !editable && plan.themeIds.length === 0 && (
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">—</span>
+                <span className="text-xs text-muted-foreground ">—</span>
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Réseaux</span>
+            <span className="text-xs font-medium text-muted-foreground ">Réseaux</span>
             <div className="flex flex-wrap gap-1.5">
               {ALL_PLATFORMS.map((platform) => {
                 const Icon = platformIcons[platform];
@@ -142,13 +142,13 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
                 );
               })}
               {!editable && plan.platforms.length === 0 && (
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">—</span>
+                <span className="text-xs text-muted-foreground ">—</span>
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Formats</span>
+            <span className="text-xs font-medium text-muted-foreground ">Formats</span>
             <div className="flex flex-wrap gap-1.5">
               {CONTENT_FORMATS.map((format) => {
                 const isSelected = plan.formats.includes(format);
@@ -166,12 +166,12 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
                 );
               })}
               {!editable && plan.formats.length === 0 && (
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">—</span>
+                <span className="text-xs text-muted-foreground ">—</span>
               )}
             </div>
           </div>
 
-          <label className="flex items-center justify-between text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          <label className="flex items-center justify-between text-xs font-medium text-muted-foreground ">
             Fréquence (publications/jour)
             <input
               type="number"
@@ -180,7 +180,7 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
               disabled={!editable}
               value={plan.frequency}
               onChange={(event) => onChange({ ...plan, frequency: Number(event.target.value) })}
-              className="w-14 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-center text-sm text-zinc-800 disabled:border-transparent disabled:bg-transparent dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
+              className="w-14 rounded-lg border border-border bg-surface px-2 py-1 text-center text-sm text-zinc-800 disabled:border-transparent disabled:bg-transparent   dark:text-zinc-200"
             />
           </label>
         </>

@@ -16,10 +16,10 @@ interface PublicationsTableProps {
 
 export function PublicationsTable({ publications }: PublicationsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="overflow-x-auto rounded-xl border border-border bg-surface  ">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead>
-          <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
+          <tr className="border-b border-border text-xs font-medium text-muted-foreground  ">
             <th className="px-4 py-3">Date</th>
             <th className="px-4 py-3">Marque</th>
             <th className="px-4 py-3">Réseau</th>
@@ -28,12 +28,12 @@ export function PublicationsTable({ publications }: PublicationsTableProps) {
             <th className="px-4 py-3">Responsable</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <tbody className="divide-y divide-border ">
           {publications.map((publication) => {
             const Icon = platformIcons[publication.platform];
             return (
               <tr key={publication.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">
                   <Link href={`/publications/${publication.id}`} className="block hover:underline">
                     {dateFormatter.format(new Date(publication.scheduledFor))}
                   </Link>
@@ -42,9 +42,9 @@ export function PublicationsTable({ publications }: PublicationsTableProps) {
                   <Link href={`/publications/${publication.id}`}>{publication.brand}</Link>
                 </td>
                 <td className="px-4 py-3">
-                  <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                  <Icon className="h-4 w-4 text-muted-foreground " />
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">
                   {publication.theme || "—"}
                 </td>
                 <td className="px-4 py-3">
@@ -54,7 +54,7 @@ export function PublicationsTable({ publications }: PublicationsTableProps) {
                     {STATUS_LABEL[publication.status]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">
                   {publication.owner || "—"}
                 </td>
               </tr>

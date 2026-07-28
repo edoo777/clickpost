@@ -51,13 +51,13 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
   const lastPoint = currentPlotted[currentPlotted.length - 1];
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Évolution des performances</h2>
+        <h2 className="text-sm font-semibold text-foreground ">Évolution des performances</h2>
         <select
           value={metric}
           onChange={(event) => setMetric(event.target.value as NumericMetricKey)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300"
         >
           {METRIC_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>
@@ -68,7 +68,7 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
       </div>
 
       {previousSeries && (
-        <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground ">
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" /> Période actuelle
           </span>
@@ -79,7 +79,7 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
       )}
 
       {currentPlotted.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
       ) : (
         <>
           <svg
@@ -103,7 +103,7 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
                 d={toPath(previousPlotted)}
                 fill="none"
                 stroke="currentColor"
-                className="text-zinc-400 dark:text-zinc-600"
+                className="text-muted-foreground "
                 strokeWidth={2}
                 strokeDasharray="4 4"
                 strokeLinecap="round"
@@ -143,7 +143,7 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
             </text>
           </svg>
 
-          <div className="flex justify-between text-xs text-zinc-400 dark:text-zinc-600">
+          <div className="flex justify-between text-xs text-muted-foreground ">
             <span>{dateFormatter.format(new Date(`${currentSeries[0].date}T00:00:00`))}</span>
             <span>{dateFormatter.format(new Date(`${currentSeries[currentSeries.length - 1].date}T00:00:00`))}</span>
           </div>

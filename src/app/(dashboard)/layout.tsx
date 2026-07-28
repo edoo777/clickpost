@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <CampaignsSessionProvider>
                 <ContentWorkspaceProvider>
                   <UserProfileSessionProvider>
-                    <div className="flex min-h-screen w-full flex-col bg-zinc-50 dark:bg-zinc-950">
+                    <div className="flex min-h-screen w-full flex-col bg-background ">
                       <Sidebar />
                       <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:ml-64 lg:px-10 lg:py-8">
                         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">{children}</div>

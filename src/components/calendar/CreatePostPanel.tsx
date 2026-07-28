@@ -2,7 +2,7 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-white/[.08] dark:bg-zinc-900 dark:text-zinc-400";
+  "w-full rounded-lg border border-border bg-zinc-50 px-3 py-2 text-sm text-muted-foreground  dark:bg-zinc-900 ";
 
 interface CreatePostPanelProps {
   onClose: () => void;
@@ -19,16 +19,16 @@ export function CreatePostPanel({ onClose }: CreatePostPanelProps) {
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
-      <div className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-white p-6 shadow-xl dark:bg-zinc-950">
+      <div className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-surface p-6 shadow-xl ">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+          <h2 className="text-lg font-semibold text-foreground ">
             Créer une publication
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted  "
           >
             ✕
           </button>
@@ -67,11 +67,11 @@ export function CreatePostPanel({ onClose }: CreatePostPanelProps) {
           </label>
         </div>
 
-        <div className="mt-auto flex gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
+        <div className="mt-auto flex gap-3 border-t border-border pt-4 ">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+            className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Annuler
           </button>

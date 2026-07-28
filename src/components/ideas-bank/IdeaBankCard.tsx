@@ -24,10 +24,10 @@ export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaB
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl border bg-white p-4 dark:bg-zinc-950 ${
+      className={`flex flex-col gap-3 rounded-xl border bg-surface p-4  ${
         isSelected
           ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
-          : "border-zinc-200 hover:border-zinc-400 dark:border-white/[.08] dark:hover:border-white/[.16]"
+          : "border-border hover:border-zinc-400  dark:hover:border-white/[.16]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -46,19 +46,19 @@ export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaB
         <span className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
           {idea.title || "Sans titre"}
         </span>
-        <span className="truncate text-xs text-zinc-400 dark:text-zinc-600">
+        <span className="truncate text-xs text-muted-foreground ">
           {themeLabel ?? "Sans thématique"} ·{" "}
           {idea.scheduledFor ? dateFormatter.format(new Date(idea.scheduledFor)) : "Sans date"}
         </span>
       </button>
 
-      <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-600">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground ">
         {idea.priority && (
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-900">
+          <span className="rounded-full bg-muted px-2 py-0.5 ">
             Priorité {PRIORITY_LABEL[idea.priority].toLowerCase()}
           </span>
         )}
-        <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-900">
+        <span className="rounded-full bg-muted px-2 py-0.5 ">
           {idea.source === "generated" ? "Générée" : "Manuelle"}
         </span>
         {idea.publicationId && (

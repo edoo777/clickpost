@@ -1,8 +1,11 @@
 import type { NotificationKey } from "@/types/settings";
 
 export type DisplayDensity = "comfortable" | "compact";
-export type DisplayTheme = "system" | "light" | "dark";
 
+/**
+ * Le thème clair/sombre/système vit désormais dans le ThemeProvider global (src/lib/theme-store.tsx),
+ * seule source de vérité pour toute l'application — il n'est plus dupliqué ici.
+ */
 export interface UserProfileExtra {
   memberId: string;
   firstName: string;
@@ -15,5 +18,4 @@ export interface UserProfileExtra {
   bio: string;
   notifications: Record<NotificationKey, boolean>;
   displayDensity: DisplayDensity;
-  theme: DisplayTheme;
 }

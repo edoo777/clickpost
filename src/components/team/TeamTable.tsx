@@ -18,10 +18,10 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="overflow-x-auto rounded-xl border border-border bg-surface  ">
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
-          <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
+          <tr className="border-b border-border text-xs font-medium text-muted-foreground  ">
             <th className="px-4 py-3">Membre</th>
             <th className="px-4 py-3">Rôle</th>
             <th className="px-4 py-3">Marques accessibles</th>
@@ -29,20 +29,20 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
             <th className="px-4 py-3">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <tbody className="divide-y divide-border ">
           {members.map((member) => (
             <tr key={member.id}>
               <td className="px-4 py-3">
                 <div className="flex flex-col">
-                  <span className="font-medium text-zinc-950 dark:text-zinc-50">{member.name}</span>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-600">{member.email}</span>
+                  <span className="font-medium text-foreground ">{member.name}</span>
+                  <span className="text-xs text-muted-foreground ">{member.email}</span>
                 </div>
               </td>
               <td className="px-4 py-3">
                 <select
                   value={member.role}
                   onChange={(event) => onUpdateRole(member.id, event.target.value as TeamRole)}
-                  className={`rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium dark:border-white/[.08] ${ROLE_STYLE[member.role]}`}
+                  className={`rounded-lg border border-border px-2 py-1 text-xs font-medium  ${ROLE_STYLE[member.role]}`}
                 >
                   {ALL_ROLES.map((role) => (
                     <option key={role} value={role}>
@@ -54,14 +54,14 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-1">
                   {member.brands.length === ALL_BRANDS.length ? (
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-zinc-600  dark:text-zinc-400">
                       Toutes les marques
                     </span>
                   ) : (
                     member.brands.map((brand) => (
                       <span
                         key={brand}
-                        className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                        className="rounded-full bg-muted px-2 py-0.5 text-xs text-zinc-600  dark:text-zinc-400"
                       >
                         {brand}
                       </span>
@@ -102,7 +102,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                     <button
                       type="button"
                       onClick={() => setConfirmingId(null)}
-                      className="rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+                      className="rounded-lg border border-border px-2 py-1 text-xs font-medium text-zinc-600  dark:text-zinc-400"
                     >
                       Annuler
                     </button>

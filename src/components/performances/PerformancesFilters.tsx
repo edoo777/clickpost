@@ -19,7 +19,7 @@ export interface PerformancesFiltersValue {
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
 
 const FIELD_CLASS =
-  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
 interface PerformancesFiltersProps {
   value: PerformancesFiltersValue;

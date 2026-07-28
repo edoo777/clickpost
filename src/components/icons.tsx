@@ -186,6 +186,32 @@ export function IconClose(props: IconProps) {
   );
 }
 
+export function IconSun(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2.5M12 19v2.5M4.5 4.5l1.8 1.8M17.7 17.7l1.8 1.8M2.5 12h2.5M19 12h2.5M4.5 19.5l1.8-1.8M17.7 6.3l1.8-1.8" />
+    </Base>
+  );
+}
+
+export function IconMoon(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+    </Base>
+  );
+}
+
+export function IconMonitor(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4" width="18" height="13" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+    </Base>
+  );
+}
+
 export function IconChevronDown(props: IconProps) {
   return (
     <Base {...props}>

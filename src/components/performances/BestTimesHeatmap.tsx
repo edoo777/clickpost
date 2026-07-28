@@ -6,7 +6,7 @@ const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const WEEKDAY_LABEL_SHORT = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
 function intensityClass(rate: number, maxRate: number): string {
-  if (maxRate <= 0 || rate <= 0) return "bg-zinc-100 text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600";
+  if (maxRate <= 0 || rate <= 0) return "bg-muted text-muted-foreground  ";
   const ratio = rate / maxRate;
   if (ratio > 0.8) return "bg-blue-600 text-white";
   if (ratio > 0.6) return "bg-blue-500 text-white";
@@ -25,10 +25,10 @@ export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
   const slotLabels = SLOT_ORDER.map((slotKey) => grid.find((cell) => cell.slotKey === slotKey)?.slotLabel ?? slotKey);
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Meilleurs jours et heures</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">Meilleurs jours et heures</h2>
       {best ? (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs text-muted-foreground ">
           Meilleur créneau :{" "}
           <span className="font-medium text-zinc-700 dark:text-zinc-300">
             {best.weekdayLabel} · {best.slotLabel}
@@ -36,21 +36,21 @@ export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
           ({best.engagementRate.toFixed(1)}% d&apos;engagement)
         </p>
       ) : (
-        <p className="text-xs text-zinc-400 dark:text-zinc-600">Pas assez de données sur cette période.</p>
+        <p className="text-xs text-muted-foreground ">Pas assez de données sur cette période.</p>
       )}
 
       <div className="overflow-x-auto">
         <div className="grid min-w-[420px] grid-cols-[64px_repeat(4,1fr)] gap-1.5">
           <div />
           {slotLabels.map((label) => (
-            <div key={label} className="pb-1 text-center text-xs font-medium text-zinc-400 dark:text-zinc-600">
+            <div key={label} className="pb-1 text-center text-xs font-medium text-muted-foreground ">
               {label}
             </div>
           ))}
 
           {WEEKDAY_ORDER.map((weekday) => (
             <Fragment key={weekday}>
-              <div className="flex items-center text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center text-xs font-medium text-muted-foreground ">
                 {WEEKDAY_LABEL_SHORT[weekday]}
               </div>
               {SLOT_ORDER.map((slotKey) => {

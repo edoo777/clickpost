@@ -26,12 +26,12 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
     .slice(0, 3);
 
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Meilleures publications</h2>
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
+      <h2 className="text-sm font-semibold text-foreground ">Meilleures publications</h2>
       {top.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <ul className="flex flex-col divide-y divide-border ">
           {top.map((publication) => {
             const Icon = platformIcons[publication.platform];
             return (
@@ -44,10 +44,10 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
                     <Icon className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                    <span className="truncate text-sm font-medium text-foreground ">
                       {publication.excerpt || "Sans titre"}
                     </span>
-                    <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                    <span className="text-xs text-muted-foreground ">
                       {publication.brand} · {dateFormatter.format(new Date(publication.scheduledFor))}
                     </span>
                   </div>
@@ -55,7 +55,7 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
                     <span className="text-sm font-semibold text-violet-600 dark:text-violet-400">
                       {publication.engagementRate.toFixed(1)}%
                     </span>
-                    <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                    <span className="text-xs text-muted-foreground ">
                       {numberFormatter.format(publication.performance.reach)} vues
                     </span>
                   </div>

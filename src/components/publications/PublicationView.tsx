@@ -88,11 +88,11 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       <div className="flex flex-col gap-4">
         <Link
           href="/publications"
-          className="w-fit text-sm font-medium text-zinc-500 hover:underline dark:text-zinc-400"
+          className="w-fit text-sm font-medium text-muted-foreground hover:underline "
         >
           ← Retour à la liste
         </Link>
-        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Publication introuvable.
         </p>
       </div>
@@ -208,22 +208,22 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     <div className="flex flex-col gap-6">
       <Link
         href="/publications"
-        className="w-fit text-sm font-medium text-zinc-500 hover:underline dark:text-zinc-400"
+        className="w-fit text-sm font-medium text-muted-foreground hover:underline "
       >
         ← Retour à la liste
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted ">
             <Icon className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
           </span>
           <div className="flex flex-col gap-1">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground ">
               {displayed.excerpt || (mode === "create" ? "Nouvelle publication" : "Publication")}
             </h1>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">{displayed.brand}</span>
+              <span className="text-sm text-muted-foreground ">{displayed.brand}</span>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[displayed.status]}`}
               >
@@ -239,7 +239,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Annuler
               </button>
@@ -256,14 +256,14 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
               <button
                 type="button"
                 onClick={handleDuplicate}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Dupliquer
               </button>
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Modifier
               </button>

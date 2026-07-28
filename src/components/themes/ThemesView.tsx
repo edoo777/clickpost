@@ -16,10 +16,10 @@ export function ThemesView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           Thématiques
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           Gérez la bibliothèque de thématiques de chaque marque et attribuez-les librement aux jours
           de la semaine.
         </p>
@@ -34,7 +34,7 @@ export function ThemesView() {
         <select
           value={selectedBrandId}
           onChange={(event) => setSelectedBrandId(event.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300"
         >
           {brandProfiles.map((brand) => (
             <option key={brand.id} value={brand.id}>
@@ -54,7 +54,7 @@ export function ThemesView() {
 
       <div className="flex flex-col gap-3">
         {brandThemes.length === 0 && (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">
+          <p className="text-sm text-muted-foreground ">
             Aucune thématique pour cette marque. Créez-en une pour commencer.
           </p>
         )}

@@ -25,7 +25,7 @@ export function TopicRow({
       className={`flex items-center gap-3 rounded-lg border p-3 ${
         isDuplicate
           ? "border-amber-300 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10"
-          : "border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
+          : "border-border bg-surface  "
       }`}
     >
       <input
@@ -54,7 +54,7 @@ export function TopicRow({
         className={`shrink-0 rounded-md p-1.5 ${
           topic.locked
             ? "text-zinc-900 dark:text-zinc-50"
-            : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400"
+            : "text-muted-foreground hover:text-zinc-600  dark:hover:text-zinc-400"
         }`}
       >
         <IconLock className="h-4 w-4" />

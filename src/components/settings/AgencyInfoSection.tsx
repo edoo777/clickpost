@@ -2,7 +2,7 @@ import { COUNTRY_OPTIONS, LANGUAGE_OPTIONS, TIME_ZONE_OPTIONS } from "@/lib/sett
 import type { AgencyInfo } from "@/types/settings";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-zinc-50 disabled:text-zinc-500 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
+  "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-background disabled:text-zinc-500   dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
 
 interface AgencyInfoSectionProps {
   info: AgencyInfo;
@@ -16,8 +16,8 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Informations de l&apos;agence</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">Informations de l&apos;agence</h2>
 
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-black">

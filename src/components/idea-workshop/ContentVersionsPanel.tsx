@@ -14,7 +14,7 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-medium text-zinc-400 dark:text-zinc-600">{label}</dt>
+      <dt className="font-medium text-muted-foreground ">{label}</dt>
       <dd className="whitespace-pre-wrap">{value || "—"}</dd>
     </div>
   );
@@ -22,7 +22,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function VersionSummary({ version }: { version: ContentVersion }) {
   return (
-    <dl className="flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+    <dl className="flex flex-col gap-2 text-xs text-muted-foreground ">
       {version.format === "text" && (
         <>
           <Field label="Accroche" value={version.body.hook} />
@@ -107,9 +107,9 @@ export function ContentVersionsPanel({
   const compareVersions = sorted.filter((version) => compareIds.includes(version.id));
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Versions</h2>
+        <h2 className="text-sm font-semibold text-foreground ">Versions</h2>
         <button
           type="button"
           onClick={onSaveNewVersion}
@@ -120,7 +120,7 @@ export function ContentVersionsPanel({
       </div>
 
       {sorted.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucune version enregistrée pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground ">Aucune version enregistrée pour l&apos;instant.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {sorted.map((version) => (
@@ -129,7 +129,7 @@ export function ContentVersionsPanel({
               className={`flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 ${
                 version.isCurrent
                   ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
-                  : "border-zinc-200 dark:border-white/[.08]"
+                  : "border-border "
               }`}
             >
               <label className="flex items-center gap-2 text-sm">
@@ -142,7 +142,7 @@ export function ContentVersionsPanel({
                 <span className="font-medium text-zinc-800 dark:text-zinc-200">
                   {version.name || `Version ${version.versionNumber}`}
                 </span>
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                <span className="text-xs text-muted-foreground ">
                   {FORMAT_LABEL[version.format]} · {dateFormatter.format(new Date(version.createdAt))} ·{" "}
                   {version.source === "ai" ? "IA" : "Manuelle"}
                 </span>
@@ -157,14 +157,14 @@ export function ContentVersionsPanel({
                   type="button"
                   onClick={() => onRestore(version.id)}
                   disabled={version.isCurrent}
-                  className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
                   Restaurer
                 </button>
                 <button
                   type="button"
                   onClick={() => onDuplicate(version.id)}
-                  className="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
                   Dupliquer
                 </button>
@@ -182,11 +182,11 @@ export function ContentVersionsPanel({
       )}
 
       {compareVersions.length === 2 && (
-        <div className="grid grid-cols-1 gap-4 border-t border-zinc-100 pt-4 sm:grid-cols-2 dark:border-white/[.06]">
+        <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2 ">
           {compareVersions.map((version) => (
             <div
               key={version.id}
-              className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 text-sm dark:border-white/[.08]"
+              className="flex flex-col gap-2 rounded-lg border border-border p-3 text-sm "
             >
               <h3 className="font-medium text-zinc-800 dark:text-zinc-200">
                 {version.name || `Version ${version.versionNumber}`}

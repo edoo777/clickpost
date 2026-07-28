@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AgencyInfoSection } from "@/components/settings/AgencyInfoSection";
 import { BrandIdentitySection } from "@/components/settings/BrandIdentitySection";
 import { ContentPreferencesSection } from "@/components/settings/ContentPreferencesSection";
+import { DisplayPreferencesSection } from "@/components/settings/DisplayPreferencesSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
@@ -51,8 +52,8 @@ export function SettingsView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">Paramètres</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Paramètres</h1>
+          <p className="text-sm text-muted-foreground ">
             Paramètres généraux utilisés dans toute la plateforme.
           </p>
         </header>
@@ -64,7 +65,7 @@ export function SettingsView() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
                   Annuler
                 </button>
@@ -80,7 +81,7 @@ export function SettingsView() {
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Modifier
               </button>
@@ -103,6 +104,8 @@ export function SettingsView() {
       )}
 
       <OtherSectionsLinks />
+
+      <DisplayPreferencesSection />
 
       <AgencyInfoSection
         info={displayed.info}

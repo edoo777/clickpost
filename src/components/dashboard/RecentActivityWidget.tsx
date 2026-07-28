@@ -52,10 +52,10 @@ export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Re
     .slice(0, MAX_ITEMS);
 
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Activité récente</h2>
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
+      <h2 className="text-sm font-semibold text-foreground ">Activité récente</h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucune activité pour ces filtres.</p>
+        <p className="text-sm text-muted-foreground ">Aucune activité pour ces filtres.</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((row) => (
@@ -68,7 +68,7 @@ export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Re
                 >
                   <span className="font-medium">{row.actorName || "Système"}</span> — {row.action}
                 </Link>
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                <span className="text-xs text-muted-foreground ">
                   {row.publicationExcerpt} · {dateFormatter.format(new Date(row.createdAt))}
                 </span>
               </div>

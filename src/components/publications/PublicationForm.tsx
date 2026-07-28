@@ -34,12 +34,12 @@ const TIME_ZONES = [
 ];
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-zinc-50 disabled:text-zinc-500 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
+  "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-background disabled:text-zinc-500   dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{title}</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">{title}</h2>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{children}</div>
     </section>
   );
@@ -133,7 +133,7 @@ function MediaField({
       {value.map((media) => (
         <div
           key={media.id}
-          className="flex items-center gap-2 rounded-lg border border-zinc-200 p-2 dark:border-white/[.08]"
+          className="flex items-center gap-2 rounded-lg border border-border p-2 "
         >
           <select
             disabled={!editable}
@@ -163,13 +163,13 @@ function MediaField({
         </div>
       ))}
       {value.length === 0 && !editable && (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucun média associé.</p>
+        <p className="text-sm text-muted-foreground ">Aucun média associé.</p>
       )}
       {editable && (
         <button
           type="button"
           onClick={add}
-          className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:border-zinc-500 dark:border-white/[.16] dark:text-zinc-400"
+          className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
         >
           + Ajouter un média (placeholder, pas de téléversement réel)
         </button>

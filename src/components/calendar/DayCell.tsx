@@ -24,7 +24,7 @@ export function DayCell({ day, isToday, posts, onSelectPost }: DayCellProps) {
         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
           isToday
             ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-            : "text-zinc-500 dark:text-zinc-400"
+            : "text-muted-foreground "
         }`}
       >
         {day}
@@ -34,7 +34,7 @@ export function DayCell({ day, isToday, posts, onSelectPost }: DayCellProps) {
           <PostChip key={post.id} post={post} onClick={() => onSelectPost(post)} />
         ))}
         {overflow > 0 && (
-          <span className="px-1.5 text-xs font-medium text-zinc-400 dark:text-zinc-600">
+          <span className="px-1.5 text-xs font-medium text-muted-foreground ">
             +{overflow} de plus
           </span>
         )}

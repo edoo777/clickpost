@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
+  --background: #f7f7fb;
   --foreground: #18181b;
-  --accent-glow-1: rgba(147, 51, 234, 0.10);
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --border: #e4e4e7;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --accent: #c026d3;
+  --success: #059669;
+  --warning: #d97706;
+  --destructive: #dc2626;
+  --focus-ring: #8b5cf6;
+  --accent-glow-1: rgba(147, 51, 234, 0.1);
   --accent-glow-2: rgba(219, 39, 119, 0.08);
+}
+
+.dark {
+  --background: #0b0a14;
+  --foreground: #f5f5f7;
+  --surface: #14121f;
+  --surface-elevated: #1b1830;
+  --border: #2b2740;
+  --muted: #1c1930;
+  --muted-foreground: #b4b4c4;
+  --primary: #9161f7;
+  --primary-foreground: #ffffff;
+  --accent: #ec4fe0;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --destructive: #f87171;
+  --focus-ring: #c084fc;
+  --accent-glow-1: rgba(168, 85, 247, 0.16);
+  --accent-glow-2: rgba(236, 72, 153, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-focus-ring: var(--focus-ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --accent-glow-1: rgba(168, 85, 247, 0.16);
-    --accent-glow-2: rgba(236, 72, 153, 0.12);
-  }
 }
 
 body {
@@ -42,4 +78,32 @@ body {
 
 ::selection {
   background: rgba(192, 38, 211, 0.22);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+* {
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }

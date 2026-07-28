@@ -18,13 +18,13 @@ const VARIETY_LABEL: Record<TopicVarietyLevel, string> = {
 };
 
 const FIELD_CLASS =
-  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
 const TOGGLE_CLASS = (isSelected: boolean) =>
   `flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
     isSelected
       ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-      : "border-zinc-200 text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+      : "border-border text-zinc-600  dark:text-zinc-400"
   }`;
 
 export interface TopicGeneratorFormValue {
@@ -81,7 +81,7 @@ export function TopicGeneratorForm({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Marque
@@ -114,7 +114,7 @@ export function TopicGeneratorForm({
           </select>
           {errors.theme && <span className="text-xs font-medium text-red-500">{errors.theme}</span>}
           {themesForBrand.length === 0 && !errors.theme && (
-            <span className="text-xs text-zinc-400 dark:text-zinc-600">
+            <span className="text-xs text-muted-foreground ">
               Aucune thématique active pour cette marque — gérez-les dans « Thématiques ».
             </span>
           )}

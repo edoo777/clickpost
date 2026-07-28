@@ -18,7 +18,7 @@ interface ApprovalQueueListProps {
 export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
   if (publications.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+      <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
         Aucune publication en attente d&apos;approbation.
       </p>
     );
@@ -33,27 +33,27 @@ export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
           <li key={publication.id}>
             <Link
               href={`/publications/${publication.id}`}
-              className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16] sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-zinc-400   dark:hover:border-white/[.16] sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted ">
                   <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
                 </span>
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                  <span className="truncate text-sm font-medium text-foreground ">
                     {publication.excerpt || "Sans titre"}
                   </span>
-                  <span className="truncate text-xs text-zinc-400 dark:text-zinc-600">
+                  <span className="truncate text-xs text-muted-foreground ">
                     {publication.brand} · {dateFormatter.format(new Date(publication.scheduledFor))}
                   </span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-muted-foreground ">
                   Responsable :{" "}
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">{publication.owner || "—"}</span>
                 </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-muted-foreground ">
                   Prochain intervenant :{" "}
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">{nextActor ?? "—"}</span>
                 </span>

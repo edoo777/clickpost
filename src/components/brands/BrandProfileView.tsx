@@ -25,13 +25,13 @@ export function BrandProfileView({ profile }: BrandProfileViewProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-600">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground ">
             Profil de marque
           </span>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
             {draft.name}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{draft.industry}</p>
+          <p className="text-sm text-muted-foreground ">{draft.industry}</p>
           <div className="w-64">
             <CompletenessBar percent={percent} />
           </div>
@@ -43,7 +43,7 @@ export function BrandProfileView({ profile }: BrandProfileViewProps) {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Annuler
               </button>
@@ -59,7 +59,7 @@ export function BrandProfileView({ profile }: BrandProfileViewProps) {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Modifier
             </button>

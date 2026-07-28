@@ -61,13 +61,13 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           {ideas.length} idée{ideas.length > 1 ? "s" : ""}
         </p>
         <button
           type="button"
           onClick={() => setIsManagerOpen(true)}
-          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
           Gérer les colonnes
         </button>
@@ -88,12 +88,12 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
               className={`flex w-72 flex-shrink-0 flex-col gap-3 rounded-xl border p-3 ${
                 dragOverStageId === stage.id
                   ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
-                  : "border-zinc-200 dark:border-white/[.08]"
+                  : "border-border "
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${stage.color}`}>{stage.name}</span>
-                <span className="text-xs text-zinc-400 dark:text-zinc-600">{stageIdeas.length}</span>
+                <span className="text-xs text-muted-foreground ">{stageIdeas.length}</span>
               </div>
               <div className="flex flex-col gap-2">
                 {stageIdeas.map((idea) => (
@@ -106,7 +106,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
                   />
                 ))}
                 {stageIdeas.length === 0 && (
-                  <p className="rounded-lg border border-dashed border-zinc-200 px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
+                  <p className="rounded-lg border border-dashed border-border px-2 py-4 text-center text-xs text-muted-foreground  ">
                     Aucune idée
                   </p>
                 )}
@@ -120,10 +120,10 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
           className="flex w-72 flex-shrink-0 flex-col gap-3 rounded-xl border border-dashed border-zinc-300 p-3 dark:border-white/[.12]"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground  ">
               Sans colonne
             </span>
-            <span className="text-xs text-zinc-400 dark:text-zinc-600">{unassigned.length}</span>
+            <span className="text-xs text-muted-foreground ">{unassigned.length}</span>
           </div>
           <div className="flex flex-col gap-2">
             {unassigned.map((idea) => (
@@ -136,7 +136,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
               />
             ))}
             {unassigned.length === 0 && (
-              <p className="rounded-lg border border-dashed border-zinc-200 px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
+              <p className="rounded-lg border border-dashed border-border px-2 py-4 text-center text-xs text-muted-foreground  ">
                 Aucune idée
               </p>
             )}

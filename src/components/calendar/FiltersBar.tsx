@@ -34,7 +34,7 @@ const STATUSES: PublicationStatus[] = [
 ];
 
 const SELECT_CLASS =
-  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
 interface FiltersBarProps {
   filters: CalendarFilters;
@@ -112,7 +112,7 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
         <button
           type="button"
           onClick={() => onChange(DEFAULT_CALENDAR_FILTERS)}
-          className="text-sm font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+          className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
         >
           Réinitialiser
         </button>

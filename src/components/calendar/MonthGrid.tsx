@@ -39,12 +39,12 @@ export function MonthGrid({ year, month, posts, onSelectPost }: MonthGridProps) 
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="rounded-xl border border-border bg-surface p-4  ">
       <div className="grid grid-cols-7 gap-2">
         {WEEKDAYS.map((day) => (
           <div
             key={day}
-            className="pb-2 text-center text-xs font-medium text-zinc-400 dark:text-zinc-600"
+            className="pb-2 text-center text-xs font-medium text-muted-foreground "
           >
             {day}
           </div>

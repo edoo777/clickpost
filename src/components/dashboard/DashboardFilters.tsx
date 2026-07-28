@@ -44,7 +44,7 @@ const ALL_STATUSES: PublicationStatus[] = [
 ];
 
 const FIELD_CLASS =
-  "rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition-colors focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300 dark:focus:ring-violet-500/20";
+  "rounded-xl border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition-colors focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200   dark:text-zinc-300 dark:focus:ring-violet-500/20";
 
 interface DashboardFiltersProps {
   value: DashboardFiltersValue;
@@ -62,7 +62,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
   return (
     <div
       aria-label="Filtres du tableau de bord"
-      className="flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-white/[.08] dark:bg-zinc-950"
+      className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm  "
     >
       <select
         value={value.brandId}

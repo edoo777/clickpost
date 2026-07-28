@@ -30,10 +30,10 @@ export function KanbanCard({ idea, isSelected, onToggleSelect, onOpen }: KanbanC
     <div
       draggable
       onDragStart={handleDragStart}
-      className={`flex cursor-grab flex-col gap-2 rounded-lg border bg-white p-3 active:cursor-grabbing dark:bg-zinc-950 ${
+      className={`flex cursor-grab flex-col gap-2 rounded-lg border bg-surface p-3 active:cursor-grabbing  ${
         isSelected
           ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
-          : "border-zinc-200 hover:border-zinc-400 dark:border-white/[.08] dark:hover:border-white/[.16]"
+          : "border-border hover:border-zinc-400  dark:hover:border-white/[.16]"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -44,7 +44,7 @@ export function KanbanCard({ idea, isSelected, onToggleSelect, onOpen }: KanbanC
           aria-label="Sélectionner cette idée"
         />
         {idea.priority && (
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground  ">
             {PRIORITY_LABEL[idea.priority]}
           </span>
         )}
@@ -52,7 +52,7 @@ export function KanbanCard({ idea, isSelected, onToggleSelect, onOpen }: KanbanC
 
       <button type="button" onClick={onOpen} className="flex flex-col gap-1 text-left hover:underline">
         <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{idea.title || "Sans titre"}</span>
-        <span className="text-xs text-zinc-400 dark:text-zinc-600">
+        <span className="text-xs text-muted-foreground ">
           {themeLabel ?? "Sans thématique"} ·{" "}
           {idea.scheduledFor ? dateFormatter.format(new Date(idea.scheduledFor)) : "Sans date"}
         </span>

@@ -30,10 +30,10 @@ export function DashboardView() {
   return (
     <>
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           Tableau de bord
         </h1>
-        <p className="text-sm capitalize text-zinc-500 dark:text-zinc-400">{today}</p>
+        <p className="text-sm capitalize text-muted-foreground ">{today}</p>
       </header>
 
       <DashboardFilters value={filters} onChange={setFilters} />

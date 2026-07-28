@@ -22,16 +22,16 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
     return (
       <section
         aria-label="Aperçu du pipeline d'idées"
-        className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-8 text-center dark:border-white/[.15] dark:bg-zinc-950"
+        className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-300 bg-surface px-4 py-8 text-center dark:border-white/[.15] "
       >
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           Aucune idée {filters.brandId !== "all" || filters.platform !== "all" ? "pour ces filtres" : "pour l'instant"}
           . Générez des sujets ou créez une idée pour commencer.
         </p>
         <div className="flex items-center gap-3">
           <Link
             href="/boite-idees"
-            className="rounded-xl border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+            className="rounded-xl border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Générateur de sujets
           </Link>
@@ -63,10 +63,10 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
   return (
     <section
       aria-label="Aperçu du pipeline d'idées"
-      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950"
+      className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  "
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Pipeline d&apos;idées</h2>
+        <h2 className="text-sm font-semibold text-foreground ">Pipeline d&apos;idées</h2>
         <Link href="/boite-idees" className="text-sm font-medium text-violet-600 hover:underline dark:text-violet-400">
           Voir la banque d&apos;idées
         </Link>
@@ -76,10 +76,10 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
           <Link
             key={stat.key}
             href="/boite-idees"
-            className="flex flex-col gap-1 rounded-xl border border-zinc-100 p-3 transition-colors hover:border-violet-200 hover:bg-violet-50/60 dark:border-white/[.06] dark:hover:border-violet-500/30 dark:hover:bg-violet-500/5"
+            className="flex flex-col gap-1 rounded-xl border border-border p-3 transition-colors hover:border-violet-200 hover:bg-violet-50/60  dark:hover:border-violet-500/30 dark:hover:bg-violet-500/5"
           >
-            <span className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50">{stat.count}</span>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{stat.label}</span>
+            <span className="text-2xl font-semibold text-foreground ">{stat.count}</span>
+            <span className="text-xs text-muted-foreground ">{stat.label}</span>
           </Link>
         ))}
       </div>

@@ -69,17 +69,17 @@ export function CollaborationPanel({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Commentaires</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">Commentaires</h2>
 
       {publication.comments.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucun commentaire pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground ">Aucun commentaire pour l&apos;instant.</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {publication.comments.map((comment) => (
             <li
               key={comment.id}
-              className="flex flex-col gap-1 rounded-lg border border-zinc-100 p-3 dark:border-white/[.06]"
+              className="flex flex-col gap-1 rounded-lg border border-border p-3 "
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{comment.authorName}</span>
@@ -88,12 +88,12 @@ export function CollaborationPanel({
                     className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                       comment.audience === "client"
                         ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                        : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                        : "bg-muted text-zinc-600  dark:text-zinc-400"
                     }`}
                   >
                     {comment.audience === "client" ? "Client" : "Interne"}
                   </span>
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
+                  <span className="text-[10px] text-muted-foreground ">
                     {dateFormatter.format(new Date(comment.createdAt))}
                   </span>
                 </div>
@@ -104,16 +104,16 @@ export function CollaborationPanel({
         </ul>
       )}
 
-      <div className="flex flex-col gap-2 border-t border-zinc-100 pt-3 dark:border-white/[.06]">
+      <div className="flex flex-col gap-2 border-t border-border pt-3 ">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-zinc-200 p-1 dark:border-white/[.08]">
+          <div className="flex items-center gap-1 rounded-lg border border-border p-1 ">
             <button
               type="button"
               onClick={() => setAudience("internal")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 audience === "internal"
                   ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                  : "text-zinc-500 dark:text-zinc-400"
+                  : "text-muted-foreground "
               }`}
             >
               Interne
@@ -124,7 +124,7 @@ export function CollaborationPanel({
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 audience === "client"
                   ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                  : "text-zinc-500 dark:text-zinc-400"
+                  : "text-muted-foreground "
               }`}
             >
               Client
@@ -137,7 +137,7 @@ export function CollaborationPanel({
               onChange={(event) => {
                 if (event.target.value) insertMention(event.target.value);
               }}
-              className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-600 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-400"
+              className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-zinc-600   dark:text-zinc-400"
             >
               <option value="">Mentionner…</option>
               {members.map((member) => (
@@ -154,7 +154,7 @@ export function CollaborationPanel({
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder="Ajouter un commentaire…"
-          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
+          className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800   dark:text-zinc-200"
         />
 
         <button

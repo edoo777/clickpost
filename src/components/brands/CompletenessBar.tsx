@@ -12,11 +12,11 @@ interface CompletenessBarProps {
 export function CompletenessBar({ percent, label = "Profil complet" }: CompletenessBarProps) {
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center justify-between text-xs text-muted-foreground ">
         <span>{label}</span>
         <span className="font-medium text-zinc-700 dark:text-zinc-300">{percent}%</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted ">
         <div
           className={`h-full rounded-full transition-[width] ${getFillColor(percent)}`}
           style={{ width: `${percent}%` }}

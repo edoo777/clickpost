@@ -31,17 +31,17 @@ export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
-      <div className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-white p-6 shadow-xl dark:bg-zinc-950">
+      <div className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-surface p-6 shadow-xl ">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className={`flex h-9 w-9 items-center justify-center rounded-full ${color.bg}`}>
               <Icon className={`h-4 w-4 ${color.text}`} />
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-zinc-950 dark:text-zinc-50">
+              <span className="text-sm font-medium text-foreground ">
                 {PLATFORM_LABEL[post.platform]}
               </span>
-              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+              <span className="text-xs text-muted-foreground ">
                 {account?.handle ?? post.brand}
               </span>
             </div>
@@ -50,7 +50,7 @@ export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted  "
           >
             ✕
           </button>
@@ -61,26 +61,26 @@ export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
         </span>
 
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">{post.excerpt}</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-foreground ">{post.excerpt}</h2>
+          <p className="text-sm text-muted-foreground ">
             {post.brand} · {dateFormatter.format(new Date(post.scheduledFor))}
           </p>
         </div>
 
         <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{post.text}</p>
 
-        <div className="mt-auto flex gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
+        <div className="mt-auto flex gap-3 border-t border-border pt-4 ">
           <button
             type="button"
             disabled
-            className="flex-1 cursor-not-allowed rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-400 dark:border-white/[.08] dark:text-zinc-600"
+            className="flex-1 cursor-not-allowed rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
             Modifier
           </button>
           <button
             type="button"
             disabled
-            className="flex-1 cursor-not-allowed rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600"
+            className="flex-1 cursor-not-allowed rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
             Approuver
           </button>

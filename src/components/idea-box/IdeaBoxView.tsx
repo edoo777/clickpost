@@ -22,17 +22,17 @@ export function IdeaBoxView() {
           <span className="accent-halo flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
             <IconLightbulb className="h-5 w-5 text-white" />
           </span>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
             Boîte à idées
           </h1>
         </div>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           Générez des sujets, consultez la banque, puis filtrez, éditez et transformez vos idées vers
           l&apos;Atelier ou une publication.
         </p>
       </header>
 
-      <div className="flex flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-1.5 dark:border-white/[.08] dark:bg-zinc-950 sm:flex-row">
+      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-1.5   sm:flex-row">
         {TABS.map((item) => (
           <button
             key={item.key}
@@ -45,7 +45,7 @@ export function IdeaBoxView() {
             }`}
           >
             <span className="text-sm font-semibold">{item.label}</span>
-            <span className={`text-xs ${tab === item.key ? "text-white/80" : "text-zinc-400 dark:text-zinc-600"}`}>
+            <span className={`text-xs ${tab === item.key ? "text-white/80" : "text-muted-foreground "}`}>
               {item.description}
             </span>
           </button>

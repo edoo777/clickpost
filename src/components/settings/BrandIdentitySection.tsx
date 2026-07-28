@@ -13,14 +13,14 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Identité visuelle</h2>
+        <h2 className="text-sm font-semibold text-foreground ">Identité visuelle</h2>
         {editable && (
           <button
             type="button"
             onClick={onReset}
-            className="text-xs font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+            className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline "
           >
             Restaurer les valeurs par défaut
           </button>
@@ -36,9 +36,9 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
               disabled={!editable}
               value={identity.primaryColor}
               onChange={(event) => set("primaryColor", event.target.value)}
-              className="h-9 w-14 rounded border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
+              className="h-9 w-14 rounded border border-border bg-surface  "
             />
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{identity.primaryColor}</span>
+            <span className="text-xs text-muted-foreground ">{identity.primaryColor}</span>
           </div>
         </label>
 
@@ -50,19 +50,19 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
               disabled={!editable}
               value={identity.secondaryColor}
               onChange={(event) => set("secondaryColor", event.target.value)}
-              className="h-9 w-14 rounded border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
+              className="h-9 w-14 rounded border border-border bg-surface  "
             />
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">{identity.secondaryColor}</span>
+            <span className="text-xs text-muted-foreground ">{identity.secondaryColor}</span>
           </div>
         </label>
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs font-medium text-muted-foreground ">
           Aperçu de l&apos;interface personnalisée
         </span>
         <div
-          className="flex overflow-hidden rounded-lg border border-zinc-200 dark:border-white/[.08]"
+          className="flex overflow-hidden rounded-lg border border-border "
           style={{ height: 120 }}
         >
           <div className="flex w-24 flex-col gap-2 p-3" style={{ backgroundColor: identity.primaryColor }}>
@@ -73,7 +73,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
           <div className="flex flex-1 flex-col justify-between bg-white p-3 dark:bg-zinc-900">
             <div className="flex flex-col gap-1.5">
               <span className="h-2 w-24 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-              <span className="h-2 w-32 rounded-full bg-zinc-100 dark:bg-zinc-800" />
+              <span className="h-2 w-32 rounded-full bg-muted " />
             </div>
             <span
               className="w-fit rounded-lg px-3 py-1.5 text-xs font-medium text-white"

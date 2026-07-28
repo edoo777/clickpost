@@ -9,12 +9,12 @@ import type { SocialPlatform } from "@/types/dashboard";
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-zinc-50 disabled:text-zinc-500 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
+  "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-background disabled:text-zinc-500   dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
-      <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">{title}</h2>
+    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
+      <h2 className="text-sm font-semibold text-foreground ">{title}</h2>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{children}</div>
     </section>
   );
@@ -112,7 +112,7 @@ function PlatformField({
             className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
               isSelected
                 ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "border-zinc-200 text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+                : "border-border text-zinc-600  dark:text-zinc-400"
             } ${editable ? "cursor-pointer" : "cursor-default"}`}
           >
             <Icon className="h-3.5 w-3.5" />
@@ -152,10 +152,10 @@ function ContentExamplesField({
         return (
           <div
             key={example.id}
-            className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 dark:border-white/[.08]"
+            className="flex flex-col gap-2 rounded-lg border border-border p-3 "
           >
             <div className="flex items-center gap-2">
-              <Icon className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+              <Icon className="h-4 w-4 shrink-0 text-muted-foreground " />
               <select
                 disabled={!editable}
                 value={example.platform}
@@ -202,13 +202,13 @@ function ContentExamplesField({
         <button
           type="button"
           onClick={addExample}
-          className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:border-zinc-500 dark:border-white/[.16] dark:text-zinc-400"
+          className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
         >
           + Ajouter un exemple
         </button>
       )}
       {value.length === 0 && !editable && (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucun exemple renseigné.</p>
+        <p className="text-sm text-muted-foreground ">Aucun exemple renseigné.</p>
       )}
     </div>
   );

@@ -18,6 +18,8 @@ import {
   IconUsers,
   IconWand,
 } from "@/components/icons";
+import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
+import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
 
@@ -77,21 +79,24 @@ export function Sidebar() {
 
   return (
     <>
-      <div className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 lg:hidden dark:border-white/[.08] dark:bg-black">
+      <div className="flex items-center justify-between border-b border-border bg-white px-4 py-3 lg:hidden dark:bg-surface">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600">
             <IconLogoMark className="h-4 w-4 text-white" />
           </span>
-          <span className="text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">ClickPost</span>
+          <span className="text-base font-semibold tracking-tight text-foreground ">ClickPost</span>
         </Link>
-        <button
-          type="button"
-          onClick={() => setIsMobileOpen(true)}
-          aria-label="Ouvrir le menu"
-          className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-        >
-          <IconMenu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <ThemeQuickToggle className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400 " />
+          <button
+            type="button"
+            onClick={() => setIsMobileOpen(true)}
+            aria-label="Ouvrir le menu"
+            className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400 "
+          >
+            <IconMenu className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {isMobileOpen && (
@@ -116,14 +121,17 @@ export function Sidebar() {
               </span>
               <span className="text-lg font-semibold tracking-tight text-white">ClickPost</span>
             </Link>
-            <button
-              type="button"
-              onClick={() => setIsMobileOpen(false)}
-              aria-label="Fermer le menu"
-              className="rounded-lg p-1.5 text-white/50 hover:bg-white/[.08] hover:text-white lg:hidden"
-            >
-              <IconClose className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <ThemeQuickToggle className="rounded-lg p-1.5 text-white/50 hover:bg-white/[.08] hover:text-white" />
+              <button
+                type="button"
+                onClick={() => setIsMobileOpen(false)}
+                aria-label="Fermer le menu"
+                className="rounded-lg p-1.5 text-white/50 hover:bg-white/[.08] hover:text-white lg:hidden"
+              >
+                <IconClose className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <div className="px-3 pb-4">
@@ -161,6 +169,11 @@ export function Sidebar() {
             </span>
             <IconChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
           </Link>
+
+          <div className="flex flex-col gap-1.5 px-3 pt-3">
+            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">Thème</label>
+            <ThemeSelect surface="dark" />
+          </div>
 
           <div className="flex flex-col gap-1.5 border-t border-white/[.06] px-5 py-4">
             <label className="text-[11px] font-medium uppercase tracking-wide text-white/30">

@@ -18,7 +18,7 @@ const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "t
 const ALL_PRIORITIES: ContentPriority[] = ["low", "medium", "high"];
 
 const FIELD_CLASS =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
+  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800   dark:text-zinc-200";
 
 export interface IdeaQuickEditValue {
   title: string;
@@ -114,16 +114,16 @@ export function IdeaQuickEditPanel({
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-black/30" role="dialog" aria-modal="true">
-      <div className="flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto border-l border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+      <div className="flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto border-l border-border bg-surface p-5  ">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+          <h2 className="text-lg font-semibold text-foreground ">
             {idea ? "Modifier l'idée" : "Nouvelle idée"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="rounded-md px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-muted  "
           >
             ✕
           </button>
@@ -294,14 +294,14 @@ export function IdeaQuickEditPanel({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Annuler
           </button>
         </div>
 
         {idea && (
-          <div className="flex flex-wrap gap-2 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
+          <div className="flex flex-wrap gap-2 border-t border-border pt-4 ">
             <Link
               href={`/atelier/${idea.id}`}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 dark:shadow-fuchsia-500/10"
@@ -311,7 +311,7 @@ export function IdeaQuickEditPanel({
             <button
               type="button"
               onClick={onDuplicate}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Dupliquer
             </button>
@@ -319,7 +319,7 @@ export function IdeaQuickEditPanel({
               <button
                 type="button"
                 onClick={onRestore}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Restaurer
               </button>
@@ -327,7 +327,7 @@ export function IdeaQuickEditPanel({
               <button
                 type="button"
                 onClick={onArchive}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Archiver
               </button>
@@ -342,7 +342,7 @@ export function IdeaQuickEditPanel({
             {idea.publicationId && (
               <Link
                 href={`/publications/${idea.publicationId}`}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Voir la publication
               </Link>

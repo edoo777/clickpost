@@ -22,18 +22,18 @@ export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCa
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-left transition-colors hover:border-zinc-400 dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16]"
+      className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 text-left transition-colors hover:border-zinc-400   dark:hover:border-white/[.16]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted ">
             <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
           </span>
           <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-50">
+            <span className="truncate text-sm font-medium text-foreground ">
               {account.accountName}
             </span>
-            <span className="truncate text-xs text-zinc-400 dark:text-zinc-600">{account.handle}</span>
+            <span className="truncate text-xs text-muted-foreground ">{account.handle}</span>
           </div>
         </div>
         <span
@@ -43,7 +43,7 @@ export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCa
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-600">
+      <div className="flex items-center justify-between text-xs text-muted-foreground ">
         <span>{account.brand}</span>
         <span>
           {account.lastSyncedAt
@@ -52,7 +52,7 @@ export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCa
         </span>
       </div>
 
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-muted-foreground ">
         {scheduledPostsCount} publication{scheduledPostsCount > 1 ? "s" : ""} programmée
         {scheduledPostsCount > 1 ? "s" : ""}
       </p>

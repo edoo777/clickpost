@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
+import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
 import { COUNTRY_OPTIONS, LANGUAGE_OPTIONS, NOTIFICATION_LABEL, TIME_ZONE_OPTIONS } from "@/lib/settings-data";
@@ -22,10 +23,10 @@ const NOTIFICATION_ORDER: NotificationKey[] = [
 ];
 
 const FIELD_CLASS =
-  "rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 shadow-sm transition-colors focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200 dark:focus:ring-violet-500/20";
+  "rounded-xl border border-border bg-surface px-3 py-2 text-sm text-zinc-800 shadow-sm transition-colors focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-60   dark:text-zinc-200 dark:focus:ring-violet-500/20";
 
 const SECTION_CLASS =
-  "rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950";
+  "rounded-2xl border border-border bg-surface p-5 shadow-sm  ";
 
 export function ProfileView() {
   const { members, currentUserId } = useTeamSession();
@@ -40,7 +41,7 @@ export function ProfileView() {
   const displayed = isEditing ? draft : profile;
 
   if (!member) {
-    return <p className="text-sm text-zinc-400 dark:text-zinc-600">Utilisateur introuvable.</p>;
+    return <p className="text-sm text-muted-foreground ">Utilisateur introuvable.</p>;
   }
 
   function set<K extends keyof UserProfileExtra>(key: K, value: UserProfileExtra[K]) {
@@ -72,12 +73,12 @@ export function ProfileView() {
             {member.name.slice(0, 1).toUpperCase()}
           </span>
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">{member.name}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{member.name}</h1>
             <div className="flex flex-wrap items-center gap-2">
               <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium ${ROLE_STYLE[member.role]}`}>
                 {ROLE_LABEL[member.role]}
               </span>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400">{member.email}</span>
+              <span className="text-sm text-muted-foreground ">{member.email}</span>
             </div>
           </div>
         </div>
@@ -87,7 +88,7 @@ export function ProfileView() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Annuler
               </button>
@@ -103,7 +104,7 @@ export function ProfileView() {
             <button
               type="button"
               onClick={handleEdit}
-              className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Modifier le profil
             </button>
@@ -119,7 +120,7 @@ export function ProfileView() {
       )}
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Identité</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Identité</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Prénom
@@ -178,7 +179,7 @@ export function ProfileView() {
             className={FIELD_CLASS}
           />
         </label>
-        <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-600">
+        <p className="mt-3 text-xs text-muted-foreground ">
           Nom, email et rôle se gèrent depuis{" "}
           <Link href="/equipe" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
             Équipe
@@ -188,7 +189,7 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Localisation</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Localisation</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Fuseau horaire
@@ -239,9 +240,9 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Réseaux connectés</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Réseaux connectés</h2>
         {accounts.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucun compte connecté.</p>
+          <p className="text-sm text-muted-foreground ">Aucun compte connecté.</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {accounts.map((account) => {
@@ -249,7 +250,7 @@ export function ProfileView() {
               return (
                 <li
                   key={account.id}
-                  className="flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:border-white/[.08] dark:bg-zinc-900 dark:text-zinc-300"
+                  className="flex items-center gap-2 rounded-full border border-border bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-600  dark:bg-zinc-900 dark:text-zinc-300"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {account.handle}
@@ -258,7 +259,7 @@ export function ProfileView() {
             })}
           </ul>
         )}
-        <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-600">
+        <p className="mt-3 text-xs text-muted-foreground ">
           Gérer les connexions depuis{" "}
           <Link href="/comptes" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
             Comptes
@@ -268,9 +269,9 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Marques gérées</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Marques gérées</h2>
         {managedBrands.length === 0 ? (
-          <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucune marque assignée.</p>
+          <p className="text-sm text-muted-foreground ">Aucune marque assignée.</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {managedBrands.map((brand) => (
@@ -283,7 +284,7 @@ export function ProfileView() {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-600">
+        <p className="mt-3 text-xs text-muted-foreground ">
           Modifiable depuis{" "}
           <Link href="/equipe" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
             Équipe
@@ -293,11 +294,11 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-1 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Préférences de notification</h2>
-        <p className="mb-4 text-xs text-zinc-400 dark:text-zinc-600">
+        <h2 className="mb-1 text-sm font-semibold text-foreground ">Préférences de notification</h2>
+        <p className="mb-4 text-xs text-muted-foreground ">
           Simulation — aucune notification réelle n&apos;est envoyée.
         </p>
-        <div className="flex flex-col divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <div className="flex flex-col divide-y divide-border ">
           {NOTIFICATION_ORDER.map((key) => (
             <label
               key={key}
@@ -325,21 +326,15 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Préférences d&apos;affichage</h2>
+        <h2 className="mb-1 text-sm font-semibold text-foreground ">Préférences d&apos;affichage</h2>
+        <p className="mb-4 text-xs text-muted-foreground ">
+          Le thème s&apos;applique immédiatement, indépendamment du mode édition.
+        </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Thème
-            <select
-              disabled={!isEditing}
-              value={displayed.theme}
-              onChange={(event) => set("theme", event.target.value as UserProfileExtra["theme"])}
-              className={FIELD_CLASS}
-            >
-              <option value="system">Système</option>
-              <option value="light">Clair</option>
-              <option value="dark">Sombre</option>
-            </select>
-          </label>
+            <ThemeSelect surface="light" />
+          </div>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Densité d&apos;affichage
             <select
@@ -356,34 +351,34 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Sécurité</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Sécurité</h2>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             disabled
-            className="cursor-not-allowed rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-400 dark:border-white/[.08] dark:text-zinc-600"
+            className="cursor-not-allowed rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
             Changer le mot de passe
           </button>
           <button
             type="button"
             disabled
-            className="cursor-not-allowed rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-400 dark:border-white/[.08] dark:text-zinc-600"
+            className="cursor-not-allowed rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
             Gérer les sessions actives
           </button>
         </div>
-        <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-600">
+        <p className="mt-2 text-xs text-muted-foreground ">
           Authentification avancée non disponible dans cette démonstration.
         </p>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">Abonnement</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">Abonnement</h2>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col">
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Plan Agence — Démonstration</span>
-            <span className="text-xs text-zinc-400 dark:text-zinc-600">
+            <span className="text-xs text-muted-foreground ">
               Aucun système de paiement actif dans cette version.
             </span>
           </div>

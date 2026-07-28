@@ -44,7 +44,7 @@ export const DEFAULT_PUBLICATIONS_FILTERS: PublicationsFiltersValue = {
 };
 
 const FIELD_CLASS =
-  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
 interface PublicationsFiltersProps {
   value: PublicationsFiltersValue;
@@ -123,14 +123,14 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-zinc-200 p-1 dark:border-white/[.08]">
+        <div className="flex items-center gap-1 rounded-lg border border-border p-1 ">
           <button
             type="button"
             onClick={() => onChange({ ...value, viewMode: "cards" })}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
               value.viewMode === "cards"
                 ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "text-zinc-500 dark:text-zinc-400"
+                : "text-muted-foreground "
             }`}
           >
             Cartes
@@ -141,7 +141,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
               value.viewMode === "table"
                 ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "text-zinc-500 dark:text-zinc-400"
+                : "text-muted-foreground "
             }`}
           >
             Tableau

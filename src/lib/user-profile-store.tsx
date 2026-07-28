@@ -18,7 +18,6 @@ function buildDefaultProfile(memberId: string, fallbackName: string): UserProfil
     bio: "",
     notifications: { ...DEFAULT_AGENCY_SETTINGS.notifications },
     displayDensity: "comfortable",
-    theme: "system",
   };
 }
 

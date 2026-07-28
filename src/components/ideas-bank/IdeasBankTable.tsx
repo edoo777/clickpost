@@ -23,10 +23,10 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
   const { themes } = useThemesSession();
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="overflow-x-auto rounded-xl border border-border bg-surface  ">
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
-          <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
+          <tr className="border-b border-border text-xs font-medium text-muted-foreground  ">
             <th className="px-4 py-3" />
             <th className="px-4 py-3">Titre</th>
             <th className="px-4 py-3">Thématique</th>
@@ -36,7 +36,7 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
             <th className="px-4 py-3">Source</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <tbody className="divide-y divide-border ">
           {ideas.map((idea) => {
             const themeLabel = themes.find((theme) => theme.id === idea.themeId)?.label;
             return (
@@ -54,11 +54,11 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
                     {idea.title || "Sans titre"}
                   </button>
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">{themeLabel ?? "—"}</td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">{themeLabel ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground ">
                   {idea.platform ? PLATFORM_LABEL[idea.platform] : "—"}
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">
                   {idea.scheduledFor ? dateFormatter.format(new Date(idea.scheduledFor)) : "Sans date"}
                 </td>
                 <td className="px-4 py-3">
@@ -68,7 +68,7 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
                     {IDEA_STATUS_LABEL[idea.status]}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-muted-foreground ">
                   {idea.source === "generated" ? "Générée" : "Manuelle"}
                 </td>
               </tr>

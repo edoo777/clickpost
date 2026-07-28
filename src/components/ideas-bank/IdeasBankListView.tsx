@@ -209,10 +209,10 @@ export function IdeasBankListView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           Banque d&apos;idées
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground ">
           {filtered.length} idée{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
         </p>
       </header>
@@ -220,7 +220,7 @@ export function IdeasBankListView() {
       <IdeasBankFilters value={filters} onChange={setFilters} batches={topicBatches} onNewIdea={openCreatePanel} />
 
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-white/[.08] dark:bg-zinc-900/40">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-zinc-50 px-3 py-2  dark:bg-zinc-900/40">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {selectedIds.size} idée{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
           </span>
@@ -228,28 +228,28 @@ export function IdeasBankListView() {
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-sm font-medium text-zinc-500 underline-offset-2 hover:underline dark:text-zinc-400"
+              className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
             >
               Tout désélectionner
             </button>
             <button
               type="button"
               onClick={handleRestoreSelection}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Restaurer la sélection
             </button>
             <button
               type="button"
               onClick={() => setIsScheduleModalOpen(true)}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Planifier la sélection
             </button>
             <button
               type="button"
               onClick={handleArchiveSelection}
-              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Archiver la sélection
             </button>
@@ -279,7 +279,7 @@ export function IdeasBankListView() {
           />
         )
       ) : filtered.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Aucune idée ne correspond à ces critères. Générez un bloc de sujets ou créez une idée
           manuellement pour commencer.
         </p>
@@ -287,9 +287,9 @@ export function IdeasBankListView() {
         <div className="flex flex-col gap-6">
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+              <h2 className="text-sm font-semibold text-foreground ">
                 {group.label}{" "}
-                <span className="font-normal text-zinc-400 dark:text-zinc-600">({group.ideas.length})</span>
+                <span className="font-normal text-muted-foreground ">({group.ideas.length})</span>
               </h2>
               {renderIdeas(group.ideas)}
             </div>

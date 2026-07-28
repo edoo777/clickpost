@@ -24,25 +24,25 @@ export function RecentIdeasWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Recen
     .slice(0, MAX_ITEMS);
 
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Idées récentes</h2>
+        <h2 className="text-sm font-semibold text-foreground ">Idées récentes</h2>
         <Link href="/boite-idees" className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400">
           Voir tout
         </Link>
       </div>
       {recent.length === 0 ? (
-        <p className="text-sm text-zinc-400 dark:text-zinc-600">Aucune idée pour ces filtres.</p>
+        <p className="text-sm text-muted-foreground ">Aucune idée pour ces filtres.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-zinc-100 dark:divide-white/[.06]">
+        <ul className="flex flex-col divide-y divide-border ">
           {recent.map((idea) => (
             <li key={idea.id}>
               <Link href={`/atelier/${idea.id}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                  <span className="truncate text-sm font-medium text-foreground ">
                     {idea.title || "Sans titre"}
                   </span>
-                  <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                  <span className="text-xs text-muted-foreground ">
                     {dateFormatter.format(new Date(idea.updatedAt))}
                   </span>
                 </div>
