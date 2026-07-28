@@ -8,6 +8,7 @@ import {
   IdeasBankFilters,
   type IdeasBankFiltersValue,
 } from "@/components/ideas-bank/IdeasBankFilters";
+import { IdeasBankKanban } from "@/components/ideas-bank/IdeasBankKanban";
 import { IdeasBankTable } from "@/components/ideas-bank/IdeasBankTable";
 import { IdeaQuickEditPanel, type IdeaQuickEditValue } from "@/components/ideas-bank/IdeaQuickEditPanel";
 import { brandProfiles } from "@/lib/brand-profiles";
@@ -249,7 +250,21 @@ export function IdeasBankListView() {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {filters.viewMode === "kanban" ? (
+        filters.brandId === "all" ? (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
+            Sélectionnez une marque pour afficher le Kanban.
+          </p>
+        ) : (
+          <IdeasBankKanban
+            brandId={filters.brandId}
+            ideas={filtered}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onOpen={openEditPanel}
+          />
+        )
+      ) : filtered.length === 0 ? (
         <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
           Aucune idée ne correspond à ces critères. Générez un bloc de sujets ou créez une idée
           manuellement pour commencer.

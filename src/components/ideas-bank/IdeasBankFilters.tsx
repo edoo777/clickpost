@@ -14,7 +14,7 @@ import type { ContentPriority, ContentSource } from "@/types/publication";
 import type { TopicBatch } from "@/types/topic-batch";
 
 export type IdeasBankGroupBy = "none" | "theme" | "batch" | "campaign";
-export type IdeasBankViewMode = "cards" | "table";
+export type IdeasBankViewMode = "cards" | "table" | "kanban";
 
 export interface IdeasBankFiltersValue {
   search: string;
@@ -276,6 +276,17 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
             }`}
           >
             Tableau
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange({ ...value, viewMode: "kanban" })}
+            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              value.viewMode === "kanban"
+                ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                : "text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
+            Kanban
           </button>
         </div>
 
