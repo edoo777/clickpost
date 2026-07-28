@@ -149,6 +149,15 @@ export function IconLock(props: IconProps) {
   );
 }
 
+export function IconLightbulb(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M9 18h6M10 21h4" />
+      <path d="M12 3a6 6 0 0 0-3.5 10.9c.6.45 1 1.15 1 1.9V16h5v-.2c0-.75.4-1.45 1-1.9A6 6 0 0 0 12 3Z" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>
