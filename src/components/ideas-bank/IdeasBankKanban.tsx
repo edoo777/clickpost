@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { KanbanCard } from "@/components/ideas-bank/KanbanCard";
 import { KanbanColumnsManager } from "@/components/ideas-bank/KanbanColumnsManager";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { mapIdeaStatusToPublicationStatus, SYNC_ACTOR_NAME } from "@/lib/idea-publication-sync";
+import { usePostsSession } from "@/lib/posts-store";
 import { buildDefaultWorkflowStages } from "@/lib/workflow-stages";
 import type { Idea } from "@/types/idea";
 import type { WorkflowStage } from "@/types/workflow-stage";
@@ -18,6 +20,7 @@ interface IdeasBankKanbanProps {
 
 export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, onOpen }: IdeasBankKanbanProps) {
   const { addWorkflowStage, updateIdea, getWorkflowStagesByBrand } = useContentWorkspace();
+  const { posts, changeStatus } = usePostsSession();
   const [isManagerOpen, setIsManagerOpen] = useState(false);
   const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
   const bootstrappedBrandIds = useRef<Set<string>>(new Set());
@@ -42,7 +45,17 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
     const ideaId = event.dataTransfer.getData("text/plain");
     setDragOverStageId(null);
     if (!ideaId) return;
-    updateIdea(ideaId, { workflowStageId: stage.id, status: stage.systemStatus as Idea["status"] });
+    const newStatus = stage.systemStatus as Idea["status"];
+    updateIdea(ideaId, { workflowStageId: stage.id, status: newStatus });
+
+    const idea = ideas.find((candidate) => candidate.id === ideaId);
+    if (!idea?.publicationId) return;
+    const publication = posts.find((post) => post.id === idea.publicationId);
+    if (!publication) return;
+    const mapped = mapIdeaStatusToPublicationStatus(newStatus);
+    if (mapped && mapped !== publication.status) {
+      changeStatus(publication.id, mapped, SYNC_ACTOR_NAME);
+    }
   }
 
   return (

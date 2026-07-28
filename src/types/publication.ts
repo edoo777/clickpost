@@ -73,4 +73,5 @@ export interface Publication {
   createdAt?: string;
   updatedAt?: string;
   linkedPublicationId?: string;
+  ideaId?: string;
 }

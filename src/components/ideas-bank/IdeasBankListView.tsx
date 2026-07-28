@@ -26,6 +26,7 @@ import {
   searchIdeas,
   type IdeaGroup,
 } from "@/lib/ideas";
+import { usePostsSession } from "@/lib/posts-store";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Idea } from "@/types/idea";
 
@@ -34,6 +35,14 @@ export function IdeasBankListView() {
     useContentWorkspace();
   const { themes } = useThemesSession();
   const { campaigns } = useCampaignsSession();
+  const { posts, patchPost } = usePostsSession();
+
+  function syncScheduleToPublication(idea: Idea | undefined, scheduledFor: string | undefined) {
+    if (!idea?.publicationId || !scheduledFor) return;
+    const publication = posts.find((post) => post.id === idea.publicationId);
+    if (!publication || publication.scheduledFor === scheduledFor) return;
+    patchPost(publication.id, { scheduledFor });
+  }
 
   const [filters, setFilters] = useState<IdeasBankFiltersValue>(DEFAULT_IDEAS_BANK_FILTERS);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -106,7 +115,11 @@ export function IdeasBankListView() {
   }
 
   function handleConfirmSchedule(assignments: IdeaScheduleAssignment[]) {
-    assignments.forEach((assignment) => updateIdea(assignment.ideaId, { scheduledFor: assignment.scheduledFor }));
+    assignments.forEach((assignment) => {
+      updateIdea(assignment.ideaId, { scheduledFor: assignment.scheduledFor });
+      const idea = ideas.find((candidate) => candidate.id === assignment.ideaId);
+      syncScheduleToPublication(idea, assignment.scheduledFor);
+    });
     setIsScheduleModalOpen(false);
     setSelectedIds(new Set());
   }
@@ -142,6 +155,7 @@ export function IdeasBankListView() {
 
     if (panelState?.mode === "edit" && panelState.idea) {
       updateIdea(panelState.idea.id, common);
+      syncScheduleToPublication(panelState.idea, common.scheduledFor);
     } else {
       addIdea(buildNewIdea(common));
     }

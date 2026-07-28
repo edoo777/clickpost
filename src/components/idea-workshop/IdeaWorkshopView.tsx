@@ -29,6 +29,7 @@ import {
 } from "@/lib/content-versions";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
+import { mapIdeaStatusToPublicationStatus, SYNC_ACTOR_NAME } from "@/lib/idea-publication-sync";
 import { buildPostInputFromIdea, firstCommentFromVersion } from "@/lib/idea-transformation";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_ORDER, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
@@ -168,7 +169,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   } = useContentWorkspace();
   const { themes } = useThemesSession();
   const { accounts } = useAccountsSession();
-  const { addPosts } = usePostsSession();
+  const { posts, addPosts, changeStatus } = usePostsSession();
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const [isCreatingPublication, setIsCreatingPublication] = useState(false);
 
@@ -196,6 +197,17 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
 
   function set<K extends keyof Idea>(key: K, value: Idea[K]) {
     updateIdea(idea!.id, { [key]: value } as Partial<Idea>);
+  }
+
+  function handleChangeStatus(status: IdeaStatus) {
+    set("status", status);
+    if (!idea!.publicationId) return;
+    const publication = posts.find((post) => post.id === idea!.publicationId);
+    if (!publication) return;
+    const mapped = mapIdeaStatusToPublicationStatus(status);
+    if (mapped && mapped !== publication.status) {
+      changeStatus(publication.id, mapped, SYNC_ACTOR_NAME);
+    }
   }
 
   function handleSaveNewVersion() {
@@ -322,6 +334,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     const publication = {
       ...buildNewPost({ ...input, accountId: account?.id }),
       firstComment: firstCommentFromVersion(currentVersion, idea!),
+      ideaId: idea!.id,
     };
     addPosts([publication]);
     updateIdea(idea!.id, { publicationId: publication.id, status: "ready_to_schedule" });
@@ -385,7 +398,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
             Statut
             <select
               value={idea.status}
-              onChange={(event) => set("status", event.target.value as IdeaStatus)}
+              onChange={(event) => handleChangeStatus(event.target.value as IdeaStatus)}
               className={FIELD_CLASS}
             >
               {IDEA_STATUS_ORDER.map((status) => (

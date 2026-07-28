@@ -12,11 +12,14 @@ import { PublicationPreview } from "@/components/publications/PublicationPreview
 import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, rejectPublication, requestChanges } from "@/lib/approval";
 import { brandProfiles } from "@/lib/brand-profiles";
+import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialAccount } from "@/types/dashboard";
+import type { Idea } from "@/types/idea";
 import type { Publication, PublicationHistoryEntry } from "@/types/publication";
 import type { AgencySettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
@@ -67,6 +70,7 @@ interface PublicationViewProps {
 export function PublicationView({ mode, id }: PublicationViewProps) {
   const router = useRouter();
   const { posts, addPosts, updatePost } = usePostsSession();
+  const { updateIdea } = useContentWorkspace();
   const { accounts } = useAccountsSession();
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
@@ -98,6 +102,21 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const displayed = isEditing ? draft : (existing ?? draft);
   const Icon = platformIcons[displayed.platform];
 
+  function syncToIdea(previous: Publication, updated: Publication) {
+    if (!updated.ideaId) return;
+    const patch: Partial<Idea> = {};
+    if (updated.status !== previous.status) {
+      const mapped = mapPublicationStatusToIdeaStatus(updated.status);
+      if (mapped) patch.status = mapped;
+    }
+    if (updated.scheduledFor !== previous.scheduledFor) {
+      patch.scheduledFor = updated.scheduledFor;
+    }
+    if (Object.keys(patch).length > 0) {
+      updateIdea(updated.ideaId, patch);
+    }
+  }
+
   function handleSave() {
     if (mode === "create") {
       const newPublication: Publication = { ...draft, id: crypto.randomUUID() };
@@ -113,6 +132,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     };
     const updated: Publication = { ...draft, history: [...draft.history, historyEntry] };
     updatePost(updated.id, updated);
+    if (existing) syncToIdea(existing, updated);
     setIsEditing(false);
   }
 
@@ -138,6 +158,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (!existing) return;
     const updated = approvePublication(existing, currentUserName);
     updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
     if (isEditing) setDraft(updated);
   }
 
@@ -145,6 +166,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (!existing) return;
     const updated = requestChanges(existing, note, currentUserName);
     updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
     if (isEditing) setDraft(updated);
   }
 
@@ -152,6 +174,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (!existing) return;
     const updated = rejectPublication(existing, reason, currentUserName);
     updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
     if (isEditing) setDraft(updated);
   }
 
