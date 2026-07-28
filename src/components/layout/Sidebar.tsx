@@ -17,11 +17,13 @@ import {
   IconSparkles,
   IconTag,
   IconUsers,
+  IconWand,
 } from "@/components/icons";
 import { useTeamSession } from "@/lib/team-store";
 
 const NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
+  { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Calendrier éditorial", href: "/calendrier-editorial", icon: IconLayoutGrid },
   { label: "Thématiques", href: "/thematiques", icon: IconTag },

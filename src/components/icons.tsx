@@ -158,6 +158,15 @@ export function IconLightbulb(props: IconProps) {
   );
 }
 
+export function IconWand(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M4 20 14.5 9.5" />
+      <path d="M17.5 3v3M17.5 10v3M14 6.5h3M18 6.5h3" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>
