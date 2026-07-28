@@ -67,3 +67,29 @@ export function duplicateVersion(version: ContentVersion, versions: ContentVersi
     updatedAt: now,
   };
 }
+
+/**
+ * Construit une nouvelle version "text" dérivée d'une version existante (régénération de
+ * section, raccourcir/développer/simplifier/changer le ton/adapter à un réseau) — ne modifie
+ * jamais la version source, conformément au principe « rien ne s'écrase ».
+ */
+export function buildTransformedVersion(
+  source: ContentVersion,
+  transformedBody: TextBody,
+  versions: ContentVersion[],
+  name: string
+): ContentVersion {
+  const now = new Date().toISOString();
+  return {
+    ...source,
+    id: crypto.randomUUID(),
+    versionNumber: nextVersionNumber(versions),
+    name,
+    source: "ai",
+    format: "text",
+    body: transformedBody,
+    isCurrent: true,
+    createdAt: now,
+    updatedAt: now,
+  };
+}

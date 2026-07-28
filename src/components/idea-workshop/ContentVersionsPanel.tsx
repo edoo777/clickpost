@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FORMAT_LABEL } from "@/lib/editorial-constants";
 import type { ContentVersion } from "@/types/content-version";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -9,6 +10,73 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-medium text-zinc-400 dark:text-zinc-600">{label}</dt>
+      <dd className="whitespace-pre-wrap">{value || "—"}</dd>
+    </div>
+  );
+}
+
+function VersionSummary({ version }: { version: ContentVersion }) {
+  return (
+    <dl className="flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+      {version.format === "text" && (
+        <>
+          <Field label="Accroche" value={version.body.hook} />
+          <Field label="Introduction" value={version.body.intro} />
+          <Field label="Corps" value={version.body.body} />
+          <Field label="Conclusion" value={version.body.conclusion} />
+          <Field label="Appel à l'action" value={version.body.cta} />
+        </>
+      )}
+      {version.format === "carousel" && (
+        <>
+          <Field label="Titre de couverture" value={version.body.coverTitle} />
+          <Field label="Accroche" value={version.body.hook} />
+          <Field
+            label={`Diapositives (${version.body.slides.length})`}
+            value={version.body.slides.map((slide, i) => `${i + 1}. ${slide.title} — ${slide.text}`).join("\n")}
+          />
+          <Field label="Conclusion" value={version.body.conclusion} />
+          <Field label="Appel à l'action" value={version.body.cta} />
+        </>
+      )}
+      {version.format === "short_video" && (
+        <>
+          <Field label="Accroche" value={version.body.hook} />
+          <Field label="Script" value={version.body.script} />
+          <Field label="Durée estimée" value={version.body.durationSeconds ? `${version.body.durationSeconds} s` : ""} />
+          <Field label="Appel à l'action" value={version.body.cta} />
+        </>
+      )}
+      {version.format === "story" && (
+        <Field
+          label={`Écrans (${version.body.screens.length})`}
+          value={version.body.screens.map((screen, i) => `${i + 1}. ${screen.text}`).join("\n")}
+        />
+      )}
+      {version.format === "image" && (
+        <>
+          <Field label="Concept visuel" value={version.body.concept} />
+          <Field label="Texte sur l'image" value={version.body.onImageText ?? ""} />
+          <Field label="Légende" value={version.body.caption} />
+          <Field label="Appel à l'action" value={version.body.cta} />
+        </>
+      )}
+      {version.format === "article" && (
+        <>
+          <Field label="Titre" value={version.body.title} />
+          <Field label="Introduction" value={version.body.intro} />
+          <Field label="Plan" value={version.body.plan.join(" · ")} />
+          <Field label="Conclusion" value={version.body.conclusion} />
+        </>
+      )}
+    </dl>
+  );
+}
 
 interface ContentVersionsPanelProps {
   versions: ContentVersion[];
@@ -75,7 +143,7 @@ export function ContentVersionsPanel({
                   {version.name || `Version ${version.versionNumber}`}
                 </span>
                 <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                  {dateFormatter.format(new Date(version.createdAt))} ·{" "}
+                  {FORMAT_LABEL[version.format]} · {dateFormatter.format(new Date(version.createdAt))} ·{" "}
                   {version.source === "ai" ? "IA" : "Manuelle"}
                 </span>
                 {version.isCurrent && (
@@ -123,30 +191,7 @@ export function ContentVersionsPanel({
               <h3 className="font-medium text-zinc-800 dark:text-zinc-200">
                 {version.name || `Version ${version.versionNumber}`}
               </h3>
-              {version.format === "text" && (
-                <dl className="flex flex-col gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  <div>
-                    <dt className="font-medium text-zinc-400 dark:text-zinc-600">Accroche</dt>
-                    <dd>{version.body.hook || "—"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-zinc-400 dark:text-zinc-600">Introduction</dt>
-                    <dd>{version.body.intro || "—"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-zinc-400 dark:text-zinc-600">Corps</dt>
-                    <dd className="whitespace-pre-wrap">{version.body.body || "—"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-zinc-400 dark:text-zinc-600">Conclusion</dt>
-                    <dd>{version.body.conclusion || "—"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-zinc-400 dark:text-zinc-600">Appel à l&apos;action</dt>
-                    <dd>{version.body.cta || "—"}</dd>
-                  </div>
-                </dl>
-              )}
+              <VersionSummary version={version} />
             </div>
           ))}
         </div>

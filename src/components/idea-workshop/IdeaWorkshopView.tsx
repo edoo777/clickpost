@@ -2,10 +2,29 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AIGenerationPanel } from "@/components/idea-workshop/AIGenerationPanel";
 import { ContentVersionsPanel } from "@/components/idea-workshop/ContentVersionsPanel";
 import { IdeaWorkshopSection } from "@/components/idea-workshop/IdeaWorkshopSection";
+import {
+  adaptForPlatform,
+  buildAIVersion,
+  changeTone,
+  expandText,
+  regenerateTextSection,
+  shortenText,
+  simplifyText,
+  type AIGenerationContext,
+  type GenerationLength,
+  type GenerationTone,
+  type TextSection,
+} from "@/lib/assisted-generation";
 import { brandProfiles } from "@/lib/brand-profiles";
-import { applyVersionToIdea, buildVersionFromIdea, duplicateVersion } from "@/lib/content-versions";
+import {
+  applyVersionToIdea,
+  buildTransformedVersion,
+  buildVersionFromIdea,
+  duplicateVersion,
+} from "@/lib/content-versions";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_ORDER, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
@@ -13,6 +32,7 @@ import { PLATFORM_LABEL } from "@/lib/post-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
+import type { ContentVersion } from "@/types/content-version";
 import type { Idea, IdeaStatus } from "@/types/idea";
 import type { ContentPriority, PublicationMedia } from "@/types/publication";
 
@@ -204,6 +224,81 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     removeContentVersion(versionId);
   }
 
+  const currentVersion = versions.find((version) => version.isCurrent);
+
+  function applyGeneratedVersion(version: ContentVersion) {
+    versions.filter((v) => v.isCurrent).forEach((v) => updateContentVersion(v.id, { ...v, isCurrent: false }));
+    addContentVersion(version);
+    const patch: Partial<Idea> = { activeVersionId: version.id };
+    if (version.format === "text") {
+      Object.assign(patch, applyVersionToIdea(version));
+    }
+    updateIdea(idea!.id, patch);
+  }
+
+  function buildContext(tone: GenerationTone, length: GenerationLength, instructions: string): AIGenerationContext | null {
+    if (!brand) return null;
+    return { idea: idea!, brand, theme, tone, length, instructions };
+  }
+
+  function handleGenerateAI(params: { format: ContentFormat; tone: GenerationTone; length: GenerationLength; instructions: string }) {
+    const context = buildContext(params.tone, params.length, params.instructions);
+    if (!context) return;
+    const version = buildAIVersion(context, params.format, versions);
+    applyGeneratedVersion(version);
+    setConfirmation("Contenu généré par IA (simulation).");
+  }
+
+  function handleRegenerateSection(section: TextSection, tone: GenerationTone, length: GenerationLength) {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const context = buildContext(tone, length, "");
+    if (!context) return;
+    const newBody = regenerateTextSection(currentVersion.body, section, context);
+    const version = buildTransformedVersion(currentVersion, newBody, versions, "Section régénérée");
+    applyGeneratedVersion(version);
+    setConfirmation("Section régénérée.");
+  }
+
+  function handleShorten() {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const version = buildTransformedVersion(currentVersion, shortenText(currentVersion.body), versions, "Version raccourcie");
+    applyGeneratedVersion(version);
+  }
+
+  function handleExpand() {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const context = buildContext("professional", "medium", "");
+    if (!context) return;
+    const version = buildTransformedVersion(currentVersion, expandText(currentVersion.body, context), versions, "Version développée");
+    applyGeneratedVersion(version);
+  }
+
+  function handleSimplify() {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const version = buildTransformedVersion(currentVersion, simplifyText(currentVersion.body), versions, "Version simplifiée");
+    applyGeneratedVersion(version);
+  }
+
+  function handleChangeTone(tone: GenerationTone) {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const context = buildContext(tone, "medium", "");
+    if (!context) return;
+    const version = buildTransformedVersion(currentVersion, changeTone(currentVersion.body, tone, context), versions, "Ton modifié");
+    applyGeneratedVersion(version);
+  }
+
+  function handleAdaptForPlatform(platform: SocialPlatform) {
+    if (!currentVersion || currentVersion.format !== "text") return;
+    const version = buildTransformedVersion(
+      currentVersion,
+      adaptForPlatform(currentVersion.body, platform),
+      versions,
+      `Adaptée pour ${PLATFORM_LABEL[platform]}`
+    );
+    applyGeneratedVersion(version);
+    set("platform", platform);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -373,6 +468,18 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
       <IdeaWorkshopSection title="Notes internes">
         <TextField label="Notes internes" value={idea.internalNotes ?? ""} multiline onChange={(v) => set("internalNotes", v)} />
       </IdeaWorkshopSection>
+
+      <AIGenerationPanel
+        defaultFormat={idea.format ?? "text"}
+        currentVersion={currentVersion}
+        onGenerate={handleGenerateAI}
+        onRegenerateSection={handleRegenerateSection}
+        onShorten={handleShorten}
+        onExpand={handleExpand}
+        onSimplify={handleSimplify}
+        onChangeTone={handleChangeTone}
+        onAdaptForPlatform={handleAdaptForPlatform}
+      />
 
       <ContentVersionsPanel
         versions={versions}
