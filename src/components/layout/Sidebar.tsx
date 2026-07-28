@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Calendrier éditorial", href: "/calendrier-editorial", icon: IconLayoutGrid },
   { label: "Thématiques", href: "/thematiques", icon: IconTag },
-  { label: "Générateur d'idées", href: "/generateur-idees", icon: IconSparkles },
+  { label: "Générateur de sujets", href: "/generateur-idees", icon: IconSparkles },
   { label: "Publications", href: "/publications", icon: IconSend },
   { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },
   { label: "Marques", href: "/marques", icon: IconBriefcase },

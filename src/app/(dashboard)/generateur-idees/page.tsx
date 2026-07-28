@@ -1,5 +1,5 @@
-import { IdeaGeneratorView } from "@/components/idea-generator/IdeaGeneratorView";
+import { TopicGeneratorView } from "@/components/topic-generator/TopicGeneratorView";
 
-export default function IdeaGeneratorPage() {
-  return <IdeaGeneratorView />;
+export default function TopicGeneratorPage() {
+  return <TopicGeneratorView />;
 }
