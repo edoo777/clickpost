@@ -24,7 +24,7 @@ function weekdayAt(date: Date): Weekday {
   return WEEKDAYS[(date.getDay() + 6) % 7];
 }
 
-function formatScheduledFor(date: Date): string {
+export function formatScheduledFor(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(SCHEDULE_HOUR)}:00`;
 }

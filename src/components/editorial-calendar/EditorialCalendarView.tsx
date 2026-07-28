@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { CalendarGenerationModal } from "@/components/calendar-generation/CalendarGenerationModal";
 import { WeekGrid } from "@/components/editorial-calendar/WeekGrid";
 import { brandProfiles } from "@/lib/brand-profiles";
+import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { BrandEditorialCalendar, EditorialDayPlan, EditorialWeekPlan } from "@/types/editorial-calendar";
+import type { Idea } from "@/types/idea";
 
 function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
   return {
@@ -22,6 +25,7 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
 
 export function EditorialCalendarView() {
   const { themes } = useThemesSession();
+  const { addIdea } = useContentWorkspace();
   const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() =>
     brandEditorialCalendars.map((calendar) => ({
       ...calendar,
@@ -33,6 +37,7 @@ export function EditorialCalendarView() {
   const [selectedPlanId, setSelectedPlanId] = useState(currentCalendar.weekPlans[0].id);
   const [isEditing, setIsEditing] = useState(false);
   const [draftPlan, setDraftPlan] = useState<EditorialWeekPlan | null>(null);
+  const [isGenerationModalOpen, setIsGenerationModalOpen] = useState(false);
 
   const currentPlan =
     currentCalendar.weekPlans.find((p) => p.id === selectedPlanId) ?? currentCalendar.weekPlans[0];
@@ -109,6 +114,13 @@ export function EditorialCalendarView() {
     setDraftPlan(null);
   }
 
+  function handleConfirmGeneration(ideas: Idea[]) {
+    ideas.forEach((idea) => addIdea(idea));
+    setIsGenerationModalOpen(false);
+  }
+
+  const selectedBrand = brandProfiles.find((b) => b.id === selectedBrandId);
+
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -178,6 +190,13 @@ export function EditorialCalendarView() {
             <>
               <button
                 type="button"
+                onClick={() => setIsGenerationModalOpen(true)}
+                className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              >
+                Générer les idées depuis ce plan
+              </button>
+              <button
+                type="button"
                 onClick={duplicatePlan}
                 className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
               >
@@ -213,6 +232,16 @@ export function EditorialCalendarView() {
       )}
 
       <WeekGrid plan={displayedPlan} themes={brandThemes} editable={isEditing} onChangeDay={handleChangeDay} />
+
+      {isGenerationModalOpen && selectedBrand && (
+        <CalendarGenerationModal
+          brand={selectedBrand}
+          weekPlan={currentPlan}
+          themes={brandThemes}
+          onClose={() => setIsGenerationModalOpen(false)}
+          onConfirm={handleConfirmGeneration}
+        />
+      )}
     </div>
   );
 }
