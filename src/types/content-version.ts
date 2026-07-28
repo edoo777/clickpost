@@ -1,3 +1,5 @@
+import type { RichDocument } from "@/types/rich-document";
+
 export type VersionSource = "manual" | "ai";
 
 interface ContentVersionBase {
@@ -22,6 +24,8 @@ export interface TextBody {
   cta: string;
   hashtags: string[];
   firstComment?: string;
+  /** Formatage riche du corps (Atelier) — optionnel : les versions plus anciennes n'en ont pas. */
+  documentContent?: RichDocument;
 }
 
 export interface CarouselSlide {

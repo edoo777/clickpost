@@ -1,5 +1,6 @@
 "use client";
 
+import { DevelopMenu } from "@/components/shared/DevelopMenu";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE } from "@/lib/idea-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import { useThemesSession } from "@/lib/themes-store";
@@ -34,6 +35,7 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
             <th className="px-4 py-3">Date</th>
             <th className="px-4 py-3">Statut</th>
             <th className="px-4 py-3">Source</th>
+            <th className="px-4 py-3" />
           </tr>
         </thead>
         <tbody className="divide-y divide-border ">
@@ -70,6 +72,9 @@ export function IdeasBankTable({ ideas, selectedIds, onToggleSelect, onOpen }: I
                 </td>
                 <td className="px-4 py-3 text-muted-foreground ">
                   {idea.source === "generated" ? "Générée" : "Manuelle"}
+                </td>
+                <td className="px-4 py-3">
+                  <DevelopMenu variant="idea" idea={idea} compact />
                 </td>
               </tr>
             );

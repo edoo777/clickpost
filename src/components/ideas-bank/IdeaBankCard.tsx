@@ -1,5 +1,6 @@
 "use client";
 
+import { DevelopMenu } from "@/components/shared/DevelopMenu";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Idea } from "@/types/idea";
@@ -37,9 +38,12 @@ export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaB
           onChange={onToggleSelect}
           aria-label="Sélectionner cette idée"
         />
-        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${IDEA_STATUS_STYLE[idea.status]}`}>
-          {IDEA_STATUS_LABEL[idea.status]}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${IDEA_STATUS_STYLE[idea.status]}`}>
+            {IDEA_STATUS_LABEL[idea.status]}
+          </span>
+          <DevelopMenu variant="idea" idea={idea} compact />
+        </div>
       </div>
 
       <button type="button" onClick={onOpen} className="flex flex-col gap-1 text-left hover:underline">

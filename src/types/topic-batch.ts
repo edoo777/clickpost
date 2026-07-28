@@ -31,4 +31,6 @@ export interface Topic {
   selected: boolean;
   locked: boolean;
   duplicateOfId?: string;
+  /** Idée déjà créée à partir de ce sujet — évite les doublons lors d'un nouveau clic sur « Développer ». */
+  ideaId?: string;
 }

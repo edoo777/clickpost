@@ -1,6 +1,7 @@
 "use client";
 
 import type { DragEvent } from "react";
+import { DevelopMenu } from "@/components/shared/DevelopMenu";
 import { PRIORITY_LABEL } from "@/lib/idea-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Idea } from "@/types/idea";
@@ -43,11 +44,14 @@ export function KanbanCard({ idea, isSelected, onToggleSelect, onOpen }: KanbanC
           onChange={onToggleSelect}
           aria-label="Sélectionner cette idée"
         />
-        {idea.priority && (
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground  ">
-            {PRIORITY_LABEL[idea.priority]}
-          </span>
-        )}
+        <div className="flex items-center gap-1">
+          {idea.priority && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground  ">
+              {PRIORITY_LABEL[idea.priority]}
+            </span>
+          )}
+          <DevelopMenu variant="idea" idea={idea} compact />
+        </div>
       </div>
 
       <button type="button" onClick={onOpen} className="flex flex-col gap-1 text-left hover:underline">

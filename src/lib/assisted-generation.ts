@@ -14,7 +14,17 @@ import type {
 import type { Idea } from "@/types/idea";
 import type { Theme } from "@/types/theme";
 
-export type GenerationTone = "professional" | "friendly" | "enthusiastic" | "direct";
+export type GenerationTone =
+  | "professional"
+  | "friendly"
+  | "enthusiastic"
+  | "direct"
+  | "pedagogical"
+  | "inspiring"
+  | "conversational"
+  | "expert"
+  | "storytelling"
+  | "provocative";
 export type GenerationLength = "short" | "medium" | "long";
 export type TextSection = "hook" | "intro" | "body" | "conclusion" | "cta" | "hashtags" | "firstComment";
 
@@ -32,6 +42,12 @@ export const TONE_LABEL: Record<GenerationTone, string> = {
   friendly: "Chaleureux",
   enthusiastic: "Enthousiaste",
   direct: "Direct",
+  pedagogical: "Pédagogique",
+  inspiring: "Inspirant",
+  conversational: "Conversationnel",
+  expert: "Expert",
+  storytelling: "Storytelling",
+  provocative: "Provocateur maîtrisé",
 };
 
 export const LENGTH_LABEL: Record<GenerationLength, string> = {
@@ -81,6 +97,12 @@ const TONE_OPENERS: Record<GenerationTone, string[]> = {
     "Vous allez adorer ce qui suit sur",
   ],
   direct: ["Voici l'info sur", "Droit au but :", "L'essentiel sur"],
+  pedagogical: ["Voici comment ça fonctionne, étape par étape, pour", "Décomposons ensemble", "Pour bien comprendre"],
+  inspiring: ["Et si vous changiez votre regard sur", "Imaginez ce qui devient possible avec", "Une nouvelle façon de voir"],
+  conversational: ["Alors, on parle de", "Petite question : que savez-vous de", "Discutons un peu de"],
+  expert: ["D'un point de vue expert,", "Les données le confirment sur", "Une analyse approfondie de"],
+  storytelling: ["Laissez-nous vous raconter", "Tout a commencé avec", "Voici l'histoire derrière"],
+  provocative: ["Osons le dire sur", "Personne n'en parle, mais voici", "Contrairement à ce qu'on pense de"],
 };
 
 const TONE_CLOSERS: Record<GenerationTone, string[]> = {
@@ -88,6 +110,12 @@ const TONE_CLOSERS: Record<GenerationTone, string[]> = {
   friendly: ["On a hâte de lire vos retours !", "Dites-nous ce que vous en pensez."],
   enthusiastic: ["On ne pouvait pas garder ça pour nous !", "L'aventure ne fait que commencer."],
   direct: ["Simple, efficace, sans détour.", "C'est aussi simple que ça."],
+  pedagogical: ["Vous avez maintenant toutes les clés.", "Un pas de plus vers la maîtrise du sujet."],
+  inspiring: ["Le changement commence aujourd'hui.", "Ce n'est que le début de l'histoire."],
+  conversational: ["Et vous, qu'en pensez-vous ?", "On adore lire vos avis en commentaire."],
+  expert: ["Une approche rigoureuse, pensée pour durer.", "Les faits parlent d'eux-mêmes."],
+  storytelling: ["Et cette histoire continue de s'écrire.", "La suite ? À vous de l'écrire avec nous."],
+  provocative: ["À vous de voir si vous êtes prêts à changer d'avis.", "Le débat est ouvert."],
 };
 
 const LENGTH_SENTENCES: Record<GenerationLength, number> = { short: 1, medium: 2, long: 3 };
@@ -335,4 +363,148 @@ const PLATFORM_MAX_HASHTAGS: Record<SocialPlatform, number> = {
 
 export function adaptForPlatform(body: TextBody, platform: SocialPlatform): TextBody {
   return { ...body, hashtags: body.hashtags.slice(0, PLATFORM_MAX_HASHTAGS[platform]) };
+}
+
+// --- Fonctions ajoutées pour l'Atelier de contenu intelligent (E3) ---
+// Même style que ci-dessus : simulation déterministe par gabarits, aucune IA réelle.
+
+const ALL_TONE_OPENERS: string[] = Object.values(TONE_OPENERS).flat();
+
+/** Génère plusieurs accroches distinctes (commande « Générer 5 hooks »). */
+export function buildHooks(context: AIGenerationContext, count = 5): string[] {
+  const seed = seedFromString(context.idea.id);
+  const topic = topicLabel(context).toLowerCase();
+  const hooks = Array.from({ length: count }, (_, i) => `${pick(ALL_TONE_OPENERS, seed, i)} ${topic}`);
+  return Array.from(new Set(hooks));
+}
+
+/** Propose plusieurs angles de traitement distincts (commande « Proposer 3 angles différents »). */
+export function buildAngles(context: AIGenerationContext, count = 3): string[] {
+  const seed = seedFromString(context.idea.id) + 7;
+  const templates = [
+    `Angle pratique : comment ${itemLabel(context).toLowerCase()} aide concrètement ${context.idea.targetAudience || "votre audience"}.`,
+    `Angle preuve sociale : ce que les clients de ${context.brand.name} disent de leur expérience.`,
+    `Angle avant/après : la différence que fait ${itemLabel(context).toLowerCase()} au quotidien.`,
+    `Angle coulisses : comment ${context.brand.name} conçoit ${itemLabel(context).toLowerCase()}.`,
+    `Angle contrarian : une idée reçue sur ${topicLabel(context).toLowerCase()}, et pourquoi elle est à nuancer.`,
+  ];
+  return Array.from({ length: Math.min(count, templates.length) }, (_, i) => pick(templates, seed, i));
+}
+
+/** Construit un plan en quelques points (commande « Créer un plan »). */
+export function buildPlanSections(context: AIGenerationContext, count = 3): string[] {
+  const points = context.idea.keyPoints && context.idea.keyPoints.length > 0 ? context.idea.keyPoints : null;
+  return Array.from({ length: count }, (_, i) => points?.[i] ?? `Partie ${i + 1} : ${bodySentence(context, i)}`);
+}
+
+/** Reformule pour plus de clarté (commande « Rendre plus clair »). */
+export function clarifyText(body: TextBody): TextBody {
+  const seed = seedFromString(body.body) + 5;
+  const transitions = ["Concrètement, cela signifie ceci :", "Pour le dire simplement :", "En clair :"];
+  return { ...body, intro: `En résumé : ${body.intro}`.trim(), body: `${pick(transitions, seed)} ${body.body}`.trim() };
+}
+
+/** Corrige les espacements et la ponctuation (commande « Corriger le français », simulation). */
+export function correctFrenchText(body: TextBody): TextBody {
+  const clean = (text: string) => text.replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
+  return { ...body, intro: clean(body.intro), body: clean(body.body), conclusion: clean(body.conclusion) };
+}
+
+/** Renforce l'argumentaire (commande « Rendre plus convaincant »). */
+export function makePersuasiveText(body: TextBody): TextBody {
+  const seed = seedFromString(body.body) + 9;
+  const boosters = [
+    "C'est le moment d'agir.",
+    "Les résultats parlent d'eux-mêmes.",
+    "Rejoignez ceux qui ont déjà fait le choix.",
+  ];
+  return { ...body, conclusion: `${body.conclusion} ${pick(boosters, seed)}`.trim() };
+}
+
+/** Ajoute une ouverture narrative (commande « Ajouter du storytelling »). */
+export function addStorytellingText(body: TextBody, context: AIGenerationContext): TextBody {
+  const seed = seedFromString(body.body) + 13;
+  const openers = [
+    `Il y a peu, un client de ${context.brand.name} nous racontait :`,
+    "Laissez-nous vous raconter une histoire.",
+    "Tout a commencé simplement.",
+  ];
+  return { ...body, intro: `${pick(openers, seed)} ${body.intro}`.trim() };
+}
+
+/** Ajoute un exemple concret (commande « Ajouter des exemples »). */
+export function addExamplesText(body: TextBody, context: AIGenerationContext): TextBody {
+  const example = `Par exemple, ${itemLabel(context).toLowerCase()} a permis à ${
+    context.idea.targetAudience || "nos clients"
+  } d'obtenir des résultats concrets.`;
+  return { ...body, examples: [...(body.examples ?? []), example] };
+}
+
+/** Choisit un nouvel appel à l'action (commande « Ajouter un CTA »). */
+export function addCtaText(body: TextBody, context: AIGenerationContext): TextBody {
+  const ctas = context.brand.preferredCtas;
+  const seed = seedFromString(body.body) + 17;
+  return { ...body, cta: ctas.length > 0 ? pick(ctas, seed) : ctaLabel(context) };
+}
+
+/** Génère une conclusion (commande « Créer une conclusion »). */
+export function buildConclusionText(body: TextBody, context: AIGenerationContext): TextBody {
+  const seed = seedFromString(body.body) + 19;
+  return { ...body, conclusion: pick(TONE_CLOSERS[context.tone], seed) };
+}
+
+/** Contrôles de cohérence simples (commande « Vérifier la cohérence »). */
+export function checkConsistency(body: TextBody): string[] {
+  const messages: string[] = [];
+  if (!body.hook.trim()) messages.push("Aucune accroche définie.");
+  if (body.body.trim().length < 40) messages.push("Le corps du message semble très court.");
+  if (!body.cta.trim()) messages.push("Aucun appel à l'action défini.");
+  if (body.hashtags.length === 0) messages.push("Aucun hashtag proposé.");
+  if (messages.length === 0) {
+    messages.push("Le contenu comporte une accroche, un corps, un appel à l'action et des hashtags.");
+  }
+  return messages;
+}
+
+/** Adapte le contenu au format courriel (commande « Transformer en courriel »). */
+export function buildEmailBody(context: AIGenerationContext): TextBody {
+  const base = generateTextBody(context);
+  return {
+    ...base,
+    hook: `Objet : ${base.hook}`,
+    intro: `Bonjour,\n\n${base.intro}`,
+    conclusion: `${base.conclusion}\n\nCordialement,\nL'équipe ${context.brand.name}`,
+  };
+}
+
+/** Suggère un appel à l'action isolé (utilisé par le fournisseur de génération). */
+export function suggestCta(context: AIGenerationContext): string {
+  return ctaLabel(context);
+}
+
+/** Réécrit un passage sélectionné selon une instruction libre (barre contextuelle de sélection). */
+export function rewriteSelectionText(selectedText: string, instruction: string, context: AIGenerationContext): string {
+  const trimmed = selectedText.trim();
+  if (!trimmed) return trimmed;
+  const normalized = instruction.toLowerCase();
+  if (normalized.includes("raccourc")) {
+    const sentences = trimmed.split(/(?<=[.!?])\s+/).filter(Boolean);
+    return sentences.slice(0, Math.max(1, Math.ceil(sentences.length / 2))).join(" ");
+  }
+  if (normalized.includes("développ") || normalized.includes("étoff")) {
+    return `${trimmed} ${bodySentence(context, seedFromString(trimmed) % 3)}`;
+  }
+  if (normalized.includes("simplifi")) {
+    return trimmed.split(/\s+/).slice(0, 30).join(" ");
+  }
+  if (normalized.includes("corrig")) {
+    return trimmed.replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
+  }
+  if (normalized.includes("ton") || normalized.includes("style")) {
+    const seed = seedFromString(trimmed) + 3;
+    return `${pick(TONE_OPENERS[context.tone], seed)} ${trimmed.replace(/^[A-ZÀ-Ý]/, (c) => c.toLowerCase())}`;
+  }
+  // Réécriture générique par défaut.
+  const seed = seedFromString(trimmed + instruction);
+  return `${pick(TONE_OPENERS[context.tone], seed)} ${trimmed.replace(/^[A-ZÀ-Ý]/, (c) => c.toLowerCase())}`;
 }

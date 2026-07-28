@@ -1,10 +1,12 @@
 "use client";
 
 import { IconLock } from "@/components/icons";
-import type { Topic } from "@/types/topic-batch";
+import { DevelopMenu } from "@/components/shared/DevelopMenu";
+import type { Topic, TopicBatch } from "@/types/topic-batch";
 
 interface TopicRowProps {
   topic: Topic;
+  batch: TopicBatch;
   isDuplicate: boolean;
   onToggleSelect: () => void;
   onToggleLock: () => void;
@@ -14,6 +16,7 @@ interface TopicRowProps {
 
 export function TopicRow({
   topic,
+  batch,
   isDuplicate,
   onToggleSelect,
   onToggleLock,
@@ -46,6 +49,7 @@ export function TopicRow({
           Doublon potentiel
         </span>
       )}
+      <DevelopMenu variant="topic" topic={topic} batch={batch} />
       <button
         type="button"
         onClick={onToggleLock}

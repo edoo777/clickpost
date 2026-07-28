@@ -11,6 +11,7 @@ function buildTextBody(idea: Idea): TextBody {
     cta: idea.cta ?? "",
     hashtags: idea.hashtags ?? [],
     firstComment: idea.firstComment,
+    documentContent: idea.documentContent,
   };
 }
 
@@ -52,6 +53,7 @@ export function applyVersionToIdea(version: ContentVersion): Partial<Idea> {
     cta: body.cta,
     hashtags: body.hashtags,
     firstComment: body.firstComment,
+    documentContent: body.documentContent,
   };
 }
 

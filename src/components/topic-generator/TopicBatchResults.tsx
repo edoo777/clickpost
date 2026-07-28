@@ -106,6 +106,7 @@ export function TopicBatchResults({
           <TopicRow
             key={topic.id}
             topic={topic}
+            batch={batch}
             isDuplicate={Boolean(duplicates[topic.id])}
             onToggleSelect={() => onToggleSelect(topic.id)}
             onToggleLock={() => onToggleLock(topic.id)}

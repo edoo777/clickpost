@@ -222,6 +222,149 @@ export function IconMonitor(props: IconProps) {
   );
 }
 
+export function IconBold(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M7 4h6a3.2 3.2 0 0 1 0 6.4H7Z" />
+      <path d="M7 10.4h6.8a3.2 3.2 0 0 1 0 6.4H7Z" />
+    </Base>
+  );
+}
+
+export function IconItalic(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="11" y1="4" x2="17" y2="4" />
+      <line x1="7" y1="20" x2="13" y2="20" />
+      <line x1="14" y1="4" x2="10" y2="20" />
+    </Base>
+  );
+}
+
+export function IconLink(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M11 6.5 12.6 4.9a3.3 3.3 0 0 1 4.7 4.7L15.7 11" />
+      <path d="M13 17.5 11.4 19.1a3.3 3.3 0 0 1-4.7-4.7L8.3 13" />
+    </Base>
+  );
+}
+
+export function IconListBullet(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="4.5" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4.5" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="4.5" cy="18" r="1" fill="currentColor" stroke="none" />
+      <line x1="9" y1="6" x2="20" y2="6" />
+      <line x1="9" y1="12" x2="20" y2="12" />
+      <line x1="9" y1="18" x2="20" y2="18" />
+    </Base>
+  );
+}
+
+export function IconListNumbered(props: IconProps) {
+  return (
+    <Base {...props}>
+      <text x="2" y="8" fontSize="6" fill="currentColor" stroke="none">1</text>
+      <text x="2" y="14.5" fontSize="6" fill="currentColor" stroke="none">2</text>
+      <text x="2" y="21" fontSize="6" fill="currentColor" stroke="none">3</text>
+      <line x1="9" y1="6" x2="20" y2="6" />
+      <line x1="9" y1="12" x2="20" y2="12" />
+      <line x1="9" y1="18" x2="20" y2="18" />
+    </Base>
+  );
+}
+
+export function IconListCheck(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4" width="4" height="4" rx="1" />
+      <path d="M3.7 6 4.5 6.8 6.3 5" />
+      <rect x="3" y="16" width="4" height="4" rx="1" />
+      <line x1="10" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="10" y1="18" x2="20" y2="18" />
+    </Base>
+  );
+}
+
+export function IconQuote(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M7 8.5c-1.8 0-3 1.4-3 3.3S5.2 15 7 15c0-3.5 1.5-5.5 3.5-6.5" />
+      <path d="M16 8.5c-1.8 0-3 1.4-3 3.3s1.2 3.2 3 3.2c0-3.5 1.5-5.5 3.5-6.5" />
+    </Base>
+  );
+}
+
+export function IconMinus(props: IconProps) {
+  return (
+    <Base {...props}>
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </Base>
+  );
+}
+
+export function IconUndo(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M7 8H15.5a4.5 4.5 0 0 1 0 9H10" />
+      <path d="M7 4 3.5 8 7 12" />
+    </Base>
+  );
+}
+
+export function IconRedo(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M17 8H8.5a4.5 4.5 0 0 0 0 9H14" />
+      <path d="M17 4 20.5 8 17 12" />
+    </Base>
+  );
+}
+
+export function IconLayoutDocument(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <line x1="8" y1="8" x2="16" y2="8" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+      <line x1="8" y1="16" x2="13" y2="16" />
+    </Base>
+  );
+}
+
+export function IconLayoutSplit(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4" width="7.5" height="16" rx="1.5" />
+      <rect x="13.5" y="4" width="7.5" height="7" rx="1.5" />
+      <rect x="13.5" y="13" width="7.5" height="7" rx="1.5" />
+    </Base>
+  );
+}
+
+export function IconPanelRight(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <line x1="15" y1="4" x2="15" y2="20" />
+    </Base>
+  );
+}
+
+export function IconHistory(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M3 12a9 9 0 1 0 2.6-6.4" />
+      <path d="M3 4v5h5" />
+      <path d="M12 8v4l3 2" />
+    </Base>
+  );
+}
+
 export function IconChevronDown(props: IconProps) {
   return (
     <Base {...props}>

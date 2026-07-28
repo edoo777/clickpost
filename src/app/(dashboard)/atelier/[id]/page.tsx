@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { IdeaWorkshopView } from "@/components/idea-workshop/IdeaWorkshopView";
 
 interface IdeaWorkshopPageProps {
@@ -6,5 +7,9 @@ interface IdeaWorkshopPageProps {
 
 export default async function IdeaWorkshopPage({ params }: IdeaWorkshopPageProps) {
   const { id } = await params;
-  return <IdeaWorkshopView ideaId={id} />;
+  return (
+    <Suspense fallback={null}>
+      <IdeaWorkshopView ideaId={id} />
+    </Suspense>
+  );
 }

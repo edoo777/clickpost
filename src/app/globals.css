@@ -108,3 +108,101 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
+
+/* Typographie de l'éditeur riche de l'Atelier de contenu (Tiptap est volontairement non stylé). */
+.workshop-prose {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+
+.workshop-prose p.is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.workshop-prose h1,
+.workshop-prose h2,
+.workshop-prose h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+}
+
+.workshop-prose h1 {
+  font-size: 1.75rem;
+}
+
+.workshop-prose h2 {
+  font-size: 1.375rem;
+}
+
+.workshop-prose h3 {
+  font-size: 1.125rem;
+}
+
+.workshop-prose p {
+  margin-top: 0.6em;
+  margin-bottom: 0.6em;
+}
+
+.workshop-prose ul,
+.workshop-prose ol {
+  margin: 0.6em 0;
+  padding-left: 1.4em;
+}
+
+.workshop-prose ul {
+  list-style: disc;
+}
+
+.workshop-prose ol {
+  list-style: decimal;
+}
+
+.workshop-prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+
+.workshop-prose ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.workshop-prose ul[data-type="taskList"] li > label {
+  margin-top: 0.3em;
+}
+
+.workshop-prose blockquote {
+  border-left: 3px solid var(--primary);
+  margin: 0.8em 0;
+  padding-left: 1em;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.workshop-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.6em 0;
+}
+
+.workshop-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.workshop-prose code {
+  background: var(--muted);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}

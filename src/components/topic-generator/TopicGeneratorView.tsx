@@ -235,7 +235,7 @@ export function TopicGeneratorView() {
         updatedAt: now,
       };
       addIdea(idea);
-      updateTopic(topic.id, { selected: false });
+      updateTopic(topic.id, { selected: false, ideaId: idea.id });
     });
 
     updateTopicBatch(activeBatchId, {
@@ -272,8 +272,8 @@ export function TopicGeneratorView() {
           Générateur de sujets
         </h1>
         <p className="text-sm text-muted-foreground ">
-          Génère un bloc de sujets distincts pour une thématique donnée (simulation déterministe,
-          sans IA réelle) — pas encore des contenus complets.
+          Génère un bloc de sujets distincts pour une thématique donnée, en mode démonstration —
+          pas encore des contenus complets.
         </p>
       </header>
 

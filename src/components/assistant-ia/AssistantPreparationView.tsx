@@ -57,7 +57,7 @@ export function AssistantPreparationView() {
           Assistant IA de préparation
         </h1>
         <p className="text-sm text-muted-foreground ">
-          Un parcours guidé, en simulation déterministe (aucune IA réelle), pour préparer rapidement le
+          Un parcours guidé, en mode démonstration, pour préparer rapidement le
           contenu d&apos;une marque à partir de son calendrier éditorial.
         </p>
       </header>

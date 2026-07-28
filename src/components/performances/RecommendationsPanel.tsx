@@ -8,7 +8,7 @@ export function RecommendationsPanel({ recommendations }: RecommendationsPanelPr
       <div className="flex flex-col gap-1">
         <h2 className="text-sm font-semibold text-foreground ">Recommandations</h2>
         <p className="text-xs text-muted-foreground ">
-          Générées automatiquement à partir des données de cette période (simulation, sans IA réelle).
+          Générées automatiquement à partir des données de cette période, en mode démonstration.
         </p>
       </div>
       <ul className="flex flex-col gap-2">

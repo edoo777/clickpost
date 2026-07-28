@@ -1,6 +1,8 @@
+import type { GenerationTone } from "@/lib/assisted-generation";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { ContentPriority, ContentSource, PublicationMedia } from "@/types/publication";
+import type { RichDocument } from "@/types/rich-document";
 
 export type IdeaStatus =
   | "idea"
@@ -58,4 +60,10 @@ export interface Idea {
   media?: PublicationMedia[];
   internalNotes?: string;
   activeVersionId?: string;
+  /** Corps riche de l'Atelier de contenu (document Tiptap) — source du miroir texte `body`. */
+  documentContent?: RichDocument;
+  /** Dernier mode d'affichage utilisé dans l'Atelier ; n'efface jamais le contenu au changement. */
+  workshopDisplayMode?: "document" | "structured";
+  /** Ton éditorial préféré pour cette idée (affiché en propriété, préselectionne la catégorie « Ton »). */
+  tone?: GenerationTone;
 }
