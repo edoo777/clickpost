@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AIGenerationPanel } from "@/components/idea-workshop/AIGenerationPanel";
 import { ContentVersionsPanel } from "@/components/idea-workshop/ContentVersionsPanel";
@@ -18,6 +19,7 @@ import {
   type GenerationTone,
   type TextSection,
 } from "@/lib/assisted-generation";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { brandProfiles } from "@/lib/brand-profiles";
 import {
   applyVersionToIdea,
@@ -27,8 +29,11 @@ import {
 } from "@/lib/content-versions";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
+import { buildPostInputFromIdea, firstCommentFromVersion } from "@/lib/idea-transformation";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_ORDER, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
+import { buildNewPost } from "@/lib/posts";
+import { usePostsSession } from "@/lib/posts-store";
 import { useThemesSession } from "@/lib/themes-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -151,6 +156,7 @@ interface IdeaWorkshopViewProps {
 }
 
 export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
+  const router = useRouter();
   const {
     ideas,
     contentVersions,
@@ -161,7 +167,10 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     setActiveContentVersion,
   } = useContentWorkspace();
   const { themes } = useThemesSession();
+  const { accounts } = useAccountsSession();
+  const { addPosts } = usePostsSession();
   const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [isCreatingPublication, setIsCreatingPublication] = useState(false);
 
   const idea = ideas.find((candidate) => candidate.id === ideaId);
 
@@ -299,6 +308,26 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     set("platform", platform);
   }
 
+  function handleCreatePublication() {
+    if (!idea!.platform || isCreatingPublication) return;
+    setIsCreatingPublication(true);
+
+    const brandName = brand?.name ?? idea!.brandId;
+    const account =
+      accounts.find(
+        (candidate) => candidate.brand === brandName && candidate.platform === idea!.platform && candidate.status === "connected"
+      ) ?? accounts.find((candidate) => candidate.brand === brandName && candidate.status === "connected");
+
+    const input = buildPostInputFromIdea(idea!, currentVersion, brandName, theme?.label ?? "");
+    const publication = {
+      ...buildNewPost({ ...input, accountId: account?.id }),
+      firstComment: firstCommentFromVersion(currentVersion, idea!),
+    };
+    addPosts([publication]);
+    updateIdea(idea!.id, { publicationId: publication.id, status: "ready_to_schedule" });
+    router.push(`/publications/${publication.id}`);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -318,13 +347,29 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
             {theme && <span>· {theme.label}</span>}
           </div>
         </div>
-        {idea.publicationId && (
+        {idea.publicationId ? (
           <Link
             href={`/publications/${idea.publicationId}`}
             className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
           >
             Voir la publication
           </Link>
+        ) : (
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              onClick={handleCreatePublication}
+              disabled={!idea.platform || isCreatingPublication}
+              className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+            >
+              Créer une publication
+            </button>
+            {!idea.platform && (
+              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                Sélectionnez un réseau dans les détails avant de créer une publication.
+              </span>
+            )}
+          </div>
         )}
       </div>
 
