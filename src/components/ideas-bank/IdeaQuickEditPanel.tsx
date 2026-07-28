@@ -302,6 +302,12 @@ export function IdeaQuickEditPanel({
 
         {idea && (
           <div className="flex flex-wrap gap-2 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+            <Link
+              href={`/atelier/${idea.id}`}
+              className="rounded-lg bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+            >
+              Ouvrir l&apos;atelier
+            </Link>
             <button
               type="button"
               onClick={onDuplicate}
