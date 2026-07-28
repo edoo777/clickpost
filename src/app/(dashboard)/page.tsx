@@ -3,6 +3,7 @@ import { ConnectedAccounts } from "@/components/dashboard/ConnectedAccounts";
 import { MyTasksWidget } from "@/components/dashboard/MyTasksWidget";
 import { NeedsActionWidget } from "@/components/dashboard/NeedsActionWidget";
 import { PerformanceOverview } from "@/components/dashboard/PerformanceOverview";
+import { PipelineOverview } from "@/components/dashboard/PipelineOverview";
 import { UpcomingPosts } from "@/components/dashboard/UpcomingPosts";
 
 export default function DashboardPage() {
@@ -22,6 +23,8 @@ export default function DashboardPage() {
       </header>
 
       <PerformanceOverview />
+
+      <PipelineOverview />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">

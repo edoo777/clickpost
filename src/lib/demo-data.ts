@@ -1,4 +1,4 @@
-import type { PerformanceMetric, SocialAccount } from "@/types/dashboard";
+import type { SocialAccount } from "@/types/dashboard";
 import type { Publication } from "@/types/publication";
 
 const CREATED_OFFSET_DAYS = 5;
@@ -15,13 +15,6 @@ const CAMPAIGN_BY_POST_ID: Record<string, string> = {
   "post-18": "campaign-nova-summer-sale",
   "post-19": "campaign-atlas-roundtable-q3",
 };
-
-export const performanceMetrics: PerformanceMetric[] = [
-  { id: "impressions", label: "Impressions", value: "128 400", change: 12.4 },
-  { id: "engagement", label: "Taux d'engagement", value: "4.8%", change: 1.6 },
-  { id: "followers", label: "Nouveaux abonnés", value: "1 042", change: 8.1 },
-  { id: "clicks", label: "Clics sur les liens", value: "3 210", change: -2.3 },
-];
 
 const STANDARD_PERMISSIONS = [
   "Lecture du profil",
