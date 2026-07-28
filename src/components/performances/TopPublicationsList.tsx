@@ -10,12 +10,12 @@ interface TopPublicationsListProps {
 
 export function TopPublicationsList({ publications }: TopPublicationsListProps) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Meilleures publications</h2>
       {publications.length === 0 ? (
         <p className="text-sm text-zinc-400 dark:text-zinc-600">Pas assez de données sur cette période.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-black/[.06] dark:divide-white/[.06]">
+        <ul className="flex flex-col divide-y divide-zinc-100 dark:divide-white/[.06]">
           {publications.map((publication) => {
             const Icon = platformIcons[publication.platform];
             const color = platformColors[publication.platform];

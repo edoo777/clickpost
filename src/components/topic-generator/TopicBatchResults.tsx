@@ -40,7 +40,7 @@ export function TopicBatchResults({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+      <div className="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">{batch.name}</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">{themeLabel}</p>
@@ -73,7 +73,7 @@ export function TopicBatchResults({
           type="button"
           onClick={onRegenerateUnlocked}
           disabled={unlockedCount === 0}
-          className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
           Régénérer les non verrouillés
         </button>
@@ -81,14 +81,14 @@ export function TopicBatchResults({
           type="button"
           onClick={onSaveSelected}
           disabled={selectedCount === 0}
-          className="rounded-lg bg-zinc-950 px-4 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
         >
           Enregistrer la sélection ({selectedCount})
         </button>
         <button
           type="button"
           onClick={onArchiveBatch}
-          className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
           Archiver le bloc
         </button>
@@ -114,7 +114,7 @@ export function TopicBatchResults({
           />
         ))}
         {topics.length === 0 && (
-          <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+          <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
             Tous les sujets de ce bloc ont été supprimés.
           </p>
         )}

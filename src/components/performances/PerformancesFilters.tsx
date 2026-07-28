@@ -19,7 +19,7 @@ export interface PerformancesFiltersValue {
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
 
 const FIELD_CLASS =
-  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
 
 interface PerformancesFiltersProps {
   value: PerformancesFiltersValue;
@@ -108,7 +108,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           type="checkbox"
           checked={value.compare}
           onChange={(event) => onChange({ ...value, compare: event.target.checked })}
-          className="h-4 w-4 rounded border-black/[.2] dark:border-white/[.2]"
+          className="h-4 w-4 rounded border-zinc-300 dark:border-white/[.2]"
         />
         Comparer à la période précédente
       </label>

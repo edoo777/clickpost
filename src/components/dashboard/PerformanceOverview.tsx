@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useAccountsSession } from "@/lib/accounts-store";
 import {
@@ -8,10 +9,10 @@ import {
   getPreviousPeriodFilters,
   type PerformanceFilters,
 } from "@/lib/analytics-report";
+import { brandProfiles } from "@/lib/brand-profiles";
 import { toISODate } from "@/lib/date-utils";
 import type { PerformanceMetric } from "@/types/dashboard";
 
-const WINDOW_DAYS = 30;
 const numberFormatter = new Intl.NumberFormat("fr-FR");
 
 function percentChange(current: number, previous: number): number {
@@ -19,28 +20,34 @@ function percentChange(current: number, previous: number): number {
   return Math.round(((current - previous) / previous) * 100);
 }
 
-export function PerformanceOverview() {
+interface PerformanceOverviewProps {
+  filters?: DashboardFiltersValue;
+}
+
+export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: PerformanceOverviewProps) {
   const { accounts } = useAccountsSession();
+  const windowDays = Number(filters.period);
+  const brandName = filters.brandId !== "all" ? brandProfiles.find((brand) => brand.id === filters.brandId)?.name : undefined;
 
   const endDate = new Date();
   const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - (WINDOW_DAYS - 1));
+  startDate.setDate(startDate.getDate() - (windowDays - 1));
 
-  const filters: PerformanceFilters = {
-    brand: "all",
+  const perfFilters: PerformanceFilters = {
+    brand: brandName ?? "all",
     accountId: "all",
-    platform: "all",
+    platform: filters.platform,
     startDate: toISODate(startDate),
     endDate: toISODate(endDate),
   };
 
-  const currentTotals = aggregateTotals(getDailySeries(filters, accounts));
-  const previousTotals = aggregateTotals(getDailySeries(getPreviousPeriodFilters(filters), accounts));
+  const currentTotals = aggregateTotals(getDailySeries(perfFilters, accounts));
+  const previousTotals = aggregateTotals(getDailySeries(getPreviousPeriodFilters(perfFilters), accounts));
 
   const metrics: PerformanceMetric[] = [
     {
       id: "impressions",
-      label: "Impressions (30 j)",
+      label: `Impressions (${windowDays} j)`,
       value: numberFormatter.format(currentTotals.impressions),
       change: percentChange(currentTotals.impressions, previousTotals.impressions),
     },

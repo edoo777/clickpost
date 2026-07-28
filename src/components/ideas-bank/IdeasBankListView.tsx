@@ -220,7 +220,7 @@ export function IdeasBankListView() {
       <IdeasBankFilters value={filters} onChange={setFilters} batches={topicBatches} onNewIdea={openCreatePanel} />
 
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-black/[.08] bg-zinc-50 px-3 py-2 dark:border-white/[.08] dark:bg-zinc-900/40">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-white/[.08] dark:bg-zinc-900/40">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {selectedIds.size} idée{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
           </span>
@@ -235,21 +235,21 @@ export function IdeasBankListView() {
             <button
               type="button"
               onClick={handleRestoreSelection}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Restaurer la sélection
             </button>
             <button
               type="button"
               onClick={() => setIsScheduleModalOpen(true)}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Planifier la sélection
             </button>
             <button
               type="button"
               onClick={handleArchiveSelection}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Archiver la sélection
             </button>
@@ -279,7 +279,7 @@ export function IdeasBankListView() {
           />
         )
       ) : filtered.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
           Aucune idée ne correspond à ces critères. Générez un bloc de sujets ou créez une idée
           manuellement pour commencer.
         </p>

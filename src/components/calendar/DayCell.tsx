@@ -23,7 +23,7 @@ export function DayCell({ day, isToday, posts, onSelectPost }: DayCellProps) {
       <span
         className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
           isToday
-            ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+            ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
             : "text-zinc-500 dark:text-zinc-400"
         }`}
       >

@@ -8,7 +8,7 @@ import type { SocialPlatform } from "@/types/dashboard";
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
 
 export interface NewAccountInput {
   brand: string;
@@ -110,18 +110,18 @@ export function AddAccountPanel({ onClose, onConnect }: AddAccountPanelProps) {
           </label>
         </div>
 
-        <div className="mt-auto flex gap-3 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+        <div className="mt-auto flex gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="flex-1 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Annuler
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            className="flex-1 rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+            className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
             Connecter
           </button>

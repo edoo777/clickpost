@@ -89,7 +89,7 @@ export function AccountsListView() {
         <button
           type="button"
           onClick={() => setIsAddOpen(true)}
-          className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
           + Ajouter un compte
         </button>
@@ -98,7 +98,7 @@ export function AccountsListView() {
       <AccountsFilters value={filters} onChange={setFilters} />
 
       {filteredAccounts.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
           Aucun compte ne correspond à ces critères.
         </p>
       ) : (

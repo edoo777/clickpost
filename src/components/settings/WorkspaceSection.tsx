@@ -13,7 +13,7 @@ export function WorkspaceSection({ brandsCount, membersCount, accountsCount }: W
   const [isDeleted, setIsDeleted] = useState(false);
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Sécurité et organisation</h2>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -35,7 +35,7 @@ export function WorkspaceSection({ brandsCount, membersCount, accountsCount }: W
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+      <div className="flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
         {isDeleted ? (
           <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
             Suppression simulée — aucune donnée n&apos;a réellement été supprimée (démonstration).
@@ -49,7 +49,7 @@ export function WorkspaceSection({ brandsCount, membersCount, accountsCount }: W
               <button
                 type="button"
                 onClick={() => setIsConfirming(false)}
-                className="flex-1 rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+                className="flex-1 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Annuler
               </button>

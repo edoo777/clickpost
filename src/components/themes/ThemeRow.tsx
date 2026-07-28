@@ -4,13 +4,13 @@ import type { Weekday } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-black/[.08] bg-white px-2.5 py-1.5 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
+  "w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
 
 function dayChipClass(isSelected: boolean): string {
   return `rounded-full border px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
     isSelected
-      ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
-      : "border-black/[.08] text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+      ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
+      : "border-zinc-200 text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
   }`;
 }
 
@@ -47,8 +47,8 @@ export function ThemeRow({
     <div
       className={`flex flex-col gap-3 rounded-xl border p-4 ${
         theme.active
-          ? "border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950"
-          : "border-black/[.06] bg-zinc-50 dark:border-white/[.06] dark:bg-zinc-900/40"
+          ? "border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
+          : "border-zinc-100 bg-zinc-50 dark:border-white/[.06] dark:bg-zinc-900/40"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -58,7 +58,7 @@ export function ThemeRow({
             disabled={!canMoveUp}
             onClick={onMoveUp}
             aria-label="Monter la thématique"
-            className="rounded-md border border-black/[.08] p-1 text-zinc-500 disabled:opacity-30 dark:border-white/[.08] dark:text-zinc-400"
+            className="rounded-md border border-zinc-200 p-1 text-zinc-500 disabled:opacity-30 dark:border-white/[.08] dark:text-zinc-400"
           >
             <IconArrowUp className="h-3.5 w-3.5" />
           </button>
@@ -67,7 +67,7 @@ export function ThemeRow({
             disabled={!canMoveDown}
             onClick={onMoveDown}
             aria-label="Descendre la thématique"
-            className="rounded-md border border-black/[.08] p-1 text-zinc-500 disabled:opacity-30 dark:border-white/[.08] dark:text-zinc-400"
+            className="rounded-md border border-zinc-200 p-1 text-zinc-500 disabled:opacity-30 dark:border-white/[.08] dark:text-zinc-400"
           >
             <IconArrowDown className="h-3.5 w-3.5" />
           </button>

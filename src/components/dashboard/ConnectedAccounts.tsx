@@ -8,7 +8,7 @@ export function ConnectedAccounts() {
   const { accounts } = useAccountsSession();
 
   return (
-    <section className="rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="mb-4 text-sm font-semibold text-zinc-950 dark:text-zinc-50">
         Comptes sociaux connectés
       </h2>
@@ -17,8 +17,8 @@ export function ConnectedAccounts() {
           const Icon = platformIcons[account.platform];
           return (
             <li key={account.id} className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
-                <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-50 dark:bg-violet-500/10">
+                <Icon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
               </span>
               <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-medium text-zinc-950 dark:text-zinc-50">

@@ -20,7 +20,7 @@ export function PublicationCard({ publication }: PublicationCardProps) {
   return (
     <Link
       href={`/publications/${publication.id}`}
-      className="flex flex-col gap-3 rounded-xl border border-black/[.08] bg-white p-4 transition-colors hover:border-black/[.16] dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16]"
+      className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">

@@ -13,7 +13,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Identité visuelle</h2>
         {editable && (
@@ -36,7 +36,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
               disabled={!editable}
               value={identity.primaryColor}
               onChange={(event) => set("primaryColor", event.target.value)}
-              className="h-9 w-14 rounded border border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950"
+              className="h-9 w-14 rounded border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
             />
             <span className="text-xs text-zinc-500 dark:text-zinc-400">{identity.primaryColor}</span>
           </div>
@@ -50,7 +50,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
               disabled={!editable}
               value={identity.secondaryColor}
               onChange={(event) => set("secondaryColor", event.target.value)}
-              className="h-9 w-14 rounded border border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950"
+              className="h-9 w-14 rounded border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
             />
             <span className="text-xs text-zinc-500 dark:text-zinc-400">{identity.secondaryColor}</span>
           </div>
@@ -62,7 +62,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
           Aperçu de l&apos;interface personnalisée
         </span>
         <div
-          className="flex overflow-hidden rounded-lg border border-black/[.08] dark:border-white/[.08]"
+          className="flex overflow-hidden rounded-lg border border-zinc-200 dark:border-white/[.08]"
           style={{ height: 120 }}
         >
           <div className="flex w-24 flex-col gap-2 p-3" style={{ backgroundColor: identity.primaryColor }}>

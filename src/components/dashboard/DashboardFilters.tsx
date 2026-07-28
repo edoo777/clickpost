@@ -1,0 +1,119 @@
+"use client";
+
+import { brandProfiles } from "@/lib/brand-profiles";
+import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import type { SocialPlatform } from "@/types/dashboard";
+import type { PublicationStatus } from "@/types/publication";
+
+export type DashboardPeriod = "7" | "30" | "90";
+
+export interface DashboardFiltersValue {
+  brandId: string | "all";
+  platform: SocialPlatform | "all";
+  period: DashboardPeriod;
+  status: PublicationStatus | "all";
+}
+
+export const DEFAULT_DASHBOARD_FILTERS: DashboardFiltersValue = {
+  brandId: "all",
+  platform: "all",
+  period: "30",
+  status: "all",
+};
+
+const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
+
+const ALL_STATUSES: PublicationStatus[] = [
+  "idea",
+  "to_develop",
+  "content_generated",
+  "draft",
+  "in_production",
+  "in_review",
+  "pending_client",
+  "approved",
+  "ready_to_schedule",
+  "scheduled",
+  "published",
+  "failed",
+  "rejected",
+];
+
+const FIELD_CLASS =
+  "rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm transition-colors focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300 dark:focus:ring-violet-500/20";
+
+interface DashboardFiltersProps {
+  value: DashboardFiltersValue;
+  onChange: (value: DashboardFiltersValue) => void;
+}
+
+export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
+  const isDefault =
+    value.brandId === "all" && value.platform === "all" && value.status === "all" && value.period === "30";
+
+  return (
+    <div
+      aria-label="Filtres du tableau de bord"
+      className="flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-white/[.08] dark:bg-zinc-950"
+    >
+      <select
+        value={value.brandId}
+        onChange={(event) => onChange({ ...value, brandId: event.target.value })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Toutes les marques</option>
+        {brandProfiles.map((brand) => (
+          <option key={brand.id} value={brand.id}>
+            {brand.name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.platform}
+        onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les réseaux</option>
+        {ALL_PLATFORMS.map((platform) => (
+          <option key={platform} value={platform}>
+            {PLATFORM_LABEL[platform]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.period}
+        onChange={(event) => onChange({ ...value, period: event.target.value as DashboardPeriod })}
+        className={FIELD_CLASS}
+      >
+        <option value="7">7 derniers jours</option>
+        <option value="30">30 derniers jours</option>
+        <option value="90">90 derniers jours</option>
+      </select>
+
+      <select
+        value={value.status}
+        onChange={(event) => onChange({ ...value, status: event.target.value as PublicationStatus | "all" })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les statuts</option>
+        {ALL_STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {STATUS_LABEL[status]}
+          </option>
+        ))}
+      </select>
+
+      {!isDefault && (
+        <button
+          type="button"
+          onClick={() => onChange(DEFAULT_DASHBOARD_FILTERS)}
+          className="text-sm font-medium text-violet-600 hover:underline dark:text-violet-400"
+        >
+          Réinitialiser
+        </button>
+      )}
+    </div>
+  );
+}

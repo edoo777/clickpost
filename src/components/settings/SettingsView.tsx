@@ -5,6 +5,7 @@ import { AgencyInfoSection } from "@/components/settings/AgencyInfoSection";
 import { BrandIdentitySection } from "@/components/settings/BrandIdentitySection";
 import { ContentPreferencesSection } from "@/components/settings/ContentPreferencesSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
+import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
 import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
 import { useAccountsSession } from "@/lib/accounts-store";
@@ -63,14 +64,14 @@ export function SettingsView() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
                   Annuler
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+                  className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
                 >
                   Enregistrer
                 </button>
@@ -79,7 +80,7 @@ export function SettingsView() {
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
                 Modifier
               </button>
@@ -100,6 +101,8 @@ export function SettingsView() {
           au rechargement de la page.
         </p>
       )}
+
+      <OtherSectionsLinks />
 
       <AgencyInfoSection
         info={displayed.info}

@@ -26,8 +26,8 @@ export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaB
     <div
       className={`flex flex-col gap-3 rounded-xl border bg-white p-4 dark:bg-zinc-950 ${
         isSelected
-          ? "border-zinc-950 dark:border-zinc-50"
-          : "border-black/[.08] hover:border-black/[.16] dark:border-white/[.08] dark:hover:border-white/[.16]"
+          ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
+          : "border-zinc-200 hover:border-zinc-400 dark:border-white/[.08] dark:hover:border-white/[.16]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">

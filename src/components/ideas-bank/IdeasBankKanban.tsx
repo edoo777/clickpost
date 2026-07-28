@@ -67,7 +67,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
         <button
           type="button"
           onClick={() => setIsManagerOpen(true)}
-          className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
           Gérer les colonnes
         </button>
@@ -87,8 +87,8 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
               onDrop={(event) => handleDrop(event, stage)}
               className={`flex w-72 flex-shrink-0 flex-col gap-3 rounded-xl border p-3 ${
                 dragOverStageId === stage.id
-                  ? "border-zinc-950 dark:border-zinc-50"
-                  : "border-black/[.08] dark:border-white/[.08]"
+                  ? "border-violet-500 ring-1 ring-violet-500/20 dark:border-violet-400"
+                  : "border-zinc-200 dark:border-white/[.08]"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -106,7 +106,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
                   />
                 ))}
                 {stageIdeas.length === 0 && (
-                  <p className="rounded-lg border border-dashed border-black/[.1] px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
+                  <p className="rounded-lg border border-dashed border-zinc-200 px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
                     Aucune idée
                   </p>
                 )}
@@ -117,7 +117,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
 
         <div
           onDragOver={(event) => event.preventDefault()}
-          className="flex w-72 flex-shrink-0 flex-col gap-3 rounded-xl border border-dashed border-black/[.12] p-3 dark:border-white/[.12]"
+          className="flex w-72 flex-shrink-0 flex-col gap-3 rounded-xl border border-dashed border-zinc-300 p-3 dark:border-white/[.12]"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
@@ -136,7 +136,7 @@ export function IdeasBankKanban({ brandId, ideas, selectedIds, onToggleSelect, o
               />
             ))}
             {unassigned.length === 0 && (
-              <p className="rounded-lg border border-dashed border-black/[.1] px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
+              <p className="rounded-lg border border-dashed border-zinc-200 px-2 py-4 text-center text-xs text-zinc-400 dark:border-white/[.1] dark:text-zinc-600">
                 Aucune idée
               </p>
             )}

@@ -43,7 +43,7 @@ export function CalendarPreview() {
   );
 
   return (
-    <div className="rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/[.08] dark:bg-zinc-950">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
           {MONTH_NAMES[month]} {year}
@@ -66,7 +66,7 @@ export function CalendarPreview() {
                 day === null
                   ? ""
                   : isToday
-                    ? "bg-zinc-950 font-semibold text-white dark:bg-zinc-50 dark:text-black"
+                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 font-semibold text-white shadow-sm shadow-fuchsia-500/20"
                     : hasPost
                       ? "bg-blue-50 font-medium text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
                       : "text-zinc-700 dark:text-zinc-300"

@@ -18,10 +18,10 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950">
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
-          <tr className="border-b border-black/[.06] text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
+          <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
             <th className="px-4 py-3">Membre</th>
             <th className="px-4 py-3">Rôle</th>
             <th className="px-4 py-3">Marques accessibles</th>
@@ -29,7 +29,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
             <th className="px-4 py-3">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-black/[.06] dark:divide-white/[.06]">
+        <tbody className="divide-y divide-zinc-100 dark:divide-white/[.06]">
           {members.map((member) => (
             <tr key={member.id}>
               <td className="px-4 py-3">
@@ -42,7 +42,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                 <select
                   value={member.role}
                   onChange={(event) => onUpdateRole(member.id, event.target.value as TeamRole)}
-                  className={`rounded-lg border border-black/[.08] px-2 py-1 text-xs font-medium dark:border-white/[.08] ${ROLE_STYLE[member.role]}`}
+                  className={`rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium dark:border-white/[.08] ${ROLE_STYLE[member.role]}`}
                 >
                   {ALL_ROLES.map((role) => (
                     <option key={role} value={role}>
@@ -102,7 +102,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                     <button
                       type="button"
                       onClick={() => setConfirmingId(null)}
-                      className="rounded-lg border border-black/[.08] px-2 py-1 text-xs font-medium text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+                      className="rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
                     >
                       Annuler
                     </button>

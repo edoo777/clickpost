@@ -47,7 +47,7 @@ export function PublicationsListView() {
       <PublicationsFilters value={filters} onChange={setFilters} />
 
       {filtered.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
           Aucune publication ne correspond à ces critères.
         </p>
       ) : filters.viewMode === "cards" ? (

@@ -2,7 +2,9 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #18181b;
+  --accent-glow-1: rgba(147, 51, 234, 0.10);
+  --accent-glow-2: rgba(219, 39, 119, 0.08);
 }
 
 @theme inline {
@@ -14,13 +16,30 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --accent-glow-1: rgba(168, 85, 247, 0.16);
+    --accent-glow-2: rgba(236, 72, 153, 0.12);
   }
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, var(--accent-glow-1), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, var(--accent-glow-2), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Halo premium réutilisable pour les surfaces mises en avant (boutons flottants, cartes clés). */
+.accent-halo {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.18),
+    0 12px 32px -8px rgba(217, 70, 219, 0.45);
+}
+
+::selection {
+  background: rgba(192, 38, 211, 0.22);
 }

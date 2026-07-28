@@ -25,7 +25,7 @@ export function TopicRow({
       className={`flex items-center gap-3 rounded-lg border p-3 ${
         isDuplicate
           ? "border-amber-300 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10"
-          : "border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950"
+          : "border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950"
       }`}
     >
       <input
@@ -39,7 +39,7 @@ export function TopicRow({
         onChange={(event) => onChangeLabel(event.target.value)}
         disabled={topic.locked}
         aria-label="Modifier le libellé du sujet"
-        className="flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-black/[.08] focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
+        className="flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-zinc-200 focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
       />
       {isDuplicate && (
         <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">

@@ -46,7 +46,7 @@ const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "t
 const ALL_PRIORITIES: ContentPriority[] = ["low", "medium", "high"];
 
 const FIELD_CLASS =
-  "w-full rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
+  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200";
 
 function TextField({
   label,
@@ -116,7 +116,7 @@ function MediaField({
       {value.map((media) => (
         <div
           key={media.id}
-          className="flex items-center gap-2 rounded-lg border border-black/[.08] p-2 dark:border-white/[.08]"
+          className="flex items-center gap-2 rounded-lg border border-zinc-200 p-2 dark:border-white/[.08]"
         >
           <select
             value={media.type}
@@ -144,7 +144,7 @@ function MediaField({
       <button
         type="button"
         onClick={add}
-        className="w-fit rounded-lg border border-dashed border-black/[.16] px-3 py-1.5 text-xs font-medium text-zinc-500 hover:border-black/[.3] dark:border-white/[.16] dark:text-zinc-400"
+        className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-zinc-500 hover:border-zinc-500 dark:border-white/[.16] dark:text-zinc-400"
       >
         + Ajouter un média (placeholder, pas de téléversement réel)
       </button>
@@ -184,7 +184,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
         >
           ← Retour à la banque d&apos;idées
         </Link>
-        <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+        <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
           Idée introuvable.
         </p>
       </div>
@@ -363,7 +363,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
         {idea.publicationId ? (
           <Link
             href={`/publications/${idea.publicationId}`}
-            className="rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Voir la publication
           </Link>
@@ -373,7 +373,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
               type="button"
               onClick={handleCreatePublication}
               disabled={!idea.platform || isCreatingPublication}
-              className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+              className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
             >
               Créer une publication
             </button>

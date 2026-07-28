@@ -2,7 +2,7 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-black/[.08] bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-white/[.08] dark:bg-zinc-900 dark:text-zinc-400";
+  "w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-500 dark:border-white/[.08] dark:bg-zinc-900 dark:text-zinc-400";
 
 interface CreatePostPanelProps {
   onClose: () => void;
@@ -67,11 +67,11 @@ export function CreatePostPanel({ onClose }: CreatePostPanelProps) {
           </label>
         </div>
 
-        <div className="mt-auto flex gap-3 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+        <div className="mt-auto flex gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+            className="flex-1 rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
             Annuler
           </button>

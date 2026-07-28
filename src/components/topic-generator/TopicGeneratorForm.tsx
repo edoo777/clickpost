@@ -18,13 +18,13 @@ const VARIETY_LABEL: Record<TopicVarietyLevel, string> = {
 };
 
 const FIELD_CLASS =
-  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
 
 const TOGGLE_CLASS = (isSelected: boolean) =>
   `flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
     isSelected
-      ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
-      : "border-black/[.08] text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
+      ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
+      : "border-zinc-200 text-zinc-600 dark:border-white/[.08] dark:text-zinc-400"
   }`;
 
 export interface TopicGeneratorFormValue {
@@ -81,7 +81,7 @@ export function TopicGeneratorForm({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Marque
@@ -237,7 +237,7 @@ export function TopicGeneratorForm({
       <button
         type="button"
         onClick={onGenerate}
-        className="w-fit rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
       >
         Générer les sujets
       </button>

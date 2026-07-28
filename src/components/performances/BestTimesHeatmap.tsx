@@ -25,7 +25,7 @@ export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
   const slotLabels = SLOT_ORDER.map((slotKey) => grid.find((cell) => cell.slotKey === slotKey)?.slotLabel ?? slotKey);
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Meilleurs jours et heures</h2>
       {best ? (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">

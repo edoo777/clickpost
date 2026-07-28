@@ -16,10 +16,10 @@ interface PublicationsTableProps {
 
 export function PublicationsTable({ publications }: PublicationsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-black/[.08] bg-white dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-white/[.08] dark:bg-zinc-950">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead>
-          <tr className="border-b border-black/[.06] text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
+          <tr className="border-b border-zinc-100 text-xs font-medium text-zinc-400 dark:border-white/[.06] dark:text-zinc-600">
             <th className="px-4 py-3">Date</th>
             <th className="px-4 py-3">Marque</th>
             <th className="px-4 py-3">Réseau</th>
@@ -28,7 +28,7 @@ export function PublicationsTable({ publications }: PublicationsTableProps) {
             <th className="px-4 py-3">Responsable</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-black/[.06] dark:divide-white/[.06]">
+        <tbody className="divide-y divide-zinc-100 dark:divide-white/[.06]">
           {publications.map((publication) => {
             const Icon = platformIcons[publication.platform];
             return (

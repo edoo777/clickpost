@@ -34,7 +34,7 @@ export function ThemesView() {
         <select
           value={selectedBrandId}
           onChange={(event) => setSelectedBrandId(event.target.value)}
-          className="rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
         >
           {brandProfiles.map((brand) => (
             <option key={brand.id} value={brand.id}>
@@ -46,7 +46,7 @@ export function ThemesView() {
         <button
           type="button"
           onClick={() => addTheme(selectedBrandId)}
-          className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
           + Nouvelle thématique
         </button>

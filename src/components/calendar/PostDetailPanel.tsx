@@ -69,11 +69,11 @@ export function PostDetailPanel({ post, onClose }: PostDetailPanelProps) {
 
         <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{post.text}</p>
 
-        <div className="mt-auto flex gap-3 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+        <div className="mt-auto flex gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
           <button
             type="button"
             disabled
-            className="flex-1 cursor-not-allowed rounded-lg border border-black/[.08] px-4 py-2 text-sm font-medium text-zinc-400 dark:border-white/[.08] dark:text-zinc-600"
+            className="flex-1 cursor-not-allowed rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-400 dark:border-white/[.08] dark:text-zinc-600"
           >
             Modifier
           </button>

@@ -21,7 +21,7 @@ export const DEFAULT_ACCOUNTS_FILTERS: AccountsFiltersValue = {
 };
 
 const FIELD_CLASS =
-  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
 
 interface AccountsFiltersProps {
   value: AccountsFiltersValue;

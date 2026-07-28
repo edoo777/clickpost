@@ -22,7 +22,7 @@ const SECTION_OPTIONS: { value: TextSection; label: string }[] = [
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
 
 const FIELD_CLASS =
-  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
 
 interface AIGenerationPanelProps {
   defaultFormat: ContentFormat;
@@ -63,7 +63,7 @@ export function AIGenerationPanel({
   const isTextCurrent = currentVersion?.format === "text";
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Génération assistée</h2>
         <span className="text-xs text-zinc-400 dark:text-zinc-600">Simulation déterministe, sans IA réelle</span>
@@ -116,13 +116,13 @@ export function AIGenerationPanel({
       <button
         type="button"
         onClick={() => onGenerate({ format, tone, length, instructions })}
-        className="w-fit rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
       >
         Générer avec l&apos;IA
       </button>
 
       {isTextCurrent && (
-        <div className="flex flex-col gap-3 border-t border-black/[.06] pt-4 dark:border-white/[.06]">
+        <div className="flex flex-col gap-3 border-t border-zinc-100 pt-4 dark:border-white/[.06]">
           <div className="flex flex-wrap items-center gap-2">
             <select value={section} onChange={(event) => setSection(event.target.value as TextSection)} className={FIELD_CLASS}>
               {SECTION_OPTIONS.map((option) => (
@@ -134,7 +134,7 @@ export function AIGenerationPanel({
             <button
               type="button"
               onClick={() => onRegenerateSection(section, tone, length)}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Régénérer cette section
             </button>
@@ -144,21 +144,21 @@ export function AIGenerationPanel({
             <button
               type="button"
               onClick={onShorten}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Raccourcir
             </button>
             <button
               type="button"
               onClick={onExpand}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Développer
             </button>
             <button
               type="button"
               onClick={onSimplify}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Simplifier
             </button>
@@ -179,7 +179,7 @@ export function AIGenerationPanel({
             <button
               type="button"
               onClick={() => onChangeTone(transformTone)}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Changer le ton
             </button>
@@ -200,7 +200,7 @@ export function AIGenerationPanel({
             <button
               type="button"
               onClick={() => onAdaptForPlatform(transformPlatform)}
-              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Adapter à ce réseau
             </button>

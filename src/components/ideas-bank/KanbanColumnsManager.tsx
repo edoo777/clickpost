@@ -55,7 +55,7 @@ export function KanbanColumnsManager({ brandId, stages, onClose }: KanbanColumns
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+      <div className="flex max-h-[85vh] w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Gérer les colonnes</h2>
           <button
@@ -71,19 +71,19 @@ export function KanbanColumnsManager({ brandId, stages, onClose }: KanbanColumns
           {sorted.map((stage, index) => (
             <div
               key={stage.id}
-              className="flex flex-col gap-2 rounded-lg border border-black/[.08] p-3 dark:border-white/[.08]"
+              className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 dark:border-white/[.08]"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   value={stage.name}
                   onChange={(event) => updateWorkflowStage(stage.id, { name: event.target.value })}
-                  className="min-w-0 flex-1 rounded-lg border border-black/[.08] bg-white px-2.5 py-1 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
+                  className="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
                 />
                 <button
                   type="button"
                   onClick={() => handleMove(stage.id, -1)}
                   disabled={index === 0}
-                  className="rounded-lg border border-black/[.08] px-2 py-1 text-xs text-zinc-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.08] dark:text-zinc-400"
+                  className="rounded-lg border border-zinc-200 px-2 py-1 text-xs text-zinc-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.08] dark:text-zinc-400"
                 >
                   ↑
                 </button>
@@ -91,7 +91,7 @@ export function KanbanColumnsManager({ brandId, stages, onClose }: KanbanColumns
                   type="button"
                   onClick={() => handleMove(stage.id, 1)}
                   disabled={index === sorted.length - 1}
-                  className="rounded-lg border border-black/[.08] px-2 py-1 text-xs text-zinc-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.08] dark:text-zinc-400"
+                  className="rounded-lg border border-zinc-200 px-2 py-1 text-xs text-zinc-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/[.08] dark:text-zinc-400"
                 >
                   ↓
                 </button>
@@ -108,7 +108,7 @@ export function KanbanColumnsManager({ brandId, stages, onClose }: KanbanColumns
                 <select
                   value={stage.systemStatus}
                   onChange={(event) => updateWorkflowStage(stage.id, { systemStatus: event.target.value as IdeaStatus })}
-                  className="rounded-lg border border-black/[.08] bg-white px-2.5 py-1 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
+                  className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
                 >
                   {IDEA_STATUS_ORDER.map((status) => (
                     <option key={status} value={status}>
@@ -138,7 +138,7 @@ export function KanbanColumnsManager({ brandId, stages, onClose }: KanbanColumns
         <button
           type="button"
           onClick={handleAdd}
-          className="w-fit rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+          className="w-fit rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-white/[.1] dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
           + Ajouter une colonne
         </button>

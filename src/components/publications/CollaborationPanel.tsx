@@ -69,7 +69,7 @@ export function CollaborationPanel({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Commentaires</h2>
 
       {publication.comments.length === 0 ? (
@@ -79,7 +79,7 @@ export function CollaborationPanel({
           {publication.comments.map((comment) => (
             <li
               key={comment.id}
-              className="flex flex-col gap-1 rounded-lg border border-black/[.06] p-3 dark:border-white/[.06]"
+              className="flex flex-col gap-1 rounded-lg border border-zinc-100 p-3 dark:border-white/[.06]"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{comment.authorName}</span>
@@ -104,15 +104,15 @@ export function CollaborationPanel({
         </ul>
       )}
 
-      <div className="flex flex-col gap-2 border-t border-black/[.06] pt-3 dark:border-white/[.06]">
+      <div className="flex flex-col gap-2 border-t border-zinc-100 pt-3 dark:border-white/[.06]">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-black/[.08] p-1 dark:border-white/[.08]">
+          <div className="flex items-center gap-1 rounded-lg border border-zinc-200 p-1 dark:border-white/[.08]">
             <button
               type="button"
               onClick={() => setAudience("internal")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 audience === "internal"
-                  ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                  ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
                   : "text-zinc-500 dark:text-zinc-400"
               }`}
             >
@@ -123,7 +123,7 @@ export function CollaborationPanel({
               onClick={() => setAudience("client")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 audience === "client"
-                  ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                  ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
                   : "text-zinc-500 dark:text-zinc-400"
               }`}
             >
@@ -137,7 +137,7 @@ export function CollaborationPanel({
               onChange={(event) => {
                 if (event.target.value) insertMention(event.target.value);
               }}
-              className="rounded-lg border border-black/[.08] bg-white px-2 py-1 text-xs text-zinc-600 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-400"
+              className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-600 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-400"
             >
               <option value="">Mentionner…</option>
               {members.map((member) => (
@@ -154,13 +154,13 @@ export function CollaborationPanel({
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder="Ajouter un commentaire…"
-          className="w-full rounded-lg border border-black/[.08] bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
+          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-200"
         />
 
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-fit rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
           Commenter en tant que {currentUserName}
         </button>

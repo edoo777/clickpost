@@ -51,13 +51,13 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
   const lastPoint = currentPlotted[currentPlotted.length - 1];
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Évolution des performances</h2>
         <select
           value={metric}
           onChange={(event) => setMetric(event.target.value as NumericMetricKey)}
-          className="rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300"
         >
           {METRIC_OPTIONS.map((option) => (
             <option key={option.key} value={option.key}>

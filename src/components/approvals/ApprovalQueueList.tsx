@@ -18,7 +18,7 @@ interface ApprovalQueueListProps {
 export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
   if (publications.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-black/[.12] px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
+      <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-400 dark:border-white/[.12] dark:text-zinc-600">
         Aucune publication en attente d&apos;approbation.
       </p>
     );
@@ -33,7 +33,7 @@ export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
           <li key={publication.id}>
             <Link
               href={`/publications/${publication.id}`}
-              className="flex flex-col gap-3 rounded-xl border border-black/[.08] bg-white p-4 transition-colors hover:border-black/[.16] dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16] sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 dark:border-white/[.08] dark:bg-zinc-950 dark:hover:border-white/[.16] sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">

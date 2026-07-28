@@ -19,7 +19,7 @@ export function PublicationPreview({ publication }: PublicationPreviewProps) {
   const hashtags = publication.hashtags.filter((tag) => tag.trim().length > 0);
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-black/[.08] bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
+    <section className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-white/[.08] dark:bg-zinc-950">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Aperçu de la publication</h2>
         <span className="text-xs text-zinc-400 dark:text-zinc-600">{FORMAT_LABEL[publication.format]}</span>

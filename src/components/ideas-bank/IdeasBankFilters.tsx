@@ -58,7 +58,7 @@ const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "t
 const ALL_PRIORITIES: ContentPriority[] = ["low", "medium", "high"];
 
 const FIELD_CLASS =
-  "rounded-lg border border-black/[.08] bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
+  "rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 dark:border-white/[.08] dark:bg-zinc-950 dark:text-zinc-300";
 
 interface IdeasBankFiltersProps {
   value: IdeasBankFiltersValue;
@@ -254,13 +254,13 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-black/[.08] p-1 dark:border-white/[.08]">
+        <div className="flex items-center gap-1 rounded-lg border border-zinc-200 p-1 dark:border-white/[.08]">
           <button
             type="button"
             onClick={() => onChange({ ...value, viewMode: "cards" })}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
               value.viewMode === "cards"
-                ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
                 : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
@@ -271,7 +271,7 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
             onClick={() => onChange({ ...value, viewMode: "table" })}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
               value.viewMode === "table"
-                ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
                 : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
@@ -282,7 +282,7 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
             onClick={() => onChange({ ...value, viewMode: "kanban" })}
             className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
               value.viewMode === "kanban"
-                ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-black"
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
                 : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
@@ -293,7 +293,7 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
         <button
           type="button"
           onClick={onNewIdea}
-          className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
           + Nouvelle idée
         </button>
