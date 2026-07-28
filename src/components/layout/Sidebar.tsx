@@ -19,6 +19,7 @@ import {
   IconUsers,
   IconWand,
 } from "@/components/icons";
+import { SaveStatusIndicator } from "@/components/layout/SaveStatusIndicator";
 import { SidebarCollapsedGroup } from "@/components/layout/SidebarCollapsedGroup";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
@@ -149,6 +150,7 @@ export function Sidebar() {
           <span className="text-base font-semibold tracking-tight text-foreground">ClickPost</span>
         </Link>
         <div className="flex items-center gap-1">
+          <SaveStatusIndicator collapsed />
           <ThemeQuickToggle className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400" />
           <button
             type="button"
@@ -237,6 +239,13 @@ export function Sidebar() {
               <span className={isCollapsed ? "lg:hidden" : ""}>Créer une publication</span>
               {isCollapsed && <span className={TOOLTIP_CLASS}>Créer une publication</span>}
             </Link>
+          </div>
+
+          <div className={`px-4 pb-3 ${isCollapsed ? "lg:hidden" : ""}`}>
+            <SaveStatusIndicator />
+          </div>
+          <div className={`hidden pb-2 ${isCollapsed ? "lg:block" : ""}`}>
+            <SaveStatusIndicator collapsed />
           </div>
         </div>
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { DEFAULT_CURRENT_USER_ID, TEAM_MEMBERS } from "@/lib/team-data";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import type { TeamMember } from "@/types/team";
 
 interface TeamSessionValue {
@@ -16,8 +17,8 @@ interface TeamSessionValue {
 const TeamSessionContext = createContext<TeamSessionValue | null>(null);
 
 export function TeamSessionProvider({ children }: { children: ReactNode }) {
-  const [members, setMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
-  const [currentUserId, setCurrentUserId] = useState(DEFAULT_CURRENT_USER_ID);
+  const [members, setMembers] = usePersistedState("teamMembers", TEAM_MEMBERS);
+  const [currentUserId, setCurrentUserId] = usePersistedState("currentUserId", DEFAULT_CURRENT_USER_ID);
 
   const value = useMemo<TeamSessionValue>(
     () => ({
@@ -29,7 +30,7 @@ export function TeamSessionProvider({ children }: { children: ReactNode }) {
       currentUserId,
       setCurrentUserId,
     }),
-    [members, currentUserId]
+    [members, currentUserId, setMembers, setCurrentUserId]
   );
 
   return <TeamSessionContext.Provider value={value}>{children}</TeamSessionContext.Provider>;

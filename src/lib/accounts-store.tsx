@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { connectedAccounts as demoAccounts } from "@/lib/demo-data";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import type { SocialAccount } from "@/types/dashboard";
 
 interface AccountsSessionValue {
@@ -14,7 +15,7 @@ interface AccountsSessionValue {
 const AccountsSessionContext = createContext<AccountsSessionValue | null>(null);
 
 export function AccountsSessionProvider({ children }: { children: ReactNode }) {
-  const [accounts, setAccounts] = useState<SocialAccount[]>(demoAccounts);
+  const [accounts, setAccounts] = usePersistedState("accounts", demoAccounts);
 
   const value = useMemo<AccountsSessionValue>(
     () => ({
@@ -24,7 +25,7 @@ export function AccountsSessionProvider({ children }: { children: ReactNode }) {
         setAccounts((prev) => prev.map((account) => (account.id === id ? { ...account, ...patch } : account))),
       removeAccount: (id) => setAccounts((prev) => prev.filter((account) => account.id !== id)),
     }),
-    [accounts]
+    [accounts, setAccounts]
   );
 
   return <AccountsSessionContext.Provider value={value}>{children}</AccountsSessionContext.Provider>;

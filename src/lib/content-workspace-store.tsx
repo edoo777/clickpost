@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import type { ContentVersion } from "@/types/content-version";
 import type { Idea } from "@/types/idea";
 import type { SavedView } from "@/types/saved-view";
@@ -56,12 +57,12 @@ interface ContentWorkspaceValue {
 const ContentWorkspaceContext = createContext<ContentWorkspaceValue | null>(null);
 
 export function ContentWorkspaceProvider({ children }: { children: ReactNode }) {
-  const [topicBatches, setTopicBatches] = useState<TopicBatch[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [contentVersions, setContentVersions] = useState<ContentVersion[]>([]);
-  const [workflowStages, setWorkflowStages] = useState<WorkflowStage[]>([]);
-  const [savedViews, setSavedViews] = useState<SavedView[]>([]);
+  const [topicBatches, setTopicBatches] = usePersistedState<"topicBatches">("topicBatches", []);
+  const [topics, setTopics] = usePersistedState<"topics">("topics", []);
+  const [ideas, setIdeas] = usePersistedState<"ideas">("ideas", []);
+  const [contentVersions, setContentVersions] = usePersistedState<"contentVersions">("contentVersions", []);
+  const [workflowStages, setWorkflowStages] = usePersistedState<"workflowStages">("workflowStages", []);
+  const [savedViews, setSavedViews] = usePersistedState<"savedViews">("savedViews", []);
 
   const value = useMemo<ContentWorkspaceValue>(
     () => ({
@@ -165,7 +166,20 @@ export function ContentWorkspaceProvider({ children }: { children: ReactNode }) 
       getSavedViewById: (id) => savedViews.find((view) => view.id === id),
       getSavedViewsByBrand: (brandId) => savedViews.filter((view) => view.brandId === brandId),
     }),
-    [topicBatches, topics, ideas, contentVersions, workflowStages, savedViews]
+    [
+      topicBatches,
+      topics,
+      ideas,
+      contentVersions,
+      workflowStages,
+      savedViews,
+      setTopicBatches,
+      setTopics,
+      setIdeas,
+      setContentVersions,
+      setWorkflowStages,
+      setSavedViews,
+    ]
   );
 
   return <ContentWorkspaceContext.Provider value={value}>{children}</ContentWorkspaceContext.Provider>;

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import { DEFAULT_AGENCY_SETTINGS } from "@/lib/settings-data";
 import type { AgencySettings } from "@/types/settings";
 
@@ -12,9 +13,9 @@ interface SettingsSessionValue {
 const SettingsSessionContext = createContext<SettingsSessionValue | null>(null);
 
 export function SettingsSessionProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<AgencySettings>(DEFAULT_AGENCY_SETTINGS);
+  const [settings, setSettings] = usePersistedState("settings", DEFAULT_AGENCY_SETTINGS);
 
-  const value = useMemo<SettingsSessionValue>(() => ({ settings, setSettings }), [settings]);
+  const value = useMemo<SettingsSessionValue>(() => ({ settings, setSettings }), [settings, setSettings]);
 
   return <SettingsSessionContext.Provider value={value}>{children}</SettingsSessionContext.Provider>;
 }

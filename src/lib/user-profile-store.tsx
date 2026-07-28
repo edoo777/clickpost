@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import { DEFAULT_AGENCY_SETTINGS } from "@/lib/settings-data";
 import type { UserProfileExtra } from "@/types/user-profile";
 
@@ -29,7 +30,7 @@ interface UserProfileSessionValue {
 const UserProfileSessionContext = createContext<UserProfileSessionValue | null>(null);
 
 export function UserProfileSessionProvider({ children }: { children: ReactNode }) {
-  const [profiles, setProfiles] = useState<Record<string, UserProfileExtra>>({});
+  const [profiles, setProfiles] = usePersistedState<"userProfiles">("userProfiles", {});
 
   const value = useMemo<UserProfileSessionValue>(
     () => ({
@@ -40,7 +41,7 @@ export function UserProfileSessionProvider({ children }: { children: ReactNode }
           [memberId]: { ...(prev[memberId] ?? buildDefaultProfile(memberId, "")), ...patch },
         })),
     }),
-    [profiles]
+    [profiles, setProfiles]
   );
 
   return <UserProfileSessionContext.Provider value={value}>{children}</UserProfileSessionContext.Provider>;

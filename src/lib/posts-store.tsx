@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { posts as demoPosts } from "@/lib/demo-data";
+import { usePersistedState } from "@/lib/persistence/use-persisted-state";
 import {
   buildNewPost,
   changePublicationStatus,
@@ -33,7 +34,7 @@ interface PostsSessionValue {
 const PostsSessionContext = createContext<PostsSessionValue | null>(null);
 
 export function PostsSessionProvider({ children }: { children: ReactNode }) {
-  const [posts, setPosts] = useState<Publication[]>(demoPosts);
+  const [posts, setPosts] = usePersistedState("posts", demoPosts);
 
   const value = useMemo<PostsSessionValue>(
     () => ({
@@ -58,7 +59,7 @@ export function PostsSessionProvider({ children }: { children: ReactNode }) {
           prev.map((post) => (post.id === id ? changePublicationStatus(post, status, actorName) : post))
         ),
     }),
-    [posts]
+    [posts, setPosts]
   );
 
   return <PostsSessionContext.Provider value={value}>{children}</PostsSessionContext.Provider>;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AgencyInfoSection } from "@/components/settings/AgencyInfoSection";
 import { BrandIdentitySection } from "@/components/settings/BrandIdentitySection";
 import { ContentPreferencesSection } from "@/components/settings/ContentPreferencesSection";
+import { DataPrivacySection } from "@/components/settings/DataPrivacySection";
 import { DisplayPreferencesSection } from "@/components/settings/DisplayPreferencesSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
@@ -98,14 +99,16 @@ export function SettingsView() {
 
       {isEditing && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Les modifications restent en mémoire pour cette session uniquement — elles seront perdues
-          au rechargement de la page.
+          Cliquez sur « Enregistrer » pour appliquer vos modifications — elles seront ensuite
+          sauvegardées automatiquement sur cet appareil.
         </p>
       )}
 
       <OtherSectionsLinks />
 
       <DisplayPreferencesSection />
+
+      <DataPrivacySection />
 
       <AgencyInfoSection
         info={displayed.info}
