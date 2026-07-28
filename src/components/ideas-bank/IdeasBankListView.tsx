@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { BulkScheduleModal } from "@/components/ideas-bank/BulkScheduleModal";
 import { IdeaBankCard } from "@/components/ideas-bank/IdeaBankCard";
 import {
   DEFAULT_IDEAS_BANK_FILTERS,
@@ -12,6 +13,8 @@ import { IdeaQuickEditPanel, type IdeaQuickEditValue } from "@/components/ideas-
 import { brandProfiles } from "@/lib/brand-profiles";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { brandEditorialCalendars } from "@/lib/editorial-calendars";
+import type { IdeaScheduleAssignment } from "@/lib/idea-scheduling";
 import {
   buildNewIdea,
   duplicateIdea,
@@ -34,6 +37,19 @@ export function IdeasBankListView() {
   const [filters, setFilters] = useState<IdeasBankFiltersValue>(DEFAULT_IDEAS_BANK_FILTERS);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [panelState, setPanelState] = useState<{ mode: "create" | "edit"; idea: Idea | null } | null>(null);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  const selectedIdeas = useMemo(() => ideas.filter((idea) => selectedIds.has(idea.id)), [ideas, selectedIds]);
+  const selectedBrandIds = useMemo(
+    () => new Set(selectedIdeas.map((idea) => idea.brandId)),
+    [selectedIdeas]
+  );
+  const isMixedBrands = selectedBrandIds.size > 1;
+  const selectionCalendar = useMemo(() => {
+    if (selectedBrandIds.size !== 1) return undefined;
+    const [brandId] = selectedBrandIds;
+    return brandEditorialCalendars.find((calendar) => calendar.brandId === brandId);
+  }, [selectedBrandIds]);
 
   const filtered = useMemo(() => {
     const byFilters = filterIdeas(ideas, {
@@ -85,6 +101,12 @@ export function IdeasBankListView() {
   function handleDeleteSelection() {
     if (!window.confirm(`Supprimer définitivement ${selectedIds.size} idée(s) ?`)) return;
     selectedIds.forEach((id) => removeIdea(id));
+    setSelectedIds(new Set());
+  }
+
+  function handleConfirmSchedule(assignments: IdeaScheduleAssignment[]) {
+    assignments.forEach((assignment) => updateIdea(assignment.ideaId, { scheduledFor: assignment.scheduledFor }));
+    setIsScheduleModalOpen(false);
     setSelectedIds(new Set());
   }
 
@@ -204,6 +226,13 @@ export function IdeasBankListView() {
             </button>
             <button
               type="button"
+              onClick={() => setIsScheduleModalOpen(true)}
+              className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              Planifier la sélection
+            </button>
+            <button
+              type="button"
               onClick={handleArchiveSelection}
               className="rounded-lg border border-black/[.08] px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-white/[.08] dark:text-zinc-400 dark:hover:bg-zinc-900"
             >
@@ -251,6 +280,17 @@ export function IdeasBankListView() {
           onArchive={handleArchiveFromPanel}
           onRestore={handleRestoreFromPanel}
           onDelete={handleDeleteFromPanel}
+        />
+      )}
+
+      {isScheduleModalOpen && (
+        <BulkScheduleModal
+          ideas={selectedIdeas}
+          isMixedBrands={isMixedBrands}
+          calendar={selectionCalendar}
+          themes={themes}
+          onClose={() => setIsScheduleModalOpen(false)}
+          onConfirm={handleConfirmSchedule}
         />
       )}
     </div>
