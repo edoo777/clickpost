@@ -15,19 +15,31 @@ import {
   IconMenu,
   IconSend,
   IconSettingsGear,
+  IconSidebarCollapse,
   IconUsers,
   IconWand,
 } from "@/components/icons";
+import { SidebarCollapsedGroup } from "@/components/layout/SidebarCollapsedGroup";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useSettingsSession } from "@/lib/settings-store";
+import { useSidebarState } from "@/lib/sidebar-store";
 import { useTeamSession } from "@/lib/team-store";
 
 const PRIMARY_NAV_ITEMS = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
   { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Publications", href: "/publications", icon: IconSend },
-  { label: "Boîte à idées", href: "/boite-idees", icon: IconLightbulb, aliases: ["/generateur-idees", "/banque-idees"] },
+  {
+    label: "Boîte à idées",
+    href: "/boite-idees",
+    icon: IconLightbulb,
+    aliases: ["/generateur-idees", "/banque-idees"],
+    subItems: [
+      { label: "Générateur d'idées", href: "/boite-idees?tab=generateur" },
+      { label: "Banque d'idées", href: "/boite-idees?tab=banque" },
+    ],
+  },
   { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
 ];
 
@@ -37,6 +49,11 @@ const CONFIG_NAV_ITEMS = [
   { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },
   { label: "Paramètres", href: "/parametres", icon: IconSettingsGear },
 ];
+
+type NavItem = (typeof PRIMARY_NAV_ITEMS)[number] | (typeof CONFIG_NAV_ITEMS)[number];
+
+const TOOLTIP_CLASS =
+  "pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-xs font-medium text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block";
 
 function isItemActive(pathname: string, href: string, aliases?: string[]): boolean {
   const matches = (target: string) =>
@@ -48,28 +65,73 @@ export function Sidebar() {
   const pathname = usePathname();
   const { members, currentUserId, setCurrentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
+  const { isCollapsed, toggleCollapsed } = useSidebarState();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const currentMember = members.find((member) => member.id === currentUserId);
 
-  function renderNavGroup(label: string, items: typeof PRIMARY_NAV_ITEMS) {
+  function renderNavGroup(label: string, items: NavItem[]) {
     return (
       <div className="flex flex-col gap-0.5">
-        <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">{label}</p>
-        {items.map(({ label: itemLabel, href, icon: Icon, aliases }) => {
-          const isActive = isItemActive(pathname, href, aliases);
+        <p
+          className={`px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/30 ${
+            isCollapsed ? "lg:hidden" : ""
+          }`}
+        >
+          {label}
+        </p>
+        {items.map((item) => {
+          const isActive = isItemActive(pathname, item.href, "aliases" in item ? item.aliases : undefined);
+          const subItems = "subItems" in item ? item.subItems : undefined;
+
+          if (subItems) {
+            return (
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setIsMobileOpen(false)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
+                    isCollapsed ? "lg:hidden" : ""
+                  } ${
+                    isActive
+                      ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-900/40"
+                      : "text-white/60 hover:bg-white/[.06] hover:text-white"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+                <div className={`hidden ${isCollapsed ? "lg:block" : ""}`}>
+                  <SidebarCollapsedGroup
+                    label={item.label}
+                    icon={item.icon}
+                    isActive={isActive}
+                    subItems={subItems}
+                    onNavigate={() => setIsMobileOpen(false)}
+                  />
+                </div>
+              </div>
+            );
+          }
+
           return (
             <Link
-              key={href}
-              href={href}
+              key={item.href}
+              href={item.href}
               onClick={() => setIsMobileOpen(false)}
-              className={`flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
+              aria-current={isActive ? "page" : undefined}
+              aria-label={item.label}
+              className={`group relative flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
+                isCollapsed ? "lg:justify-center" : ""
+              } ${
                 isActive
                   ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-900/40"
                   : "text-white/60 hover:bg-white/[.06] hover:text-white"
               }`}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{itemLabel}</span>
+              <item.icon className="h-4 w-4 shrink-0" />
+              <span className={`truncate ${isCollapsed ? "lg:hidden" : ""}`}>{item.label}</span>
+              {isCollapsed && <span className={TOOLTIP_CLASS}>{item.label}</span>}
             </Link>
           );
         })}
@@ -84,15 +146,15 @@ export function Sidebar() {
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600">
             <IconLogoMark className="h-4 w-4 text-white" />
           </span>
-          <span className="text-base font-semibold tracking-tight text-foreground ">ClickPost</span>
+          <span className="text-base font-semibold tracking-tight text-foreground">ClickPost</span>
         </Link>
         <div className="flex items-center gap-1">
-          <ThemeQuickToggle className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400 " />
+          <ThemeQuickToggle className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400" />
           <button
             type="button"
             onClick={() => setIsMobileOpen(true)}
             aria-label="Ouvrir le menu"
-            className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400 "
+            className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400"
           >
             <IconMenu className="h-5 w-5" />
           </button>
@@ -108,20 +170,26 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-[#0e0a1a] transition-transform duration-200 ease-out lg:w-64 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-[#0e0a1a] transition-all duration-[250ms] ease-in-out motion-reduce:transition-none lg:w-[var(--sidebar-w)] lg:translate-x-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Zone fixe du haut : logo + action principale, ne défile jamais. */}
+        {/* Zone fixe du haut : logo, réduction, action principale — ne défile jamais. */}
         <div className="shrink-0">
-          <div className="flex items-center justify-between gap-2.5 px-5 py-6">
+          <div
+            className={`flex items-center gap-2.5 px-5 py-6 ${
+              isCollapsed ? "lg:justify-center lg:px-3" : "justify-between"
+            }`}
+          >
             <Link href="/" className="flex items-center gap-2.5" onClick={() => setIsMobileOpen(false)}>
-              <span className="accent-halo flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
+              <span className="accent-halo flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
                 <IconLogoMark className="h-5 w-5 text-white" />
               </span>
-              <span className="text-lg font-semibold tracking-tight text-white">ClickPost</span>
+              <span className={`text-lg font-semibold tracking-tight text-white ${isCollapsed ? "lg:hidden" : ""}`}>
+                ClickPost
+              </span>
             </Link>
-            <div className="flex items-center gap-1">
+            <div className={`flex items-center gap-1 ${isCollapsed ? "lg:hidden" : ""}`}>
               <ThemeQuickToggle className="rounded-lg p-1.5 text-white/50 hover:bg-white/[.08] hover:text-white" />
               <button
                 type="button"
@@ -134,48 +202,79 @@ export function Sidebar() {
             </div>
           </div>
 
+          <div className="hidden px-3 pb-2 lg:block">
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              aria-expanded={!isCollapsed}
+              aria-controls="clickpost-sidebar-nav"
+              aria-label={isCollapsed ? "Déployer la barre latérale" : "Réduire la barre latérale"}
+              className={`group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white/50 transition-all hover:bg-white/[.08] hover:text-white ${
+                isCollapsed ? "justify-center" : ""
+              }`}
+            >
+              <IconSidebarCollapse
+                className={`h-4 w-4 shrink-0 transition-transform motion-reduce:transition-none ${
+                  isCollapsed ? "rotate-180" : ""
+                }`}
+              />
+              <span className={isCollapsed ? "lg:hidden" : ""}>{isCollapsed ? "Déployer" : "Réduire"}</span>
+              <span className={`ml-auto text-[10px] text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>Ctrl+B</span>
+              <span className={TOOLTIP_CLASS}>
+                {isCollapsed ? "Déployer la barre latérale" : "Réduire la barre latérale"} · Ctrl+B
+              </span>
+            </button>
+          </div>
+
           <div className="px-3 pb-4">
             <Link
               href="/publications/new"
               onClick={() => setIsMobileOpen(false)}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:from-violet-500 hover:to-fuchsia-500"
+              aria-label="Créer une publication"
+              className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:from-violet-500 hover:to-fuchsia-500`}
             >
-              <span className="text-base leading-none">+</span> Créer une publication
+              <span className="text-base leading-none">+</span>
+              <span className={isCollapsed ? "lg:hidden" : ""}>Créer une publication</span>
+              {isCollapsed && <span className={TOOLTIP_CLASS}>Créer une publication</span>}
             </Link>
           </div>
         </div>
 
         {/* Zone centrale : seule la navigation défile si elle dépasse la hauteur disponible. */}
-        <nav className="min-h-0 flex-1 overflow-y-auto px-3">
+        <nav id="clickpost-sidebar-nav" className="min-h-0 flex-1 overflow-y-auto px-3">
           <div className="flex flex-col gap-4 pb-2">
             {renderNavGroup("Principal", PRIMARY_NAV_ITEMS)}
             {renderNavGroup("Configuration & gestion", CONFIG_NAV_ITEMS)}
           </div>
         </nav>
 
-        {/* Zone fixe du bas : profil utilisateur, toujours visible. */}
+        {/* Zone fixe du bas : profil utilisateur, toujours visible (avatar seul en mode réduit). */}
         <div className="shrink-0">
           <Link
             href="/profil"
             onClick={() => setIsMobileOpen(false)}
-            className="mx-3 mt-2 flex items-center gap-2.5 rounded-xl border border-white/[.06] px-3 py-2.5 transition-colors hover:bg-white/[.06]"
+            aria-label={`Voir le profil de ${currentMember?.name ?? "l'utilisateur"}`}
+            className={`group relative mx-3 mt-2 flex items-center gap-2.5 rounded-xl border border-white/[.06] px-3 py-2.5 transition-colors hover:bg-white/[.06] ${
+              isCollapsed ? "lg:justify-center lg:px-2" : ""
+            }`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-xs font-semibold text-white">
               {(currentMember?.name ?? "?").slice(0, 1).toUpperCase()}
             </span>
-            <span className="flex min-w-0 flex-1 flex-col">
+            <span className={`flex min-w-0 flex-1 flex-col ${isCollapsed ? "lg:hidden" : ""}`}>
               <span className="truncate text-xs font-medium text-white">{settings.info.name}</span>
               <span className="truncate text-[11px] text-white/40">{currentMember?.name ?? "Mon profil"}</span>
             </span>
-            <IconChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
+            <IconChevronDown className={`h-3.5 w-3.5 shrink-0 text-white/40 ${isCollapsed ? "lg:hidden" : ""}`} />
+            {isCollapsed && <span className={TOOLTIP_CLASS}>{currentMember?.name ?? "Mon profil"}</span>}
           </Link>
 
-          <div className="flex flex-col gap-1.5 px-3 pt-3">
+          <div className={`flex flex-col gap-1.5 px-3 pt-3 ${isCollapsed ? "lg:hidden" : ""}`}>
             <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">Thème</label>
             <ThemeSelect surface="dark" />
           </div>
 
-          <div className="flex flex-col gap-1.5 border-t border-white/[.06] px-5 py-4">
+          <div className={`flex flex-col gap-1.5 border-t border-white/[.06] px-5 py-4 ${isCollapsed ? "lg:hidden" : ""}`}>
             <label className="text-[11px] font-medium uppercase tracking-wide text-white/30">
               Connecté en tant que
             </label>
@@ -191,7 +290,9 @@ export function Sidebar() {
               ))}
             </select>
           </div>
-          <div className="px-5 py-4 text-xs text-white/25">Données de démonstration</div>
+          <div className={`px-5 py-4 text-xs text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>
+            Données de démonstration
+          </div>
         </div>
       </aside>
     </>

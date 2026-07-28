@@ -19,6 +19,7 @@
   --focus-ring: #8b5cf6;
   --accent-glow-1: rgba(147, 51, 234, 0.1);
   --accent-glow-2: rgba(219, 39, 119, 0.08);
+  --sidebar-w: 16rem;
 }
 
 .dark {

@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { IdeaBoxView } from "@/components/idea-box/IdeaBoxView";
 
 export default function IdeaBoxPage() {
-  return <IdeaBoxView />;
+  return (
+    <Suspense fallback={null}>
+      <IdeaBoxView />
+    </Suspense>
+  );
 }

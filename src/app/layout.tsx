@@ -31,6 +31,10 @@ const THEME_INIT_SCRIPT = `
     if (resolved === 'dark') root.classList.add('dark');
     root.style.colorScheme = resolved;
   } catch (e) {}
+  try {
+    var collapsed = window.localStorage.getItem('clickpost-sidebar-collapsed') === 'true';
+    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '5rem' : '16rem');
+  } catch (e) {}
 })();
 `;
 

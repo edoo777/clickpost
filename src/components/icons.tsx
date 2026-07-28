@@ -186,6 +186,16 @@ export function IconClose(props: IconProps) {
   );
 }
 
+export function IconSidebarCollapse(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <line x1="9" y1="4" x2="9" y2="20" />
+      <path d="M14.5 9.5 12 12l2.5 2.5" />
+    </Base>
+  );
+}
+
 export function IconSun(props: IconProps) {
   return (
     <Base {...props}>
