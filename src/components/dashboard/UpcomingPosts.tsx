@@ -28,6 +28,7 @@ export function UpcomingPosts({ filters = DEFAULT_DASHBOARD_FILTERS }: UpcomingP
     .filter((post) => !brandName || post.brand === brandName)
     .filter((post) => filters.platform === "all" || post.platform === filters.platform)
     .filter((post) => filters.status === "all" || post.status === filters.status)
+    .filter((post) => filters.format === "all" || post.format === filters.format)
     .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime())
     .slice(0, MAX_UPCOMING);
 

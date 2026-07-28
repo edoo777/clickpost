@@ -14,6 +14,7 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
   const ideas = allIdeas.filter((idea) => {
     if (filters.brandId !== "all" && idea.brandId !== filters.brandId) return false;
     if (filters.platform !== "all" && idea.platform !== filters.platform) return false;
+    if (filters.format !== "all" && idea.format !== filters.format) return false;
     return true;
   });
 

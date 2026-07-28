@@ -10,8 +10,12 @@ import {
 } from "@/components/dashboard/DashboardFilters";
 import { MyTasksWidget } from "@/components/dashboard/MyTasksWidget";
 import { NeedsActionWidget } from "@/components/dashboard/NeedsActionWidget";
+import { PerformanceChartCard } from "@/components/dashboard/PerformanceChartCard";
 import { PerformanceOverview } from "@/components/dashboard/PerformanceOverview";
 import { PipelineOverview } from "@/components/dashboard/PipelineOverview";
+import { RecentActivityWidget } from "@/components/dashboard/RecentActivityWidget";
+import { RecentIdeasWidget } from "@/components/dashboard/RecentIdeasWidget";
+import { TopPublicationsWidget } from "@/components/dashboard/TopPublicationsWidget";
 import { UpcomingPosts } from "@/components/dashboard/UpcomingPosts";
 
 export function DashboardView() {
@@ -36,6 +40,13 @@ export function DashboardView() {
 
       <PerformanceOverview filters={filters} />
 
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PerformanceChartCard filters={filters} />
+        </div>
+        <TopPublicationsWidget filters={filters} />
+      </div>
+
       <PipelineOverview filters={filters} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -49,6 +60,11 @@ export function DashboardView() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <NeedsActionWidget filters={filters} />
+        <RecentActivityWidget filters={filters} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <RecentIdeasWidget filters={filters} />
         <MyTasksWidget />
       </div>
     </>

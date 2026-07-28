@@ -1,8 +1,10 @@
 "use client";
 
 import { brandProfiles } from "@/lib/brand-profiles";
+import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
+import type { ContentFormat } from "@/types/editorial-calendar";
 import type { PublicationStatus } from "@/types/publication";
 
 export type DashboardPeriod = "7" | "30" | "90";
@@ -12,6 +14,7 @@ export interface DashboardFiltersValue {
   platform: SocialPlatform | "all";
   period: DashboardPeriod;
   status: PublicationStatus | "all";
+  format: ContentFormat | "all";
 }
 
 export const DEFAULT_DASHBOARD_FILTERS: DashboardFiltersValue = {
@@ -19,6 +22,7 @@ export const DEFAULT_DASHBOARD_FILTERS: DashboardFiltersValue = {
   platform: "all",
   period: "30",
   status: "all",
+  format: "all",
 };
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
@@ -49,7 +53,11 @@ interface DashboardFiltersProps {
 
 export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
   const isDefault =
-    value.brandId === "all" && value.platform === "all" && value.status === "all" && value.period === "30";
+    value.brandId === "all" &&
+    value.platform === "all" &&
+    value.status === "all" &&
+    value.format === "all" &&
+    value.period === "30";
 
   return (
     <div
@@ -101,6 +109,19 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         {ALL_STATUSES.map((status) => (
           <option key={status} value={status}>
             {STATUS_LABEL[status]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.format}
+        onChange={(event) => onChange({ ...value, format: event.target.value as ContentFormat | "all" })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les types de contenu</option>
+        {CONTENT_FORMATS.map((format) => (
+          <option key={format} value={format}>
+            {FORMAT_LABEL[format]}
           </option>
         ))}
       </select>

@@ -20,6 +20,7 @@ export function NeedsActionWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Needs
   const queue = getApprovalQueue(posts, DEFAULT_APPROVAL_FILTERS)
     .filter((publication) => !brandName || publication.brand === brandName)
     .filter((publication) => filters.platform === "all" || publication.platform === filters.platform)
+    .filter((publication) => filters.format === "all" || publication.format === filters.format)
     .slice(0, MAX_ITEMS);
 
   return (
