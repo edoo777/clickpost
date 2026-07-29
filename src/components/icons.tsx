@@ -365,6 +365,35 @@ export function IconHistory(props: IconProps) {
   );
 }
 
+export function IconEye(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Base>
+  );
+}
+
+export function IconEyeOff(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M4 4l16 16" />
+      <path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a15.4 15.4 0 0 1-3.3 4.2M6.7 6.8C4.2 8.4 2.5 12 2.5 12S6 18.5 12 18.5c1.3 0 2.5-.3 3.6-.8" />
+      <path d="M9.9 10.1a3 3 0 0 0 4 4" />
+    </Base>
+  );
+}
+
+export function IconLogout(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />
+      <path d="M16 16l4-4-4-4" />
+      <path d="M20 12H9" />
+    </Base>
+  );
+}
+
 export function IconChevronDown(props: IconProps) {
   return (
     <Base {...props}>

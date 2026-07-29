@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   IconCalendar,
@@ -12,6 +12,7 @@ import {
   IconIdBadge,
   IconLightbulb,
   IconLogoMark,
+  IconLogout,
   IconMenu,
   IconSend,
   IconSettingsGear,
@@ -25,6 +26,7 @@ import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useSidebarState } from "@/lib/sidebar-store";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useTeamSession } from "@/lib/team-store";
 
 const PRIMARY_NAV_ITEMS = [
@@ -63,12 +65,20 @@ function isItemActive(pathname: string, href: string, aliases?: string[]): boole
 }
 
 export function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   const { members, currentUserId, setCurrentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
   const { isCollapsed, toggleCollapsed } = useSidebarState();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const currentMember = members.find((member) => member.id === currentUserId);
+
+  async function handleSignOut() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    router.push("/connexion");
+    router.refresh();
+  }
 
   function renderNavGroup(label: string, items: NavItem[]) {
     return (
@@ -299,6 +309,18 @@ export function Sidebar() {
               ))}
             </select>
           </div>
+
+          <div className={`px-3 pb-3 ${isCollapsed ? "lg:hidden" : ""}`}>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/[.06] hover:text-white"
+            >
+              <IconLogout className="h-4 w-4 shrink-0" />
+              Déconnexion
+            </button>
+          </div>
+
           <div className={`px-5 py-4 text-xs text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>
             Données de démonstration
           </div>

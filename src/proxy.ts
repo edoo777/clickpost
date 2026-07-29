@@ -1,11 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Accessibles sans session valide. Tout le reste (le groupe dashboard, en pratique) est protégé.
+const PUBLIC_PATHS = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser-mot-de-passe"];
+// Un utilisateur déjà connecté ne doit pas rester sur ces deux pages précises.
+const REDIRECT_IF_AUTHENTICATED_PATHS = ["/connexion", "/inscription"];
+
 /**
- * Rafraîchissement de session Supabase pour l'App Router (F1.1 — fondations uniquement).
- * Ne redirige et ne protège encore aucune route : cette logique arrive en F1.2 avec les
- * pages de connexion. Retirer l'appel à `getUser()` casserait le rafraîchissement des
- * sessions expirées côté serveur — ne pas le supprimer même en l'absence de redirection.
+ * Rafraîchissement de session Supabase (F1.1) + protection des routes (F1.2) pour l'App Router.
+ * Retirer l'appel à `getUser()` casserait le rafraîchissement des sessions expirées côté
+ * serveur — ne pas le supprimer même si la logique de redirection change.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -23,7 +27,26 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isAuthCallback = pathname.startsWith("/auth/callback");
+
+  if (!isAuthCallback) {
+    if (!user && !PUBLIC_PATHS.includes(pathname)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/connexion";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (user && REDIRECT_IF_AUTHENTICATED_PATHS.includes(pathname)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
 
   return response;
 }
