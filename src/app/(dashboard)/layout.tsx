@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { DashboardMainContent } from "@/components/layout/DashboardMainContent";
 import { FloatingAssistantButton } from "@/components/layout/FloatingAssistantButton";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TopBar } from "@/components/layout/TopBar";
 import { WorkspacePersistenceProvider } from "@/components/persistence/WorkspacePersistenceProvider";
 import { AccountsSessionProvider } from "@/lib/accounts-store";
 import { BrandsSessionProvider } from "@/lib/brands-store";
@@ -27,8 +28,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <ContentWorkspaceProvider>
                       <UserProfileSessionProvider>
                         <SidebarStateProvider>
-                          <div className="flex min-h-screen w-full flex-col bg-background">
+                          <div className="flex h-dvh w-full flex-col bg-background">
                             <Sidebar />
+                            <TopBar />
                             <DashboardMainContent>{children}</DashboardMainContent>
                             <FloatingAssistantButton />
                           </div>

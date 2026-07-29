@@ -4,67 +4,28 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
-  IconCalendar,
   IconChevronDown,
-  IconClipboardCheck,
   IconClose,
-  IconDashboard,
-  IconIdBadge,
-  IconLightbulb,
   IconLogoMark,
   IconLogout,
   IconMenu,
-  IconSend,
-  IconSettingsGear,
   IconSidebarCollapse,
-  IconUsers,
-  IconWand,
 } from "@/components/icons";
+import { ManagementMenu } from "@/components/layout/ManagementMenu";
 import { SaveStatusIndicator } from "@/components/layout/SaveStatusIndicator";
 import { SidebarCollapsedGroup } from "@/components/layout/SidebarCollapsedGroup";
 import { SidebarResizeHandle } from "@/components/layout/SidebarResizeHandle";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
+import { PRIMARY_NAV_ITEMS, isNavItemActive, type NavItem } from "@/lib/navigation";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useSidebarState } from "@/lib/sidebar-store";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
 
-const PRIMARY_NAV_ITEMS = [
-  { label: "Tableau de bord", href: "/", icon: IconDashboard },
-  { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
-  { label: "Publications", href: "/publications", icon: IconSend },
-  {
-    label: "Boîte à idées",
-    href: "/boite-idees",
-    icon: IconLightbulb,
-    aliases: ["/generateur-idees", "/banque-idees"],
-    subItems: [
-      { label: "Générateur d'idées", href: "/boite-idees?tab=generateur" },
-      { label: "Banque d'idées", href: "/boite-idees?tab=banque" },
-    ],
-  },
-  { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
-];
-
-const CONFIG_NAV_ITEMS = [
-  { label: "Comptes", href: "/comptes", icon: IconUsers },
-  { label: "Équipe", href: "/equipe", icon: IconIdBadge },
-  { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },
-  { label: "Paramètres", href: "/parametres", icon: IconSettingsGear },
-];
-
-type NavItem = (typeof PRIMARY_NAV_ITEMS)[number] | (typeof CONFIG_NAV_ITEMS)[number];
-
 const TOOLTIP_CLASS =
   "pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-xs font-medium text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block";
-
-function isItemActive(pathname: string, href: string, aliases?: string[]): boolean {
-  const matches = (target: string) =>
-    target === "/" ? pathname === "/" : pathname === target || pathname.startsWith(`${target}/`);
-  return matches(href) || (aliases?.some(matches) ?? false);
-}
 
 export function Sidebar() {
   const router = useRouter();
@@ -86,18 +47,11 @@ export function Sidebar() {
     router.refresh();
   }
 
-  function renderNavGroup(label: string, items: NavItem[]) {
+  function renderNavGroup(items: NavItem[]) {
     return (
       <div className="flex flex-col gap-0.5">
-        <p
-          className={`px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/30 ${
-            isCollapsed ? "lg:hidden" : ""
-          }`}
-        >
-          {label}
-        </p>
         {items.map((item) => {
-          const isActive = isItemActive(pathname, item.href, "aliases" in item ? item.aliases : undefined);
+          const isActive = isNavItemActive(pathname, item.href, "aliases" in item ? item.aliases : undefined);
           const subItems = "subItems" in item ? item.subItems : undefined;
 
           if (subItems) {
@@ -168,6 +122,10 @@ export function Sidebar() {
         <div className="flex items-center gap-1">
           <SaveStatusIndicator collapsed />
           <ThemeQuickToggle className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400" />
+          <ManagementMenu
+            iconOnly
+            triggerClassName="flex items-center rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400"
+          />
           <button
             type="button"
             onClick={() => setIsMobileOpen(true)}
@@ -270,10 +228,7 @@ export function Sidebar() {
         {/* Zone centrale : occupe tout l'espace restant, défilement natif (molette/tactile)
             si le contenu dépasse — jamais de flèches de défilement, barre discrète. */}
         <nav id="clickpost-sidebar-nav" className="sidebar-nav-scroll min-h-0 flex-1 overflow-y-auto px-3">
-          <div className="flex flex-col gap-3 pb-2">
-            {renderNavGroup("Principal", PRIMARY_NAV_ITEMS)}
-            {renderNavGroup("Configuration & gestion", CONFIG_NAV_ITEMS)}
-          </div>
+          <div className="flex flex-col gap-3 pb-2">{renderNavGroup(PRIMARY_NAV_ITEMS)}</div>
         </nav>
 
         {/* Zone fixe du bas : profil utilisateur, toujours visible (avatar seul en mode réduit). */}

@@ -1,0 +1,96 @@
+import type { ComponentType, SVGProps } from "react";
+import {
+  IconCalendar,
+  IconClipboardCheck,
+  IconDashboard,
+  IconIdBadge,
+  IconLightbulb,
+  IconSend,
+  IconSettingsGear,
+  IconUsers,
+  IconWand,
+} from "@/components/icons";
+
+export interface NavItem {
+  label: string;
+  href: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  aliases?: string[];
+  subItems?: { label: string; href: string }[];
+}
+
+/**
+ * Source unique des éléments de navigation principale (sidebar) — évite de dupliquer les
+ * routes/icônes à plusieurs endroits.
+ */
+export const PRIMARY_NAV_ITEMS: NavItem[] = [
+  { label: "Tableau de bord", href: "/", icon: IconDashboard },
+  { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
+  { label: "Publications", href: "/publications", icon: IconSend },
+  {
+    label: "Boîte à idées",
+    href: "/boite-idees",
+    icon: IconLightbulb,
+    aliases: ["/generateur-idees", "/banque-idees"],
+    subItems: [
+      { label: "Générateur d'idées", href: "/boite-idees?tab=generateur" },
+      { label: "Banque d'idées", href: "/boite-idees?tab=banque" },
+    ],
+  },
+  { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
+];
+
+/**
+ * Source unique des fonctions de gestion (déplacées de la sidebar vers la barre supérieure) —
+ * mêmes routes et icônes qu'auparavant, seul l'emplacement dans l'interface change.
+ */
+export const MANAGEMENT_NAV_ITEMS: NavItem[] = [
+  { label: "Comptes", href: "/comptes", icon: IconUsers },
+  { label: "Équipe", href: "/equipe", icon: IconIdBadge },
+  { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },
+  { label: "Paramètres", href: "/parametres", icon: IconSettingsGear },
+];
+
+export function isNavItemActive(pathname: string, href: string, aliases?: string[]): boolean {
+  const matches = (target: string) =>
+    target === "/" ? pathname === "/" : pathname === target || pathname.startsWith(`${target}/`);
+  return matches(href) || (aliases?.some(matches) ?? false);
+}
+
+interface PageTitleEntry {
+  href: string;
+  label: string;
+}
+
+const PAGE_TITLES: PageTitleEntry[] = [
+  { href: "/", label: "Tableau de bord" },
+  { href: "/calendrier-editorial", label: "Calendrier éditorial" },
+  { href: "/calendrier", label: "Calendrier" },
+  { href: "/publications/new", label: "Nouvelle publication" },
+  { href: "/publications", label: "Publications" },
+  { href: "/generateur-idees", label: "Générateur d'idées" },
+  { href: "/banque-idees", label: "Banque d'idées" },
+  { href: "/boite-idees", label: "Boîte à idées" },
+  { href: "/assistant-ia", label: "Assistant IA" },
+  { href: "/atelier", label: "Atelier" },
+  { href: "/comptes", label: "Comptes" },
+  { href: "/equipe", label: "Équipe" },
+  { href: "/approbations", label: "Approbations" },
+  { href: "/parametres", label: "Paramètres" },
+  { href: "/marques", label: "Marques" },
+  { href: "/performances", label: "Performances" },
+  { href: "/profil", label: "Profil" },
+  { href: "/thematiques", label: "Thématiques" },
+];
+
+// Les entrées les plus longues (les plus spécifiques) sont testées en premier, pour qu'une
+// route comme /publications/new ne soit jamais confondue avec /publications.
+const SORTED_PAGE_TITLES = [...PAGE_TITLES].sort((a, b) => b.href.length - a.href.length);
+
+/** Titre de page affiché dans la barre supérieure, dérivé du chemin courant. */
+export function getPageTitle(pathname: string): string {
+  const match = SORTED_PAGE_TITLES.find((entry) =>
+    entry.href === "/" ? pathname === "/" : pathname === entry.href || pathname.startsWith(`${entry.href}/`)
+  );
+  return match?.label ?? "ClickPost";
+}
