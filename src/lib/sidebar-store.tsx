@@ -3,8 +3,11 @@
 import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 export const SIDEBAR_STORAGE_KEY = "clickpost-sidebar-collapsed";
-export const SIDEBAR_EXPANDED_WIDTH = "16rem";
+export const SIDEBAR_WIDTH_STORAGE_KEY = "clickpost-sidebar-width";
 export const SIDEBAR_COLLAPSED_WIDTH = "5rem";
+export const SIDEBAR_MIN_WIDTH = 260;
+export const SIDEBAR_MAX_WIDTH = 480;
+export const SIDEBAR_DEFAULT_WIDTH = 320;
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -13,8 +16,17 @@ function notifyListeners() {
   listeners.forEach((listener) => listener());
 }
 
+export function clampSidebarWidth(width: number): number {
+  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, width));
+}
+
 function readStoredCollapsed(): boolean {
   return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+}
+
+function readStoredWidth(): number {
+  const stored = Number(window.localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY));
+  return Number.isFinite(stored) && stored > 0 ? clampSidebarWidth(stored) : SIDEBAR_DEFAULT_WIDTH;
 }
 
 function subscribe(callback: Listener) {
@@ -26,17 +38,36 @@ function subscribe(callback: Listener) {
   };
 }
 
-function getSnapshot(): boolean {
+function getCollapsedSnapshot(): boolean {
   return readStoredCollapsed();
 }
 
-function getServerSnapshot(): boolean {
+function getCollapsedServerSnapshot(): boolean {
   return false;
 }
 
-/** Source de vérité unique : écrit dans localStorage puis notifie tous les abonnés. */
+function getWidthSnapshot(): number {
+  return readStoredWidth();
+}
+
+function getWidthServerSnapshot(): number {
+  return SIDEBAR_DEFAULT_WIDTH;
+}
+
+/** Source de vérité unique pour l'état réduit/déployé : écrit dans localStorage puis notifie tous les abonnés. */
 export function setSidebarCollapsed(next: boolean) {
   window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+  notifyListeners();
+}
+
+/**
+ * Source de vérité unique pour la largeur ouverte choisie par glisser-déposer — préférence
+ * locale d'appareil (comme le thème), jamais synchronisée avec Supabase. Le mode réduit ne
+ * modifie jamais cette valeur : Ctrl+B / le bouton Réduire ne font que basculer l'affichage,
+ * la dernière largeur personnalisée est donc automatiquement restaurée au redéploiement.
+ */
+export function setSidebarWidth(next: number) {
+  window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(clampSidebarWidth(next)));
   notifyListeners();
 }
 
@@ -49,19 +80,23 @@ function isEditableTarget(target: EventTarget | null): boolean {
 
 interface SidebarContextValue {
   isCollapsed: boolean;
+  width: number;
   setCollapsed: (next: boolean) => void;
   toggleCollapsed: () => void;
+  setWidth: (next: number) => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
 /**
- * État central unique pour l'affichage réduit/déployé de la sidebar desktop, avec persistance
- * localStorage (via useSyncExternalStore, donc sans mismatch d'hydratation) et le raccourci
- * clavier global Ctrl+B / Cmd+B, désactivé quand le focus est dans un champ éditable.
+ * État central unique pour l'affichage réduit/déployé et la largeur de la sidebar desktop,
+ * avec persistance localStorage (via useSyncExternalStore, donc sans mismatch d'hydratation),
+ * synchronisation cross-tab (évènement "storage"), et le raccourci clavier global Ctrl+B / Cmd+B,
+ * désactivé quand le focus est dans un champ éditable.
  */
 export function SidebarStateProvider({ children }: { children: ReactNode }) {
-  const isCollapsed = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const isCollapsed = useSyncExternalStore(subscribe, getCollapsedSnapshot, getCollapsedServerSnapshot);
+  const width = useSyncExternalStore(subscribe, getWidthSnapshot, getWidthServerSnapshot);
 
   const toggleCollapsed = useCallback(() => {
     setSidebarCollapsed(!readStoredCollapsed());
@@ -82,11 +117,17 @@ export function SidebarStateProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--sidebar-w",
-      isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH
+      isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : `${width}px`
     );
-  }, [isCollapsed]);
+  }, [isCollapsed, width]);
 
-  const value: SidebarContextValue = { isCollapsed, setCollapsed: setSidebarCollapsed, toggleCollapsed };
+  const value: SidebarContextValue = {
+    isCollapsed,
+    width,
+    setCollapsed: setSidebarCollapsed,
+    toggleCollapsed,
+    setWidth: setSidebarWidth,
+  };
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }

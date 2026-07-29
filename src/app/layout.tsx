@@ -33,8 +33,12 @@ const THEME_INIT_SCRIPT = `
     root.style.colorScheme = resolved;
   } catch (e) {}
   try {
+    // Doit rester synchronisé avec SIDEBAR_MIN_WIDTH/SIDEBAR_MAX_WIDTH/SIDEBAR_DEFAULT_WIDTH
+    // de src/lib/sidebar-store.tsx — dupliqué ici uniquement pour éviter un flash avant hydratation.
     var collapsed = window.localStorage.getItem('clickpost-sidebar-collapsed') === 'true';
-    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '5rem' : '16rem');
+    var storedWidth = parseInt(window.localStorage.getItem('clickpost-sidebar-width'), 10);
+    var width = isFinite(storedWidth) && storedWidth > 0 ? Math.min(480, Math.max(260, storedWidth)) : 320;
+    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '5rem' : (width + 'px'));
   } catch (e) {}
   try {
     var cachedBranding = window.localStorage.getItem('clickpost-branding');

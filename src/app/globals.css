@@ -159,6 +159,13 @@ body {
   background: rgba(255, 255, 255, 0.32);
 }
 
+/* Pendant le glissement de la poignée de redimensionnement : suivi 1:1 du pointeur, sans
+   l'animation de 250ms normalement utilisée pour l'ouverture/fermeture/réduction. */
+html.sidebar-resizing .sidebar-shell,
+html.sidebar-resizing .dashboard-main {
+  transition: none !important;
+}
+
 /* Typographie de l'éditeur riche de l'Atelier de contenu (Tiptap est volontairement non stylé). */
 .workshop-prose {
   font-size: 1rem;

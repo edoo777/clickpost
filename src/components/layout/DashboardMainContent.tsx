@@ -15,14 +15,14 @@ export function DashboardMainContent({ children }: { children: ReactNode }) {
 
   if (isWorkshop) {
     return (
-      <main className="flex-1 overflow-y-auto transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none lg:ml-[var(--sidebar-w)]">
+      <main className="dashboard-main flex-1 overflow-y-auto transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none lg:ml-[var(--sidebar-w)]">
         {children}
       </main>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto px-4 py-6 transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none sm:px-6 lg:ml-[var(--sidebar-w)] lg:px-10 lg:py-8">
+    <main className="dashboard-main flex-1 overflow-y-auto px-4 py-6 transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none sm:px-6 lg:ml-[var(--sidebar-w)] lg:px-10 lg:py-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">{children}</div>
     </main>
   );

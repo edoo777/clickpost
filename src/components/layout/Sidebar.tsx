@@ -22,6 +22,7 @@ import {
 } from "@/components/icons";
 import { SaveStatusIndicator } from "@/components/layout/SaveStatusIndicator";
 import { SidebarCollapsedGroup } from "@/components/layout/SidebarCollapsedGroup";
+import { SidebarResizeHandle } from "@/components/layout/SidebarResizeHandle";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useSettingsSession } from "@/lib/settings-store";
@@ -70,7 +71,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { members, currentUserId, setCurrentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
-  const { isCollapsed, toggleCollapsed } = useSidebarState();
+  const { isCollapsed, toggleCollapsed, width } = useSidebarState();
   const { profile, workspace, email } = useWorkspaceSession();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -187,10 +188,12 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-brand-sidebar transition-all duration-[250ms] ease-in-out motion-reduce:transition-none lg:w-[var(--sidebar-w)] lg:translate-x-0 ${
+        className={`sidebar-shell fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-brand-sidebar transition-all duration-[250ms] ease-in-out motion-reduce:transition-none lg:w-[var(--sidebar-w)] lg:translate-x-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        <SidebarResizeHandle width={width} disabled={isCollapsed} />
+
         {/* Zone fixe du haut : logo, réduction, action principale — ne défile jamais. */}
         <div className="shrink-0">
           <div
