@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { connectedAccounts as demoAccounts } from "@/lib/demo-data";
-import { usePersistedState } from "@/lib/persistence/use-persisted-state";
+import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import type { SocialAccount } from "@/types/dashboard";
 
 interface AccountsSessionValue {
@@ -15,7 +15,7 @@ interface AccountsSessionValue {
 const AccountsSessionContext = createContext<AccountsSessionValue | null>(null);
 
 export function AccountsSessionProvider({ children }: { children: ReactNode }) {
-  const [accounts, setAccounts] = usePersistedState("accounts", demoAccounts);
+  const [accounts, setAccounts] = useSyncedPersistedState("accounts", demoAccounts, "accounts");
 
   const value = useMemo<AccountsSessionValue>(
     () => ({

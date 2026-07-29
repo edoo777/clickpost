@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { applyBrandingTokens, buildDefaultBranding, cacheBrandingLocally, readCachedBranding } from "@/lib/branding-tokens";
+import { configureSyncContext, ensureSyncTriggers } from "@/lib/sync/runtime";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
@@ -57,6 +58,7 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
       setBranding(null);
       setRole(null);
       setIsLoading(false);
+      configureSyncContext(null, null);
       return;
     }
 
@@ -103,6 +105,9 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
       applyBrandingTokens(resolvedBranding);
       cacheBrandingLocally(resolvedBranding.workspace_id, resolvedBranding);
     }
+
+    ensureSyncTriggers();
+    configureSyncContext(activeWorkspaceId, user.id);
 
     if (justCreated) {
       router.push("/onboarding");

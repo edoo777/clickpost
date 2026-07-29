@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import { usePersistedState } from "@/lib/persistence/use-persisted-state";
+import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import { nextOrder } from "@/lib/themes";
 import { themes as SEED_THEMES } from "@/lib/themes-data";
 import type { Weekday } from "@/types/editorial-calendar";
@@ -20,7 +20,7 @@ interface ThemesSessionValue {
 const ThemesSessionContext = createContext<ThemesSessionValue | null>(null);
 
 export function ThemesSessionProvider({ children }: { children: ReactNode }) {
-  const [themes, setThemes] = usePersistedState("themes", SEED_THEMES);
+  const [themes, setThemes] = useSyncedPersistedState("themes", SEED_THEMES, "themes");
 
   const value = useMemo<ThemesSessionValue>(
     () => ({

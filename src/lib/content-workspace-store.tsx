@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import { usePersistedState } from "@/lib/persistence/use-persisted-state";
+import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import type { ContentVersion } from "@/types/content-version";
 import type { Idea } from "@/types/idea";
 import type { SavedView } from "@/types/saved-view";
@@ -57,12 +57,20 @@ interface ContentWorkspaceValue {
 const ContentWorkspaceContext = createContext<ContentWorkspaceValue | null>(null);
 
 export function ContentWorkspaceProvider({ children }: { children: ReactNode }) {
-  const [topicBatches, setTopicBatches] = usePersistedState<"topicBatches">("topicBatches", []);
-  const [topics, setTopics] = usePersistedState<"topics">("topics", []);
-  const [ideas, setIdeas] = usePersistedState<"ideas">("ideas", []);
-  const [contentVersions, setContentVersions] = usePersistedState<"contentVersions">("contentVersions", []);
-  const [workflowStages, setWorkflowStages] = usePersistedState<"workflowStages">("workflowStages", []);
-  const [savedViews, setSavedViews] = usePersistedState<"savedViews">("savedViews", []);
+  const [topicBatches, setTopicBatches] = useSyncedPersistedState<"topicBatches">("topicBatches", [], "topicBatches");
+  const [topics, setTopics] = useSyncedPersistedState<"topics">("topics", [], "topics");
+  const [ideas, setIdeas] = useSyncedPersistedState<"ideas">("ideas", [], "ideas");
+  const [contentVersions, setContentVersions] = useSyncedPersistedState<"contentVersions">(
+    "contentVersions",
+    [],
+    "contentVersions"
+  );
+  const [workflowStages, setWorkflowStages] = useSyncedPersistedState<"workflowStages">(
+    "workflowStages",
+    [],
+    "workflowStages"
+  );
+  const [savedViews, setSavedViews] = useSyncedPersistedState<"savedViews">("savedViews", [], "savedViews");
 
   const value = useMemo<ContentWorkspaceValue>(
     () => ({

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { campaigns as SEED_CAMPAIGNS } from "@/lib/campaigns-data";
-import { usePersistedState } from "@/lib/persistence/use-persisted-state";
+import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import type { Campaign } from "@/types/campaign";
 
 interface CampaignsSessionValue {
@@ -15,7 +15,7 @@ interface CampaignsSessionValue {
 const CampaignsSessionContext = createContext<CampaignsSessionValue | null>(null);
 
 export function CampaignsSessionProvider({ children }: { children: ReactNode }) {
-  const [campaigns, setCampaigns] = usePersistedState("campaigns", SEED_CAMPAIGNS);
+  const [campaigns, setCampaigns] = useSyncedPersistedState("campaigns", SEED_CAMPAIGNS, "campaigns");
 
   const value = useMemo<CampaignsSessionValue>(
     () => ({

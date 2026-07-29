@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { posts as demoPosts } from "@/lib/demo-data";
-import { usePersistedState } from "@/lib/persistence/use-persisted-state";
+import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import {
   buildNewPost,
   changePublicationStatus,
@@ -34,7 +34,7 @@ interface PostsSessionValue {
 const PostsSessionContext = createContext<PostsSessionValue | null>(null);
 
 export function PostsSessionProvider({ children }: { children: ReactNode }) {
-  const [posts, setPosts] = usePersistedState("posts", demoPosts);
+  const [posts, setPosts] = useSyncedPersistedState("posts", demoPosts, "posts");
 
   const value = useMemo<PostsSessionValue>(
     () => ({
