@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { AccountStatus, SocialPlatform } from "@/types/dashboard";
@@ -29,6 +29,7 @@ interface AccountsFiltersProps {
 }
 
 export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
+  const { brands } = useBrandsSession();
   const isDefault = value.brand === "all" && value.platform === "all" && value.status === "all";
 
   return (
@@ -39,7 +40,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
         className={FIELD_CLASS}
       >
         <option value="all">Toutes les marques</option>
-        {brandProfiles.map((brand) => (
+        {brands.map((brand) => (
           <option key={brand.id} value={brand.name}>
             {brand.name}
           </option>

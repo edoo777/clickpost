@@ -11,13 +11,14 @@ import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, rejectPublication, requestChanges } from "@/lib/approval";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
+import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
 import type { Publication, PublicationHistoryEntry } from "@/types/publication";
@@ -27,21 +28,22 @@ import type { TeamMember } from "@/types/team";
 function buildBlankPublication(
   accounts: SocialAccount[],
   settings: AgencySettings,
-  members: TeamMember[]
+  members: TeamMember[],
+  brand: Brand | undefined
 ): Publication {
-  const brand = brandProfiles[0];
-  const account =
-    accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
-    accounts.find((candidate) => candidate.brand === brand.name);
+  const account = brand
+    ? accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
+      accounts.find((candidate) => candidate.brand === brand.name)
+    : undefined;
 
   const defaultOwner = members.find((member) => member.id === settings.workflow.defaultOwnerId)?.name ?? "";
   const defaultApprover = members.find((member) => member.id === settings.workflow.defaultApproverId)?.name ?? "";
 
   return {
     id: "",
-    brand: brand.name,
+    brand: brand?.name ?? "",
     accountId: account?.id ?? "",
-    platform: account?.platform ?? brand.socialPlatforms[0] ?? "instagram",
+    platform: account?.platform ?? brand?.socialPlatforms[0] ?? "instagram",
     scheduledFor: `${new Date().toISOString().slice(0, 10)}T09:00:00`,
     timeZone: "America/Toronto",
     theme: "",
@@ -72,6 +74,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { posts, addPosts, updatePost } = usePostsSession();
   const { updateIdea } = useContentWorkspace();
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
@@ -79,7 +82,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
 
   const [draft, setDraft] = useState<Publication>(
-    () => existing ?? buildBlankPublication(accounts, settings, members)
+    () => existing ?? buildBlankPublication(accounts, settings, members, brands[0])
   );
   const [isEditing, setIsEditing] = useState(mode === "create");
 

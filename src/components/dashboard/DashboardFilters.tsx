@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -52,6 +52,7 @@ interface DashboardFiltersProps {
 }
 
 export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
+  const { brands } = useBrandsSession();
   const isDefault =
     value.brandId === "all" &&
     value.platform === "all" &&
@@ -70,7 +71,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         className={FIELD_CLASS}
       >
         <option value="all">Toutes les marques</option>
-        {brandProfiles.map((brand) => (
+        {brands.map((brand) => (
           <option key={brand.id} value={brand.id}>
             {brand.name}
           </option>

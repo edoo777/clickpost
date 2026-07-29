@@ -4,7 +4,7 @@ import Link from "next/link";
 import { platformIcons } from "@/components/icons";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { DEFAULT_APPROVAL_FILTERS, getApprovalQueue } from "@/lib/approval";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
@@ -16,7 +16,8 @@ interface NeedsActionWidgetProps {
 
 export function NeedsActionWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: NeedsActionWidgetProps) {
   const { posts } = usePostsSession();
-  const brandName = filters.brandId !== "all" ? brandProfiles.find((brand) => brand.id === filters.brandId)?.name : undefined;
+  const { brands } = useBrandsSession();
+  const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
   const queue = getApprovalQueue(posts, DEFAULT_APPROVAL_FILTERS)
     .filter((publication) => !brandName || publication.brand === brandName)
     .filter((publication) => filters.platform === "all" || publication.platform === filters.platform)

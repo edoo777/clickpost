@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import type { TopicBatch } from "@/types/topic-batch";
 
 interface TopicBatchListProps {
@@ -10,6 +10,8 @@ interface TopicBatchListProps {
 }
 
 export function TopicBatchList({ batches, themeLabelFor, onOpen }: TopicBatchListProps) {
+  const { brands } = useBrandsSession();
+
   if (batches.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
@@ -23,7 +25,7 @@ export function TopicBatchList({ batches, themeLabelFor, onOpen }: TopicBatchLis
     <div className="flex flex-col gap-2">
       <h2 className="text-sm font-semibold text-foreground ">Blocs précédents</h2>
       {batches.map((batch) => {
-        const brand = brandProfiles.find((b) => b.id === batch.brandId);
+        const brand = brands.find((b) => b.id === batch.brandId);
         return (
           <button
             key={batch.id}

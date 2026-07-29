@@ -1,3 +1,4 @@
+import type { Brand } from "@/types/brand";
 import type { Campaign } from "@/types/campaign";
 import type { ContentVersion } from "@/types/content-version";
 import type { SocialAccount } from "@/types/dashboard";
@@ -17,6 +18,7 @@ export const WORKSPACE_SCHEMA_VERSION = 1;
 export interface WorkspaceData {
   posts: Publication[];
   accounts: SocialAccount[];
+  brands: Brand[];
   teamMembers: TeamMember[];
   currentUserId: string;
   settings: AgencySettings;

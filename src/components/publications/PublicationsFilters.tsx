@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { PublicationStatus } from "@/types/publication";
@@ -52,6 +52,7 @@ interface PublicationsFiltersProps {
 }
 
 export function PublicationsFilters({ value, onChange }: PublicationsFiltersProps) {
+  const { brands } = useBrandsSession();
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -69,7 +70,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
           className={FIELD_CLASS}
         >
           <option value="all">Toutes les marques</option>
-          {brandProfiles.map((brand) => (
+          {brands.map((brand) => (
             <option key={brand.id} value={brand.name}>
               {brand.name}
             </option>

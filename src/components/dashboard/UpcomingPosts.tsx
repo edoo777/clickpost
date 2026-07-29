@@ -2,7 +2,7 @@
 
 import { platformIcons } from "@/components/icons";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
@@ -21,7 +21,8 @@ interface UpcomingPostsProps {
 
 export function UpcomingPosts({ filters = DEFAULT_DASHBOARD_FILTERS }: UpcomingPostsProps) {
   const { posts } = usePostsSession();
-  const brandName = filters.brandId !== "all" ? brandProfiles.find((brand) => brand.id === filters.brandId)?.name : undefined;
+  const { brands } = useBrandsSession();
+  const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
   const now = new Date();
   const upcoming = posts
     .filter((post) => new Date(post.scheduledFor) >= now)

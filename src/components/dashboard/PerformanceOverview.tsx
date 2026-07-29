@@ -5,6 +5,7 @@ import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/compone
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { aggregateTotals, sumByDate } from "@/lib/analytics-report";
+import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
 import type { DailyMetricPoint } from "@/types/analytics";
 
@@ -34,9 +35,11 @@ interface PerformanceOverviewProps {
 
 export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: PerformanceOverviewProps) {
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
   const { current: currentPoints, previous: previousPoints, windowDays } = buildDashboardPerformancePoints(
     filters,
-    accounts
+    accounts,
+    brands
   );
   const currentTotals = aggregateTotals(currentPoints);
   const previousTotals = aggregateTotals(previousPoints);

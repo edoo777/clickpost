@@ -5,7 +5,7 @@ import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { COUNTRY_OPTIONS, LANGUAGE_OPTIONS, NOTIFICATION_LABEL, TIME_ZONE_OPTIONS } from "@/lib/settings-data";
 import { ROLE_LABEL, ROLE_STYLE } from "@/lib/team-data";
 import { useTeamSession } from "@/lib/team-store";
@@ -32,6 +32,7 @@ export function ProfileView() {
   const { members, currentUserId } = useTeamSession();
   const { getProfile, updateProfile } = useUserProfileSession();
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
 
   const member = members.find((candidate) => candidate.id === currentUserId);
   const profile = getProfile(currentUserId, member?.name ?? "");
@@ -63,7 +64,7 @@ export function ProfileView() {
     setIsEditing(false);
   }
 
-  const managedBrands = brandProfiles.filter((brand) => member.brands.includes(brand.name));
+  const managedBrands = brands.filter((brand) => member.brands.includes(brand.name));
 
   return (
     <div className="flex flex-col gap-6">

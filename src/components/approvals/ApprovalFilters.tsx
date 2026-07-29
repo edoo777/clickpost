@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import type { ApprovalFilters as ApprovalFiltersState } from "@/lib/approval";
 import type { TeamMember } from "@/types/team";
 
@@ -14,6 +14,7 @@ interface ApprovalFiltersProps {
 }
 
 export function ApprovalFilters({ value, members, onChange }: ApprovalFiltersProps) {
+  const { brands } = useBrandsSession();
   const activeMembers = members.filter((member) => member.status === "active");
 
   return (
@@ -24,7 +25,7 @@ export function ApprovalFilters({ value, members, onChange }: ApprovalFiltersPro
         className={FIELD_CLASS}
       >
         <option value="all">Toutes les marques</option>
-        {brandProfiles.map((brand) => (
+        {brands.map((brand) => (
           <option key={brand.id} value={brand.name}>
             {brand.name}
           </option>

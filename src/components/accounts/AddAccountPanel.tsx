@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 
@@ -23,7 +23,8 @@ interface AddAccountPanelProps {
 }
 
 export function AddAccountPanel({ onClose, onConnect }: AddAccountPanelProps) {
-  const [brand, setBrand] = useState(brandProfiles[0]?.name ?? "");
+  const { brands } = useBrandsSession();
+  const [brand, setBrand] = useState(brands[0]?.name ?? "");
   const [platform, setPlatform] = useState<SocialPlatform>("instagram");
   const [accountName, setAccountName] = useState("");
   const [handle, setHandle] = useState("");
@@ -66,7 +67,7 @@ export function AddAccountPanel({ onClose, onConnect }: AddAccountPanelProps) {
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Marque
             <select value={brand} onChange={(event) => setBrand(event.target.value)} className={INPUT_CLASS}>
-              {brandProfiles.map((b) => (
+              {brands.map((b) => (
                 <option key={b.id} value={b.name}>
                   {b.name}
                 </option>

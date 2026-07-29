@@ -11,7 +11,7 @@ import { WritingAssistantPanel } from "@/components/idea-workshop/WritingAssista
 import { WorkshopEditor } from "@/components/idea-workshop/editor/WorkshopEditor";
 import { useAccountsSession } from "@/lib/accounts-store";
 import type { AIGenerationContext } from "@/lib/assisted-generation";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { contentGenerationProvider, type PresetResult } from "@/lib/content-generation-provider";
 import { applyVersionToIdea, buildVersionFromIdea, duplicateVersion } from "@/lib/content-versions";
@@ -48,6 +48,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   const { themes } = useThemesSession();
   const { campaigns } = useCampaignsSession();
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
   const { posts, addPosts, changeStatus } = usePostsSession();
 
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
 
   const idea = ideas.find((candidate) => candidate.id === ideaId);
 
-  const brand = idea ? brandProfiles.find((candidate) => candidate.id === idea.brandId) : undefined;
+  const brand = idea ? brands.find((candidate) => candidate.id === idea.brandId) : undefined;
   const theme = idea ? themes.find((candidate) => candidate.id === idea.themeId) : undefined;
   const versions = idea ? contentVersions.filter((version) => version.ideaId === idea.id) : [];
   const currentVersion = versions.find((version) => version.isCurrent);

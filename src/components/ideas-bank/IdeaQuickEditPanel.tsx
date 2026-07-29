@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
@@ -90,6 +90,7 @@ export function IdeaQuickEditPanel({
   onRestore,
   onDelete,
 }: IdeaQuickEditPanelProps) {
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { campaigns } = useCampaignsSession();
   const [value, setValue] = useState<IdeaQuickEditValue>(() =>
@@ -149,7 +150,7 @@ export function IdeaQuickEditPanel({
             onChange={(event) => handleBrandChange(event.target.value)}
             className={FIELD_CLASS}
           >
-            {brandProfiles.map((brand) => (
+            {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>
                 {brand.name}
               </option>

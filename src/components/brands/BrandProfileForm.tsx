@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { platformIcons } from "@/components/icons";
 import { PLATFORM_LABEL } from "@/lib/post-status";
-import type { BrandProfile, ContentExample } from "@/types/brand";
+import type { Brand, ContentExample } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
@@ -215,13 +215,13 @@ function ContentExamplesField({
 }
 
 interface BrandProfileFormProps {
-  profile: BrandProfile;
+  profile: Brand;
   editable: boolean;
-  onChange: (profile: BrandProfile) => void;
+  onChange: (profile: Brand) => void;
 }
 
 export function BrandProfileForm({ profile, editable, onChange }: BrandProfileFormProps) {
-  function set<K extends keyof BrandProfile>(key: K, value: BrandProfile[K]) {
+  function set<K extends keyof Brand>(key: K, value: Brand[K]) {
     onChange({ ...profile, [key]: value });
   }
 

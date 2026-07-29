@@ -13,7 +13,7 @@ import { ProfileSection } from "@/components/settings/ProfileSection";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
 import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { DEFAULT_AGENCY_SETTINGS } from "@/lib/settings-data";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
@@ -23,6 +23,7 @@ export function SettingsView() {
   const { settings, setSettings } = useSettingsSession();
   const { members, currentUserId } = useTeamSession();
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
 
   const currentMember = members.find((member) => member.id === currentUserId);
   const canEdit = currentMember?.role === "owner" || currentMember?.role === "admin";
@@ -144,7 +145,7 @@ export function SettingsView() {
         onChange={(notifications) => setDraft({ ...draft, notifications })}
       />
       <WorkspaceSection
-        brandsCount={brandProfiles.length}
+        brandsCount={brands.length}
         membersCount={members.length}
         accountsCount={accounts.length}
       />

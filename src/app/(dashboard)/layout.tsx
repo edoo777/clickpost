@@ -4,6 +4,7 @@ import { FloatingAssistantButton } from "@/components/layout/FloatingAssistantBu
 import { Sidebar } from "@/components/layout/Sidebar";
 import { WorkspacePersistenceProvider } from "@/components/persistence/WorkspacePersistenceProvider";
 import { AccountsSessionProvider } from "@/lib/accounts-store";
+import { BrandsSessionProvider } from "@/lib/brands-store";
 import { CampaignsSessionProvider } from "@/lib/campaigns-store";
 import { ContentWorkspaceProvider } from "@/lib/content-workspace-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
@@ -18,25 +19,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <WorkspacePersistenceProvider>
       <PostsSessionProvider>
         <AccountsSessionProvider>
-          <TeamSessionProvider>
-            <SettingsSessionProvider>
-              <ThemesSessionProvider>
-                <CampaignsSessionProvider>
-                  <ContentWorkspaceProvider>
-                    <UserProfileSessionProvider>
-                      <SidebarStateProvider>
-                        <div className="flex min-h-screen w-full flex-col bg-background">
-                          <Sidebar />
-                          <DashboardMainContent>{children}</DashboardMainContent>
-                          <FloatingAssistantButton />
-                        </div>
-                      </SidebarStateProvider>
-                    </UserProfileSessionProvider>
-                  </ContentWorkspaceProvider>
-                </CampaignsSessionProvider>
-              </ThemesSessionProvider>
-            </SettingsSessionProvider>
-          </TeamSessionProvider>
+          <BrandsSessionProvider>
+            <TeamSessionProvider>
+              <SettingsSessionProvider>
+                <ThemesSessionProvider>
+                  <CampaignsSessionProvider>
+                    <ContentWorkspaceProvider>
+                      <UserProfileSessionProvider>
+                        <SidebarStateProvider>
+                          <div className="flex min-h-screen w-full flex-col bg-background">
+                            <Sidebar />
+                            <DashboardMainContent>{children}</DashboardMainContent>
+                            <FloatingAssistantButton />
+                          </div>
+                        </SidebarStateProvider>
+                      </UserProfileSessionProvider>
+                    </ContentWorkspaceProvider>
+                  </CampaignsSessionProvider>
+                </ThemesSessionProvider>
+              </SettingsSessionProvider>
+            </TeamSessionProvider>
+          </BrandsSessionProvider>
         </AccountsSessionProvider>
       </PostsSessionProvider>
     </WorkspacePersistenceProvider>

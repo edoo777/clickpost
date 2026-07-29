@@ -5,6 +5,7 @@ import { platformIcons } from "@/components/icons";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { getTopPublications } from "@/lib/analytics-report";
+import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
 import { usePostsSession } from "@/lib/posts-store";
 
@@ -18,7 +19,8 @@ interface TopPublicationsWidgetProps {
 export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: TopPublicationsWidgetProps) {
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
-  const { perfFilters } = buildDashboardPerformancePoints(filters, accounts);
+  const { brands } = useBrandsSession();
+  const { perfFilters } = buildDashboardPerformancePoints(filters, accounts, brands);
 
   const top = getTopPublications(posts, perfFilters, 8)
     .filter((publication) => filters.status === "all" || publication.status === filters.status)

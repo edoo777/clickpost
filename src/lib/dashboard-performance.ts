@@ -1,8 +1,8 @@
 import type { DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { getDailySeries, getPreviousPeriodFilters, type PerformanceFilters } from "@/lib/analytics-report";
-import { brandProfiles } from "@/lib/brand-profiles";
 import { toISODate } from "@/lib/date-utils";
 import type { DailyMetricPoint } from "@/types/analytics";
+import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
 
 export interface DashboardPerformancePoints {
@@ -15,11 +15,12 @@ export interface DashboardPerformancePoints {
 /** Traduit les filtres du tableau de bord en fenêtre glissante + filtres de performance, réutilisé par les widgets KPI et le graphique. */
 export function buildDashboardPerformancePoints(
   filters: DashboardFiltersValue,
-  accounts: SocialAccount[]
+  accounts: SocialAccount[],
+  brands: Brand[]
 ): DashboardPerformancePoints {
   const windowDays = Number(filters.period);
   const brandName =
-    filters.brandId !== "all" ? brandProfiles.find((brand) => brand.id === filters.brandId)?.name : undefined;
+    filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
 
   const endDate = new Date();
   const startDate = new Date(endDate);
@@ -34,8 +35,8 @@ export function buildDashboardPerformancePoints(
   };
 
   return {
-    current: getDailySeries(perfFilters, accounts),
-    previous: getDailySeries(getPreviousPeriodFilters(perfFilters), accounts),
+    current: getDailySeries(perfFilters, accounts, brands),
+    previous: getDailySeries(getPreviousPeriodFilters(perfFilters), accounts, brands),
     windowDays,
     perfFilters,
   };

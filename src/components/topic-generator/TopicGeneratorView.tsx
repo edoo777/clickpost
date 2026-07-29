@@ -8,24 +8,24 @@ import {
 } from "@/components/topic-generator/TopicGeneratorForm";
 import { TopicBatchList } from "@/components/topic-generator/TopicBatchList";
 import { TopicBatchResults } from "@/components/topic-generator/TopicBatchResults";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { detectDuplicateTopicIds, generateTopicLabels } from "@/lib/topic-generator";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
+import type { Brand } from "@/types/brand";
 import type { Idea } from "@/types/idea";
 import type { TopicBatch } from "@/types/topic-batch";
 
-function buildInitialFormValue(): TopicGeneratorFormValue {
-  const brand = brandProfiles[0];
+function buildInitialFormValue(brand: Brand | undefined): TopicGeneratorFormValue {
   return {
-    brandId: brand.id,
+    brandId: brand?.id ?? "",
     themeId: "",
     name: "",
     requestedCount: 10,
     targetAudience: "",
     objective: "",
-    platforms: brand.socialPlatforms,
+    platforms: brand?.socialPlatforms ?? [],
     formats: ["text"],
     varietyLevel: "medium",
     instructions: "",
@@ -44,6 +44,7 @@ function validateForm(value: TopicGeneratorFormValue): TopicGeneratorFormErrors 
 }
 
 export function TopicGeneratorView() {
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const {
     topicBatches,
@@ -57,7 +58,7 @@ export function TopicGeneratorView() {
     addIdea,
   } = useContentWorkspace();
 
-  const [formValue, setFormValue] = useState<TopicGeneratorFormValue>(buildInitialFormValue);
+  const [formValue, setFormValue] = useState<TopicGeneratorFormValue>(() => buildInitialFormValue(brands[0]));
   const [formErrors, setFormErrors] = useState<TopicGeneratorFormErrors>({});
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [regenerationRounds, setRegenerationRounds] = useState<Record<string, number>>({});
@@ -76,7 +77,7 @@ export function TopicGeneratorView() {
 
   function handleFormChange(next: TopicGeneratorFormValue) {
     if (next.brandId !== formValue.brandId) {
-      const brand = brandProfiles.find((b) => b.id === next.brandId);
+      const brand = brands.find((b) => b.id === next.brandId);
       setFormValue({ ...next, platforms: brand?.socialPlatforms ?? [] });
     } else {
       setFormValue(next);
@@ -88,7 +89,7 @@ export function TopicGeneratorView() {
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const brand = brandProfiles.find((b) => b.id === formValue.brandId);
+    const brand = brands.find((b) => b.id === formValue.brandId);
     const theme = themes.find((t) => t.id === formValue.themeId);
     if (!brand || !theme) return;
 
@@ -178,7 +179,7 @@ export function TopicGeneratorView() {
 
   function handleRegenerateUnlocked() {
     if (!activeBatchId || !activeBatch) return;
-    const brand = brandProfiles.find((b) => b.id === activeBatch.brandId);
+    const brand = brands.find((b) => b.id === activeBatch.brandId);
     const theme = themes.find((t) => t.id === activeBatch.themeId);
     if (!brand || !theme) return;
 

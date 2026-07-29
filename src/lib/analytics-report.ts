@@ -1,7 +1,7 @@
 import { PUBLICATION_PERFORMANCE, generateDailySeries } from "@/lib/analytics-data";
-import { brandProfiles } from "@/lib/brand-profiles";
 import { toISODate } from "@/lib/date-utils";
 import { PLATFORM_LABEL } from "@/lib/post-status";
+import type { Brand } from "@/types/brand";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 import type { DailyMetricPoint, PublicationPerformance } from "@/types/analytics";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -28,8 +28,12 @@ function getTimeSlot(hour: number): (typeof TIME_SLOTS)[number] {
   return TIME_SLOTS.find((slot) => hour >= slot.from && hour < slot.to) ?? TIME_SLOTS[0];
 }
 
-export function getDailySeries(filters: PerformanceFilters, accounts: SocialAccount[]): DailyMetricPoint[] {
-  const brandNames = filters.brand === "all" ? brandProfiles.map((brand) => brand.name) : [filters.brand];
+export function getDailySeries(
+  filters: PerformanceFilters,
+  accounts: SocialAccount[],
+  brands: Brand[]
+): DailyMetricPoint[] {
+  const brandNames = filters.brand === "all" ? brands.map((brand) => brand.name) : [filters.brand];
   const start = new Date(`${filters.startDate}T00:00:00`);
   const end = new Date(`${filters.endDate}T00:00:00`);
   const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
@@ -38,7 +42,7 @@ export function getDailySeries(filters: PerformanceFilters, accounts: SocialAcco
   const points: DailyMetricPoint[] = [];
 
   for (const brandName of brandNames) {
-    const brandProfile = brandProfiles.find((brand) => brand.name === brandName);
+    const brandProfile = brands.find((brand) => brand.name === brandName);
     if (!brandProfile) continue;
 
     let platforms: SocialPlatform[] = brandProfile.socialPlatforms;

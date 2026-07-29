@@ -1,3 +1,4 @@
+import { brandProfiles as SEED_BRANDS } from "@/lib/brand-profiles";
 import { campaigns as SEED_CAMPAIGNS } from "@/lib/campaigns-data";
 import { connectedAccounts as SEED_ACCOUNTS, posts as SEED_POSTS } from "@/lib/demo-data";
 import { themes as SEED_THEMES } from "@/lib/themes-data";
@@ -19,6 +20,7 @@ export const SEED_RECORD_IDS: ReadonlySet<string> = new Set([
   ...SEED_POSTS.map((post) => post.id),
   ...SEED_THEMES.map((theme) => theme.id),
   ...SEED_CAMPAIGNS.map((campaign) => campaign.id),
+  ...SEED_BRANDS.map((brand) => brand.id),
 ]);
 
 export function isSeedRecordId(id: string): boolean {

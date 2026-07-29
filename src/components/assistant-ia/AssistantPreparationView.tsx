@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AssistantGenerationStep } from "@/components/assistant-ia/AssistantGenerationStep";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
 import { getActiveDays } from "@/lib/idea-scheduling";
@@ -21,12 +21,13 @@ const STEP_LABELS: { key: WizardStep; label: string }[] = [
 ];
 
 export function AssistantPreparationView() {
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const [step, setStep] = useState<WizardStep>("brand");
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [createdCount, setCreatedCount] = useState(0);
 
-  const brand = brandProfiles.find((candidate) => candidate.id === selectedBrandId);
+  const brand = brands.find((candidate) => candidate.id === selectedBrandId);
   const calendar = selectedBrandId
     ? brandEditorialCalendars.find((candidate) => candidate.brandId === selectedBrandId)
     : undefined;
@@ -77,9 +78,15 @@ export function AssistantPreparationView() {
         ))}
       </ol>
 
-      {step === "brand" && (
+      {step === "brand" && brands.length === 0 && (
+        <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16] ">
+          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour utiliser l&apos;assistant.
+        </p>
+      )}
+
+      {step === "brand" && brands.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {brandProfiles.map((candidate) => (
+          {brands.map((candidate) => (
             <button
               key={candidate.id}
               type="button"

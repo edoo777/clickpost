@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import { useTeamSession } from "@/lib/team-store";
@@ -187,6 +187,7 @@ interface PublicationFormProps {
 export function PublicationForm({ publication, editable, onChange }: PublicationFormProps) {
   const { accounts } = useAccountsSession();
   const { members } = useTeamSession();
+  const { brands } = useBrandsSession();
 
   function set<K extends keyof Publication>(key: K, value: Publication[K]) {
     onChange({ ...publication, [key]: value });
@@ -249,7 +250,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
             onChange={(event) => handleBrandChange(event.target.value)}
             className={INPUT_CLASS}
           >
-            {brandProfiles.map((brand) => (
+            {brands.map((brand) => (
               <option key={brand.id} value={brand.name}>
                 {brand.name}
               </option>

@@ -16,6 +16,7 @@ import { ReportPreview } from "@/components/performances/ReportPreview";
 import { ThemePerformanceChart } from "@/components/performances/ThemePerformanceChart";
 import { TopPublicationsList } from "@/components/performances/TopPublicationsList";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { useBrandsSession } from "@/lib/brands-store";
 import {
   aggregateTotals,
   generateRecommendations,
@@ -61,6 +62,7 @@ function buildInitialFilters(): PerformancesFiltersValue {
 export function PerformancesView() {
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
+  const { brands } = useBrandsSession();
   const [filters, setFilters] = useState<PerformancesFiltersValue>(buildInitialFilters);
 
   function handleFiltersChange(next: PerformancesFiltersValue) {
@@ -80,12 +82,12 @@ export function PerformancesView() {
     endDate: filters.endDate,
   };
 
-  const currentDailyPoints = getDailySeries(reportFilters, accounts);
+  const currentDailyPoints = getDailySeries(reportFilters, accounts, brands);
   const totals = aggregateTotals(currentDailyPoints);
   const publishedCount = getPublishedCount(posts, reportFilters);
 
   const previousFilters = filters.compare ? getPreviousPeriodFilters(reportFilters) : null;
-  const previousDailyPoints = previousFilters ? getDailySeries(previousFilters, accounts) : null;
+  const previousDailyPoints = previousFilters ? getDailySeries(previousFilters, accounts, brands) : null;
   const previousTotals = previousDailyPoints ? aggregateTotals(previousDailyPoints) : null;
   const previousPublishedCount = previousFilters ? getPublishedCount(posts, previousFilters) : null;
 

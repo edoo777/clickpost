@@ -1,5 +1,6 @@
 export type SyncEntityType =
   | "accounts"
+  | "brands"
   | "campaigns"
   | "themes"
   | "topicBatches"
@@ -12,6 +13,7 @@ export type SyncEntityType =
 
 export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   accounts: "accounts",
+  brands: "brands",
   campaigns: "campaigns",
   themes: "themes",
   topicBatches: "topic_batches",

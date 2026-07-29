@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CalendarGenerationModal } from "@/components/calendar-generation/CalendarGenerationModal";
 import { WeekGrid } from "@/components/editorial-calendar/WeekGrid";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { getActiveThemesForBrand } from "@/lib/themes";
@@ -24,6 +24,7 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
 }
 
 export function EditorialCalendarView() {
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { addIdea } = useContentWorkspace();
   const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() =>
@@ -119,7 +120,7 @@ export function EditorialCalendarView() {
     setIsGenerationModalOpen(false);
   }
 
-  const selectedBrand = brandProfiles.find((b) => b.id === selectedBrandId);
+  const selectedBrand = brands.find((b) => b.id === selectedBrandId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -141,7 +142,7 @@ export function EditorialCalendarView() {
             className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300"
           >
             {calendars.map((calendar) => {
-              const brand = brandProfiles.find((b) => b.id === calendar.brandId);
+              const brand = brands.find((b) => b.id === calendar.brandId);
               return (
                 <option key={calendar.brandId} value={calendar.brandId}>
                   {brand?.name ?? calendar.brandId}

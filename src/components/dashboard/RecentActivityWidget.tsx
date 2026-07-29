@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { usePostsSession } from "@/lib/posts-store";
 
 const MAX_ITEMS = 6;
@@ -29,7 +29,8 @@ interface ActivityRow {
 
 export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: RecentActivityWidgetProps) {
   const { posts } = usePostsSession();
-  const brandName = filters.brandId !== "all" ? brandProfiles.find((brand) => brand.id === filters.brandId)?.name : undefined;
+  const { brands } = useBrandsSession();
+  const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
 
   const filteredPosts = posts
     .filter((post) => !brandName || post.brand === brandName)

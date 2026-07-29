@@ -11,7 +11,7 @@ import {
 import { IdeasBankKanban } from "@/components/ideas-bank/IdeasBankKanban";
 import { IdeasBankTable } from "@/components/ideas-bank/IdeasBankTable";
 import { IdeaQuickEditPanel, type IdeaQuickEditValue } from "@/components/ideas-bank/IdeaQuickEditPanel";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
@@ -33,6 +33,7 @@ import type { Idea } from "@/types/idea";
 export function IdeasBankListView() {
   const { ideas, topicBatches, addIdea, updateIdea, archiveIdea, restoreIdea, removeIdea } =
     useContentWorkspace();
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { campaigns } = useCampaignsSession();
   const { posts, patchPost } = usePostsSession();
@@ -302,7 +303,7 @@ export function IdeasBankListView() {
       {panelState && (
         <IdeaQuickEditPanel
           idea={panelState.idea}
-          defaultBrandId={filters.brandId !== "all" ? filters.brandId : brandProfiles[0].id}
+          defaultBrandId={filters.brandId !== "all" ? filters.brandId : (brands[0]?.id ?? "")}
           onClose={closePanel}
           onSave={handleSavePanel}
           onDuplicate={handleDuplicateFromPanel}

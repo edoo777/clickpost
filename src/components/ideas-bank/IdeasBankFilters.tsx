@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { IDEA_STATUS_ORDER, IDEA_STATUS_LABEL, PRIORITY_LABEL } from "@/lib/idea-status";
@@ -68,6 +68,7 @@ interface IdeasBankFiltersProps {
 }
 
 export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasBankFiltersProps) {
+  const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { campaigns } = useCampaignsSession();
 
@@ -93,7 +94,7 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
           className={FIELD_CLASS}
         >
           <option value="all">Toutes les marques</option>
-          {brandProfiles.map((brand) => (
+          {brands.map((brand) => (
             <option key={brand.id} value={brand.id}>
               {brand.name}
             </option>

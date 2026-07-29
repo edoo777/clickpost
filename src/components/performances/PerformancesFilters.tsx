@@ -1,6 +1,6 @@
 "use client";
 
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 
@@ -28,6 +28,7 @@ interface PerformancesFiltersProps {
 }
 
 export function PerformancesFilters({ value, accounts, onChange }: PerformancesFiltersProps) {
+  const { brands } = useBrandsSession();
   const accountsForBrand = value.brand === "all" ? accounts : accounts.filter((account) => account.brand === value.brand);
 
   return (
@@ -69,7 +70,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           className={FIELD_CLASS}
         >
           <option value="all">Toutes les marques</option>
-          {brandProfiles.map((brand) => (
+          {brands.map((brand) => (
             <option key={brand.id} value={brand.name}>
               {brand.name}
             </option>

@@ -1,7 +1,7 @@
 "use client";
 
 import { platformIcons } from "@/components/icons";
-import { brandProfiles } from "@/lib/brand-profiles";
+import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -62,6 +62,8 @@ export function TopicGeneratorForm({
   themesForBrand,
   errors,
 }: TopicGeneratorFormProps) {
+  const { brands } = useBrandsSession();
+
   function togglePlatform(platform: SocialPlatform) {
     onChange({
       ...value,
@@ -90,7 +92,7 @@ export function TopicGeneratorForm({
             onChange={(event) => onChange({ ...value, brandId: event.target.value, themeId: "" })}
             className={FIELD_CLASS}
           >
-            {brandProfiles.map((brand) => (
+            {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>
                 {brand.name}
               </option>

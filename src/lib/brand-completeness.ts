@@ -1,6 +1,23 @@
-import type { BrandProfile } from "@/types/brand";
+import type { Brand } from "@/types/brand";
 
-type TrackedField = Exclude<keyof BrandProfile, "id">;
+type TrackedField =
+  | "name"
+  | "industry"
+  | "description"
+  | "productsAndServices"
+  | "targetAudience"
+  | "communicationGoals"
+  | "toneOfVoice"
+  | "languages"
+  | "priorityTopics"
+  | "topicsToAvoid"
+  | "preferredPhrases"
+  | "forbiddenWords"
+  | "preferredCtas"
+  | "socialPlatforms"
+  | "contentExamples";
+
+export type CompletenessSource = Pick<Brand, TrackedField>;
 
 const TRACKED_FIELDS: TrackedField[] = [
   "name",
@@ -20,7 +37,7 @@ const TRACKED_FIELDS: TrackedField[] = [
   "contentExamples",
 ];
 
-function isFieldFilled(value: BrandProfile[TrackedField]): boolean {
+function isFieldFilled(value: CompletenessSource[TrackedField]): boolean {
   if (Array.isArray(value)) return value.length > 0;
   return value.trim().length > 0;
 }
@@ -31,7 +48,7 @@ export interface BrandCompleteness {
   totalCount: number;
 }
 
-export function getBrandCompleteness(profile: BrandProfile): BrandCompleteness {
+export function getBrandCompleteness(profile: CompletenessSource): BrandCompleteness {
   const totalCount = TRACKED_FIELDS.length;
   const filledCount = TRACKED_FIELDS.filter((field) => isFieldFilled(profile[field])).length;
   const percent = Math.round((filledCount / totalCount) * 100);
