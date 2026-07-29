@@ -51,7 +51,7 @@ export function SidebarCollapsedGroup({ label, icon: Icon, isActive, subItems, o
         aria-current={isActive ? "page" : undefined}
         className={`group flex w-full items-center justify-center rounded-full p-2.5 transition-all ${
           isActive
-            ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-900/40"
+            ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-fuchsia-900/40"
             : "text-white/60 hover:bg-white/[.06] hover:text-white"
         }`}
       >

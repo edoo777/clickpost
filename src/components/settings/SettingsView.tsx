@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { AgencyInfoSection } from "@/components/settings/AgencyInfoSection";
 import { BrandIdentitySection } from "@/components/settings/BrandIdentitySection";
+import { BrandingSection } from "@/components/settings/BrandingSection";
 import { ContentPreferencesSection } from "@/components/settings/ContentPreferencesSection";
 import { DataPrivacySection } from "@/components/settings/DataPrivacySection";
 import { DisplayPreferencesSection } from "@/components/settings/DisplayPreferencesSection";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
+import { ProfileSection } from "@/components/settings/ProfileSection";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
 import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
 import { useAccountsSession } from "@/lib/accounts-store";
@@ -105,6 +107,10 @@ export function SettingsView() {
       )}
 
       <OtherSectionsLinks />
+
+      <ProfileSection />
+
+      <BrandingSection />
 
       <DisplayPreferencesSection />
 

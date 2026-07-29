@@ -27,6 +27,7 @@ import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useSidebarState } from "@/lib/sidebar-store";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
 
 const PRIMARY_NAV_ITEMS = [
@@ -70,8 +71,12 @@ export function Sidebar() {
   const { members, currentUserId, setCurrentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
   const { isCollapsed, toggleCollapsed } = useSidebarState();
+  const { profile, workspace, email } = useWorkspaceSession();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const currentMember = members.find((member) => member.id === currentUserId);
+
+  const displayedWorkspaceName = workspace?.name ?? settings.info.name;
+  const displayedUserName =
+    profile?.display_name || (profile ? `${profile.first_name} ${profile.last_name}`.trim() : "") || email || "Mon profil";
 
   async function handleSignOut() {
     const supabase = createSupabaseBrowserClient();
@@ -105,7 +110,7 @@ export function Sidebar() {
                     isCollapsed ? "lg:hidden" : ""
                   } ${
                     isActive
-                      ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-900/40"
+                      ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-fuchsia-900/40"
                       : "text-white/60 hover:bg-white/[.06] hover:text-white"
                   }`}
                 >
@@ -136,7 +141,7 @@ export function Sidebar() {
                 isCollapsed ? "lg:justify-center" : ""
               } ${
                 isActive
-                  ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-900/40"
+                  ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-fuchsia-900/40"
                   : "text-white/60 hover:bg-white/[.06] hover:text-white"
               }`}
             >
@@ -182,7 +187,7 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-[#0e0a1a] transition-all duration-[250ms] ease-in-out motion-reduce:transition-none lg:w-[var(--sidebar-w)] lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-72 shrink-0 flex-col overflow-hidden bg-brand-sidebar transition-all duration-[250ms] ease-in-out motion-reduce:transition-none lg:w-[var(--sidebar-w)] lg:translate-x-0 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -243,7 +248,7 @@ export function Sidebar() {
               href="/publications/new"
               onClick={() => setIsMobileOpen(false)}
               aria-label="Créer une publication"
-              className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:from-violet-500 hover:to-fuchsia-500`}
+              className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:opacity-90`}
             >
               <span className="text-base leading-none">+</span>
               <span className={isCollapsed ? "lg:hidden" : ""}>Créer une publication</span>
@@ -272,20 +277,25 @@ export function Sidebar() {
           <Link
             href="/profil"
             onClick={() => setIsMobileOpen(false)}
-            aria-label={`Voir le profil de ${currentMember?.name ?? "l'utilisateur"}`}
+            aria-label={`Voir le profil de ${displayedUserName}`}
             className={`group relative mx-3 mt-2 flex items-center gap-2.5 rounded-xl border border-white/[.06] px-3 py-2.5 transition-colors hover:bg-white/[.06] ${
               isCollapsed ? "lg:justify-center lg:px-2" : ""
             }`}
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-xs font-semibold text-white">
-              {(currentMember?.name ?? "?").slice(0, 1).toUpperCase()}
-            </span>
+            {profile?.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element -- avatar externe (Supabase Storage).
+              <img src={profile.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-secondary text-xs font-semibold text-white">
+                {displayedUserName.slice(0, 1).toUpperCase()}
+              </span>
+            )}
             <span className={`flex min-w-0 flex-1 flex-col ${isCollapsed ? "lg:hidden" : ""}`}>
-              <span className="truncate text-xs font-medium text-white">{settings.info.name}</span>
-              <span className="truncate text-[11px] text-white/40">{currentMember?.name ?? "Mon profil"}</span>
+              <span className="truncate text-xs font-medium text-white">{displayedWorkspaceName}</span>
+              <span className="truncate text-[11px] text-white/40">{displayedUserName}</span>
             </span>
             <IconChevronDown className={`h-3.5 w-3.5 shrink-0 text-white/40 ${isCollapsed ? "lg:hidden" : ""}`} />
-            {isCollapsed && <span className={TOOLTIP_CLASS}>{currentMember?.name ?? "Mon profil"}</span>}
+            {isCollapsed && <span className={TOOLTIP_CLASS}>{displayedUserName}</span>}
           </Link>
 
           <div className={`flex flex-col gap-1.5 px-3 pt-3 ${isCollapsed ? "lg:hidden" : ""}`}>
