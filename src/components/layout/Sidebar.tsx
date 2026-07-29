@@ -194,7 +194,7 @@ export function Sidebar() {
         {/* Zone fixe du haut : logo, réduction, action principale — ne défile jamais. */}
         <div className="shrink-0">
           <div
-            className={`flex items-center gap-2.5 px-5 py-6 ${
+            className={`flex items-center gap-2.5 px-5 py-5 ${
               isCollapsed ? "lg:justify-center lg:px-3" : "justify-between"
             }`}
           >
@@ -243,7 +243,7 @@ export function Sidebar() {
             </button>
           </div>
 
-          <div className="px-3 pb-4">
+          <div className="px-3 pb-3">
             <Link
               href="/publications/new"
               onClick={() => setIsMobileOpen(false)}
@@ -264,9 +264,10 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Zone centrale : seule la navigation défile si elle dépasse la hauteur disponible. */}
-        <nav id="clickpost-sidebar-nav" className="min-h-0 flex-1 overflow-y-auto px-3">
-          <div className="flex flex-col gap-4 pb-2">
+        {/* Zone centrale : occupe tout l'espace restant, défilement natif (molette/tactile)
+            si le contenu dépasse — jamais de flèches de défilement, barre discrète. */}
+        <nav id="clickpost-sidebar-nav" className="sidebar-nav-scroll min-h-0 flex-1 overflow-y-auto px-3">
+          <div className="flex flex-col gap-3 pb-2">
             {renderNavGroup("Principal", PRIMARY_NAV_ITEMS)}
             {renderNavGroup("Configuration & gestion", CONFIG_NAV_ITEMS)}
           </div>
@@ -303,7 +304,7 @@ export function Sidebar() {
             <ThemeSelect surface="dark" />
           </div>
 
-          <div className={`flex flex-col gap-1.5 border-t border-white/[.06] px-5 py-4 ${isCollapsed ? "lg:hidden" : ""}`}>
+          <div className={`flex flex-col gap-1.5 border-t border-white/[.06] px-5 py-3 ${isCollapsed ? "lg:hidden" : ""}`}>
             <label className="text-[11px] font-medium uppercase tracking-wide text-white/30">
               Connecté en tant que
             </label>
@@ -331,7 +332,7 @@ export function Sidebar() {
             </button>
           </div>
 
-          <div className={`px-5 py-4 text-xs text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>
+          <div className={`px-5 py-3 text-xs text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>
             Données de démonstration
           </div>
         </div>
