@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import {
+  IconAlertTriangle,
   IconCalendar,
   IconClipboardCheck,
   IconDashboard,
@@ -48,8 +49,12 @@ export const MANAGEMENT_NAV_ITEMS: NavItem[] = [
   { label: "Comptes", href: "/comptes", icon: IconUsers },
   { label: "Équipe", href: "/equipe", icon: IconIdBadge },
   { label: "Approbations", href: "/approbations", icon: IconClipboardCheck },
+  { label: "Conflits", href: "/conflits", icon: IconAlertTriangle },
   { label: "Paramètres", href: "/parametres", icon: IconSettingsGear },
 ];
+
+/** Route affichant un badge de compte (conflits en attente) dans la navigation — F1.7. */
+export const CONFLICTS_NAV_HREF = "/conflits";
 
 export function isNavItemActive(pathname: string, href: string, aliases?: string[]): boolean {
   const matches = (target: string) =>
@@ -76,6 +81,7 @@ const PAGE_TITLES: PageTitleEntry[] = [
   { href: "/comptes", label: "Comptes" },
   { href: "/equipe", label: "Équipe" },
   { href: "/approbations", label: "Approbations" },
+  { href: "/conflits", label: "Centre des conflits" },
   { href: "/parametres", label: "Paramètres" },
   { href: "/marques", label: "Marques" },
   { href: "/performances", label: "Performances" },

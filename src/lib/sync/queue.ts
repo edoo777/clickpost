@@ -151,4 +151,52 @@ export async function countConflicts(): Promise<number> {
   });
 }
 
+/** Liste complète des conflits (F1.7) — `countConflicts` ne renvoyait jusqu'ici qu'un total. */
+export async function getAllConflicts(): Promise<SyncStateEntry[]> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_STATE_STORE, "readonly");
+    const request = tx.objectStore(SYNC_STATE_STORE).getAll();
+    request.onsuccess = () => {
+      const entries = (request.result as SyncStateEntry[]) ?? [];
+      resolve(entries.filter((entry) => entry.conflict));
+    };
+    request.onerror = () => reject(request.error ?? new Error("Lecture des conflits impossible."));
+  });
+}
+
+/**
+ * Aligne `lastSyncedRevision` sur la révision distante vérifiée fraîche juste avant une
+ * résolution (F1.7), sans jamais effacer le marqueur `conflict` ni la version distante
+ * conservée — celui-ci n'est levé que par `setSyncState`, appelé uniquement après un succès
+ * confirmé par Supabase (soit via le renvoi normal dans la file, soit en adoptant le distant).
+ */
+export async function primeRevisionForResolution(
+  id: string,
+  entityType: SyncEntityType,
+  revision: number,
+  syncedAt: string
+): Promise<void> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_STATE_STORE, "readwrite");
+    const store = tx.objectStore(SYNC_STATE_STORE);
+    const getRequest = store.get(id);
+    getRequest.onsuccess = () => {
+      const existing = getRequest.result as SyncStateEntry | undefined;
+      const entry: SyncStateEntry = {
+        id,
+        entityType,
+        lastSyncedRevision: revision,
+        lastSyncedAt: syncedAt,
+        conflict: existing?.conflict ?? true,
+        conflictRemote: existing?.conflictRemote,
+      };
+      store.put(entry);
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error("Préparation de la résolution impossible."));
+  });
+}
+
 export { isIndexedDbAvailable as isSyncQueueAvailable };

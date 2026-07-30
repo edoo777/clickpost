@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { IconChevronDown, IconSettingsGear } from "@/components/icons";
-import { MANAGEMENT_NAV_ITEMS, isNavItemActive } from "@/lib/navigation";
+import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
+import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, isNavItemActive } from "@/lib/navigation";
+import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
 interface ManagementMenuProps {
   onNavigate?: () => void;
@@ -24,6 +26,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAnyActive = MANAGEMENT_NAV_ITEMS.some((item) => isNavItemActive(pathname, item.href));
+  const conflictCount = useSyncStatus().conflictCount;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,20 +55,24 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        aria-label="Gestion"
+        aria-label={conflictCount > 0 ? `Gestion — ${conflictCount} conflit${conflictCount > 1 ? "s" : ""} à résoudre` : "Gestion"}
         className={
           triggerClassName ??
-          `flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          `relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             isAnyActive
               ? "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
               : "text-zinc-600 hover:bg-muted dark:text-zinc-400"
           }`
         }
       >
-        <IconSettingsGear className="h-4 w-4 shrink-0" />
+        <span className="relative">
+          <IconSettingsGear className="h-4 w-4 shrink-0" />
+          {iconOnly && <ConflictBadge count={conflictCount} className="absolute -right-1.5 -top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold leading-none text-white" />}
+        </span>
         {!iconOnly && (
           <>
             <span>Gestion</span>
+            <ConflictBadge count={conflictCount} />
             <IconChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
           </>
         )}
@@ -96,6 +103,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
+                {item.href === CONFLICTS_NAV_HREF && <ConflictBadge count={conflictCount} className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white" />}
               </Link>
             );
           })}

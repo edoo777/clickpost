@@ -59,6 +59,9 @@ export function useSyncedPersistedState<K extends WorkspaceKey>(
         isApplyingMergeRef.current = true;
         setState(merged as unknown as WorkspaceData[K]);
       },
+      applyLocalEdit: (records) => {
+        setState(records as unknown as WorkspaceData[K]);
+      },
     });
     return unregister;
   }, [entityType, setState]);

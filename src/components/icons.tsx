@@ -402,6 +402,16 @@ export function IconChevronDown(props: IconProps) {
   );
 }
 
+export function IconAlertTriangle(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M12 3.5 21.5 20h-19Z" />
+      <line x1="12" y1="9.5" x2="12" y2="14" />
+      <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
+    </Base>
+  );
+}
+
 export function IconLogoMark(props: IconProps) {
   return (
     <Base {...props} strokeWidth={2}>

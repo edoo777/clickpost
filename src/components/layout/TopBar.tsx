@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
 import { ManagementMenu } from "@/components/layout/ManagementMenu";
 import { useBrandsSession } from "@/lib/brands-store";
-import { MANAGEMENT_NAV_ITEMS, getPageTitle, isNavItemActive } from "@/lib/navigation";
+import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, getPageTitle, isNavItemActive } from "@/lib/navigation";
+import { useSyncStatus } from "@/lib/sync/use-sync-status";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
 /**
@@ -19,6 +21,7 @@ export function TopBar() {
   const pathname = usePathname();
   const { profile, workspace, email } = useWorkspaceSession();
   const { selectableBrands, activeBrand, setActiveBrandId } = useBrandsSession();
+  const conflictCount = useSyncStatus().conflictCount;
 
   const pageTitle = getPageTitle(pathname ?? "/");
   const displayedUserName =
@@ -67,6 +70,7 @@ export function TopBar() {
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
+                {item.href === CONFLICTS_NAV_HREF && <ConflictBadge count={conflictCount} />}
               </Link>
             );
           })}

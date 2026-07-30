@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { IconBriefcase, IconChartBar, IconLayoutGrid, IconTag } from "@/components/icons";
+import { IconAlertTriangle, IconBriefcase, IconChartBar, IconLayoutGrid, IconTag } from "@/components/icons";
+import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
+import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
 const LINKS = [
   { label: "Marques", description: "Profils de marque et positionnement", href: "/marques", icon: IconBriefcase },
@@ -11,9 +15,17 @@ const LINKS = [
     icon: IconLayoutGrid,
   },
   { label: "Performances", description: "Rapport d'analyse détaillé", href: "/performances", icon: IconChartBar },
+  {
+    label: "Centre des conflits",
+    description: "Résoudre les conflits de synchronisation",
+    href: "/conflits",
+    icon: IconAlertTriangle,
+  },
 ];
 
 export function OtherSectionsLinks() {
+  const conflictCount = useSyncStatus().conflictCount;
+
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="flex flex-col gap-1">
@@ -33,7 +45,10 @@ export function OtherSectionsLinks() {
               <Icon className="h-5 w-5" />
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{label}</span>
+              <span className="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                {label}
+                {href === "/conflits" && <ConflictBadge count={conflictCount} />}
+              </span>
               <span className="text-xs text-muted-foreground ">{description}</span>
             </div>
           </Link>

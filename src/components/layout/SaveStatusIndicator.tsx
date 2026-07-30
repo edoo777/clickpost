@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import {
   dismissConflictNotice,
@@ -8,7 +9,8 @@ import {
   getStatusSnapshot,
   subscribeStatus,
 } from "@/lib/persistence/coordinator";
-import { getSyncStatusServerSnapshot, getSyncStatusSnapshot, processSyncQueue, subscribeSyncStatus } from "@/lib/sync/runtime";
+import { processSyncQueue } from "@/lib/sync/runtime";
+import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
 function formatTime(iso: string): string {
   const date = new Date(iso);
@@ -17,10 +19,6 @@ function formatTime(iso: string): string {
 
 function useSaveStatus() {
   return useSyncExternalStore(subscribeStatus, getStatusSnapshot, getStatusServerSnapshot);
-}
-
-function useSyncStatus() {
-  return useSyncExternalStore(subscribeSyncStatus, getSyncStatusSnapshot, getSyncStatusServerSnapshot);
 }
 
 function syncLabel(status: string, pendingCount: number): string {
@@ -109,7 +107,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
         <div className="flex items-center gap-1.5 text-xs font-medium text-white/60">
           <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${syncDotClass}`} />
           <span className="truncate">{syncText}</span>
-          {(syncStatus.status === "error" || syncStatus.status === "conflict") && (
+          {syncStatus.status === "error" && (
             <button
               type="button"
               onClick={() => void processSyncQueue()}
@@ -118,12 +116,23 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
               Réessayer
             </button>
           )}
+          {syncStatus.status === "conflict" && (
+            <Link
+              href="/conflits"
+              className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline"
+            >
+              Résoudre
+            </Link>
+          )}
         </div>
       )}
       {syncStatus.status === "conflict" && (
         <p className="text-[11px] text-amber-300">
           {syncStatus.conflictCount} enregistrement{syncStatus.conflictCount > 1 ? "s" : ""} en conflit — vos données locales
-          sont conservées, aucune n&apos;a été perdue.
+          sont conservées, aucune n&apos;a été perdue.{" "}
+          <Link href="/conflits" className="font-semibold underline">
+            Voir les conflits
+          </Link>
         </p>
       )}
       {conflictNotice && (

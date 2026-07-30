@@ -38,6 +38,14 @@ export function getSyncStatusServerSnapshot(): SyncStatusState {
 let currentWorkspaceId: string | null = null;
 let currentUserId: string | null = null;
 
+export function getCurrentWorkspaceId(): string | null {
+  return currentWorkspaceId;
+}
+
+export function getCurrentUserId(): string | null {
+  return currentUserId;
+}
+
 export function configureSyncContext(workspaceId: string | null, userId: string | null) {
   currentWorkspaceId = workspaceId;
   currentUserId = userId;
@@ -45,6 +53,21 @@ export function configureSyncContext(workspaceId: string | null, userId: string 
     void processSyncQueue();
     void pullAndMerge();
   }
+}
+
+// Notifié à chaque nouveau conflit détecté ou résolu (F1.7) — le Centre des conflits et les
+// badges de navigation s'y abonnent pour rester à jour sans sonder la base à intervalles.
+const conflictListeners = new Set<() => void>();
+
+export function subscribeConflicts(listener: () => void) {
+  conflictListeners.add(listener);
+  return () => {
+    conflictListeners.delete(listener);
+  };
+}
+
+export function notifyConflictsChanged() {
+  conflictListeners.forEach((listener) => listener());
 }
 
 let broadcastChannel: BroadcastChannel | null = null;
@@ -204,6 +227,7 @@ async function recordConflict(
 ) {
   const { data: remote } = await supabase.from(table).select("*").eq("id", recordId).maybeSingle();
   await queueDb.markConflict(recordId, entityType, remote ?? null);
+  notifyConflictsChanged();
 }
 
 let triggersInitialized = false;
@@ -243,7 +267,12 @@ interface RecordWithId {
 
 interface SyncedEntityBinding {
   getRecords: () => RecordWithId[];
+  /** Application "silencieuse" (pull, adoption du distant) : jamais ré-enfilée comme un push. */
   applyMerged: (merged: RecordWithId[]) => void;
+  /** Application "normale" (résolution conserver-local/fusion) : passe par le setState habituel,
+   * donc détectée et ré-enfilée par le diff existant — c'est ainsi que la résolution est
+   * envoyée à Supabase, sans aucune seconde file. */
+  applyLocalEdit: (records: RecordWithId[]) => void;
 }
 
 const entityBindings = new Map<SyncEntityType, SyncedEntityBinding>();
@@ -263,6 +292,33 @@ export function registerSyncedEntity(entityType: SyncEntityType, binding: Synced
   return () => {
     if (entityBindings.get(entityType) === binding) entityBindings.delete(entityType);
   };
+}
+
+/** Lit la version locale courante d'un enregistrement (F1.7 — Centre des conflits). */
+export function getLocalRecordById(entityType: SyncEntityType, id: string): RecordWithId | undefined {
+  return entityBindings.get(entityType)?.getRecords().find((record) => record.id === id);
+}
+
+function upsertLocalRecord(entityType: SyncEntityType, updated: RecordWithId, silent: boolean) {
+  const binding = entityBindings.get(entityType);
+  if (!binding) return;
+  const current = binding.getRecords();
+  const index = current.findIndex((record) => record.id === updated.id);
+  const next = index === -1 ? [...current, updated] : current.map((record, i) => (i === index ? updated : record));
+  if (silent) binding.applyMerged(next);
+  else binding.applyLocalEdit(next);
+}
+
+/** Résolution "conserver local" / "fusion manuelle" (F1.7) : passe par le chemin d'édition
+ * normal, donc ré-enfilée et poussée par le moteur de synchronisation existant. */
+export function applyLocalResolution(entityType: SyncEntityType, record: RecordWithId) {
+  upsertLocalRecord(entityType, record, false);
+}
+
+/** Résolution "conserver distant" (F1.7) : adoption silencieuse, comme un pull — rien à
+ * pousser, la ligne distante fait déjà foi. */
+export function applyRemoteAdoption(entityType: SyncEntityType, record: RecordWithId) {
+  upsertLocalRecord(entityType, record, true);
 }
 
 let hasPulledThisSession = false;
@@ -317,6 +373,10 @@ async function mergeEntityRows(
   const pendingIds = new Set(
     pendingOperations.filter((op) => op.entityType === entityType).map((op) => op.recordId)
   );
+  const conflictEntries = await queueDb.getAllConflicts();
+  const conflictedIds = new Set(
+    conflictEntries.filter((entry) => entry.entityType === entityType).map((entry) => entry.id)
+  );
 
   const local = binding.getRecords();
   const result = [...local];
@@ -327,6 +387,9 @@ async function mergeEntityRows(
     const id = row.id as string;
     if (!isSyncableRecordId(id)) continue; // jamais une donnée de démonstration.
     if (pendingIds.has(id)) continue; // une modification locale est encore en attente d'envoi.
+    // Un conflit non résolu ne doit jamais être silencieusement écrasé par un pull ultérieur —
+    // il ne redevient éligible à la fusion qu'après une résolution explicite (F1.7).
+    if (conflictedIds.has(id)) continue;
 
     const index = result.findIndex((record) => record.id === id);
     const isRemoteDeleted = Boolean(row.deleted_at);
