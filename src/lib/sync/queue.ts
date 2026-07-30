@@ -1,9 +1,14 @@
 import type { SyncEntityType, SyncOperation, SyncStateEntry } from "@/lib/sync/types";
+import type { ImportJournalEntry } from "@/types/import-wizard";
 
 const DB_NAME = "clickpost-sync-queue";
-const DB_VERSION = 1;
+// F1.8 — montée additive : un seul nouveau store (`import_journal`), aucun store existant
+// modifié ou supprimé. Les bases déjà en version 1 sont migrées automatiquement par
+// IndexedDB (onupgradeneeded), sans perte des opérations/états déjà présents.
+const DB_VERSION = 2;
 const OPERATIONS_STORE = "operations";
 const SYNC_STATE_STORE = "sync_state";
+const IMPORT_JOURNAL_STORE = "import_journal";
 
 function isIndexedDbAvailable(): boolean {
   return typeof window !== "undefined" && typeof window.indexedDB !== "undefined";
@@ -23,6 +28,9 @@ function openQueueDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(SYNC_STATE_STORE)) {
         db.createObjectStore(SYNC_STATE_STORE, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(IMPORT_JOURNAL_STORE)) {
+        db.createObjectStore(IMPORT_JOURNAL_STORE, { keyPath: "id" });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -138,6 +146,18 @@ export async function markConflict(
   });
 }
 
+/** Lecture groupée de tout `sync_state` (F1.8 — analyse d'import) : évite d'ouvrir une
+ * connexion IndexedDB par enregistrement lors du balayage des 11 magasins locaux. */
+export async function getAllSyncStates(): Promise<SyncStateEntry[]> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SYNC_STATE_STORE, "readonly");
+    const request = tx.objectStore(SYNC_STATE_STORE).getAll();
+    request.onsuccess = () => resolve((request.result as SyncStateEntry[]) ?? []);
+    request.onerror = () => reject(request.error ?? new Error("Lecture des états de synchronisation impossible."));
+  });
+}
+
 export async function countConflicts(): Promise<number> {
   const db = await openQueueDb();
   return new Promise((resolve, reject) => {
@@ -196,6 +216,46 @@ export async function primeRevisionForResolution(
     };
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error ?? new Error("Préparation de la résolution impossible."));
+  });
+}
+
+// ---------------------------------------------------------------------------------------
+// F1.8 — Journal local de la session d'importation des anciennes données IndexedDB. Store
+// additif distinct de `sync_state` (qui ne trace que le succès final) : nécessaire pour
+// suivre la progression pendant un lot encore en cours et permettre une reprise fidèle
+// après interruption (fermeture d'onglet, perte réseau). Jamais vidé automatiquement en
+// dehors d'une nouvelle analyse explicitement relancée par l'utilisateur.
+// ---------------------------------------------------------------------------------------
+
+export async function getImportJournal(): Promise<ImportJournalEntry[]> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMPORT_JOURNAL_STORE, "readonly");
+    const request = tx.objectStore(IMPORT_JOURNAL_STORE).getAll();
+    request.onsuccess = () => resolve((request.result as ImportJournalEntry[]) ?? []);
+    request.onerror = () => reject(request.error ?? new Error("Lecture du journal d'import impossible."));
+  });
+}
+
+export async function putImportJournalEntry(entry: ImportJournalEntry): Promise<void> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMPORT_JOURNAL_STORE, "readwrite");
+    tx.objectStore(IMPORT_JOURNAL_STORE).put(entry);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error("Écriture du journal d'import impossible."));
+  });
+}
+
+/** Repart d'une analyse neuve — n'efface que le journal d'import (jamais `sync_state`,
+ * `operations`, ni aucune donnée de workspace). */
+export async function clearImportJournal(): Promise<void> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMPORT_JOURNAL_STORE, "readwrite");
+    tx.objectStore(IMPORT_JOURNAL_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error("Réinitialisation du journal d'import impossible."));
   });
 }
 

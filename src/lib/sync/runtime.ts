@@ -299,6 +299,13 @@ export function getLocalRecordById(entityType: SyncEntityType, id: string): Reco
   return entityBindings.get(entityType)?.getRecords().find((record) => record.id === id);
 }
 
+/** Lit tous les enregistrements locaux courants d'une entité (F1.8 — analyse d'import) —
+ * ne fonctionne que si le magasin correspondant est monté (toujours vrai depuis le tableau
+ * de bord, où l'assistant d'import est accessible). */
+export function getAllLocalRecords(entityType: SyncEntityType): RecordWithId[] {
+  return entityBindings.get(entityType)?.getRecords() ?? [];
+}
+
 function upsertLocalRecord(entityType: SyncEntityType, updated: RecordWithId, silent: boolean) {
   const binding = entityBindings.get(entityType);
   if (!binding) return;

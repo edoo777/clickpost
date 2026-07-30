@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ImportWizardModal } from "@/components/settings/import-wizard/ImportWizardModal";
 import {
   applyImportedBackup,
   buildExportBackup,
@@ -17,6 +18,7 @@ export function DataPrivacySection() {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
 
   function handleExport() {
     setErrorMessage(null);
@@ -107,7 +109,17 @@ export function DataPrivacySection() {
         >
           Effacer les données locales
         </button>
+
+        <button
+          type="button"
+          onClick={() => setIsImportWizardOpen(true)}
+          className="rounded-lg border border-violet-200 px-4 py-2 text-sm font-medium text-violet-700 transition-colors hover:bg-violet-50 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/10"
+        >
+          Importer mes anciennes données locales
+        </button>
       </div>
+
+      {isImportWizardOpen && <ImportWizardModal onClose={() => setIsImportWizardOpen(false)} />}
 
       {pendingAction?.type === "import" && (
         <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">

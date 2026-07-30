@@ -47,6 +47,14 @@ export function getConflictTitle(
   return readStringField(local, field) ?? readStringField(remote, field) ?? "Sans titre";
 }
 
+/** Titre d'un enregistrement isolé (sans contrepartie) — F1.8, assistant d'import. Même table
+ * de champs que `getConflictTitle`, réutilisée plutôt que dupliquée. */
+export function getRecordTitle(entityType: SyncEntityType, record: Record<string, unknown> | null): string {
+  const field = TITLE_FIELD_BY_ENTITY[entityType];
+  if (!field) return "Sans titre";
+  return readStringField(record, field) ?? "Sans titre";
+}
+
 /** Identifiant de marque associé, quand le type d'entité en porte un (brandId direct, ou nom
  * de marque en texte libre pour les comptes/publications, plus anciens dans le modèle). */
 export function getConflictBrandRef(
@@ -56,6 +64,11 @@ export function getConflictBrandRef(
   const brandId = readStringField(local, "brandId") ?? readStringField(remote, "brandId");
   const brandName = readStringField(local, "brand") ?? readStringField(remote, "brand");
   return { brandId, brandName };
+}
+
+/** Référence de marque d'un enregistrement isolé — F1.8, assistant d'import. */
+export function getRecordBrandRef(record: Record<string, unknown> | null): { brandId?: string; brandName?: string } {
+  return { brandId: readStringField(record, "brandId"), brandName: readStringField(record, "brand") };
 }
 
 export function formatFieldValue(value: unknown): string {
