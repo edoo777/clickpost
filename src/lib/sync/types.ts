@@ -47,7 +47,7 @@ export interface SyncStateEntry {
   conflictRemote?: Record<string, unknown> | null;
 }
 
-export type SyncStatus = "idle" | "pending" | "syncing" | "synced" | "conflict" | "error";
+export type SyncStatus = "idle" | "pending" | "syncing" | "merging" | "synced" | "conflict" | "error";
 
 export interface SyncStatusState {
   status: SyncStatus;

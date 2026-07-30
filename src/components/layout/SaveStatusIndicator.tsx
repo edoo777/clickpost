@@ -27,6 +27,8 @@ function syncLabel(status: string, pendingCount: number): string {
   switch (status) {
     case "syncing":
       return "Synchronisation en cours…";
+    case "merging":
+      return "Récupération des données…";
     case "conflict":
       return "Conflit de synchronisation";
     case "error":
@@ -67,7 +69,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
   const syncDotClass =
     syncStatus.status === "conflict" || syncStatus.status === "error"
       ? "bg-destructive"
-      : syncStatus.status === "syncing" || syncStatus.status === "pending"
+      : syncStatus.status === "syncing" || syncStatus.status === "pending" || syncStatus.status === "merging"
         ? "bg-warning"
         : "bg-success";
   const combinedLabel = syncText ? `${label} · ${syncText}` : label;

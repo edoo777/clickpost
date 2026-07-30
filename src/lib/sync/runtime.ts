@@ -1,5 +1,6 @@
-import { mapRecordToRow } from "@/lib/sync/mappers";
+import { mapRecordToRow, mapRowToRecord } from "@/lib/sync/mappers";
 import * as queueDb from "@/lib/sync/queue";
+import { isSyncableRecordId } from "@/lib/sync/is-user-created";
 import { SYNC_TABLE_BY_ENTITY, type SyncEntityType, type SyncOperationKind, type SyncStatusState } from "@/lib/sync/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -40,7 +41,10 @@ let currentUserId: string | null = null;
 export function configureSyncContext(workspaceId: string | null, userId: string | null) {
   currentWorkspaceId = workspaceId;
   currentUserId = userId;
-  if (workspaceId && userId) void processSyncQueue();
+  if (workspaceId && userId) {
+    void processSyncQueue();
+    void pullAndMerge();
+  }
 }
 
 let broadcastChannel: BroadcastChannel | null = null;
@@ -221,5 +225,145 @@ export function ensureSyncTriggers() {
       const message = event.data as { type?: string };
       if (message?.type === "sync-changed") void processSyncQueue();
     };
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// F1.6 — Pull et fusion au démarrage (moitié manquante du moteur : jusqu'ici, uniquement
+// local → Supabase). Un pull unique par session, dès que le contexte est configuré ; les
+// enregistrements distants sont fusionnés dans l'état React déjà monté des magasins via un
+// registre de bindings (voir `registerSyncedEntity`, utilisé par `use-synced-state.ts`),
+// jamais via une nouvelle lecture IndexedDB qui laisserait l'UI déjà affichée obsolète.
+// ---------------------------------------------------------------------------------------
+
+interface RecordWithId {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface SyncedEntityBinding {
+  getRecords: () => RecordWithId[];
+  applyMerged: (merged: RecordWithId[]) => void;
+}
+
+const entityBindings = new Map<SyncEntityType, SyncedEntityBinding>();
+// Lignes distantes reçues avant que le magasin correspondant ne soit monté (l'ordre de montage
+// entre WorkspaceSessionProvider et les magasins synchronisés n'est pas garanti) — appliquées
+// dès l'enregistrement tardif du binding, jamais perdues.
+const bufferedRemoteRows = new Map<SyncEntityType, Record<string, unknown>[]>();
+
+/** Appelé par `useSyncedPersistedState` à chaque montage/démontage d'un magasin synchronisé. */
+export function registerSyncedEntity(entityType: SyncEntityType, binding: SyncedEntityBinding): () => void {
+  entityBindings.set(entityType, binding);
+  const buffered = bufferedRemoteRows.get(entityType);
+  if (buffered) {
+    bufferedRemoteRows.delete(entityType);
+    void mergeEntityRows(entityType, buffered, binding);
+  }
+  return () => {
+    if (entityBindings.get(entityType) === binding) entityBindings.delete(entityType);
+  };
+}
+
+let hasPulledThisSession = false;
+
+/** Pull unique par session : une requête par entité, filtrée sur le workspace actif. */
+export async function pullAndMerge() {
+  if (hasPulledThisSession) return;
+  if (!currentWorkspaceId || !currentUserId) return;
+  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+  hasPulledThisSession = true;
+
+  setStatus({ status: "merging" });
+  const supabase = createSupabaseBrowserClient();
+
+  try {
+    for (const [entityType, table] of Object.entries(SYNC_TABLE_BY_ENTITY) as [SyncEntityType, string][]) {
+      const { data, error } = await supabase.from(table).select("*").eq("workspace_id", currentWorkspaceId);
+      if (error || !data) continue;
+
+      const binding = entityBindings.get(entityType);
+      if (binding) {
+        await mergeEntityRows(entityType, data, binding);
+      } else {
+        bufferedRemoteRows.set(entityType, data);
+      }
+    }
+    const conflictCount = await queueDb.countConflicts();
+    setStatus({
+      status: conflictCount > 0 ? "conflict" : "synced",
+      conflictCount,
+      lastSyncedAt: new Date().toISOString(),
+    });
+  } catch {
+    // Échec réseau/partiel : on retentera au prochain appel de configureSyncContext
+    // (ex. reconnexion) plutôt que de laisser la session sans aucune donnée distante.
+    hasPulledThisSession = false;
+  }
+}
+
+/**
+ * Fusionne des lignes distantes dans l'état local déjà monté d'une entité : jamais
+ * d'écrasement d'un enregistrement dont une modification locale est encore dans la file
+ * d'attente (l'envoi en cours reste prioritaire), dernier `updated_at` gagnant sinon,
+ * suppression locale des enregistrements marqués `deleted_at` côté distant.
+ */
+async function mergeEntityRows(
+  entityType: SyncEntityType,
+  remoteRows: Record<string, unknown>[],
+  binding: SyncedEntityBinding
+): Promise<void> {
+  const pendingOperations = await queueDb.getAllOperations();
+  const pendingIds = new Set(
+    pendingOperations.filter((op) => op.entityType === entityType).map((op) => op.recordId)
+  );
+
+  const local = binding.getRecords();
+  const result = [...local];
+  let changed = false;
+  const newlySyncedRows: Record<string, unknown>[] = [];
+
+  for (const row of remoteRows) {
+    const id = row.id as string;
+    if (!isSyncableRecordId(id)) continue; // jamais une donnée de démonstration.
+    if (pendingIds.has(id)) continue; // une modification locale est encore en attente d'envoi.
+
+    const index = result.findIndex((record) => record.id === id);
+    const isRemoteDeleted = Boolean(row.deleted_at);
+
+    if (isRemoteDeleted) {
+      if (index !== -1) {
+        result.splice(index, 1);
+        changed = true;
+      }
+      continue;
+    }
+
+    const remoteUpdatedAt = row.updated_at as string | undefined;
+    if (index === -1) {
+      result.push(mapRowToRecord(row) as RecordWithId);
+      changed = true;
+      newlySyncedRows.push(row);
+      continue;
+    }
+
+    const localUpdatedAt = (result[index] as { updatedAt?: string }).updatedAt;
+    const remoteIsNewer =
+      !localUpdatedAt || (remoteUpdatedAt !== undefined && new Date(remoteUpdatedAt).getTime() > new Date(localUpdatedAt).getTime());
+    if (remoteIsNewer) {
+      result[index] = mapRowToRecord(row) as RecordWithId;
+      changed = true;
+      newlySyncedRows.push(row);
+    }
+  }
+
+  if (!changed) return;
+
+  binding.applyMerged(result);
+
+  // Ces lignes viennent d'être reçues depuis Supabase : marquer leur révision comme déjà
+  // synchronisée pour que `useSyncedPersistedState` ne les ré-enfile jamais comme un push.
+  for (const row of newlySyncedRows) {
+    await queueDb.setSyncState(row.id as string, entityType, row.revision as number, row.updated_at as string);
   }
 }
