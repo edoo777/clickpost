@@ -29,15 +29,22 @@ import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { ContentVersion, TextBody } from "@/types/content-version";
 
+/** Origine réelle d'un résultat — permet à l'interface d'afficher clairement si une génération
+ * vient de Claude (IA réelle) ou du générateur simulé (repli ou action non encore branchée). */
+export type GenerationSource = "claude" | "simulated";
+
 export type PresetResult =
-  | { kind: "version"; version: ContentVersion }
+  | { kind: "version"; version: ContentVersion; source?: GenerationSource; fallbackReason?: string }
   | { kind: "text_list"; label: string; items: string[] }
   | { kind: "report"; label: string; items: string[] };
 
 /**
- * Abstraction de génération de contenu — préparée pour être remplacée demain par un fournisseur
- * IA distant (OpenAI, Anthropic, ou autre) sans changer l'UI qui l'appelle. Aujourd'hui, seule
- * l'implémentation simulée existe : aucune clé, aucun appel réseau, résultats déterministes.
+ * Abstraction de génération de contenu — implémentée par un générateur simulé (déterministe,
+ * aucun appel réseau) et par `RemoteAIContentGenerationProvider` (Claude réel, F2.1). Seules
+ * `generateFromPreset` et `generateFullContent` sont asynchrones : ce sont les deux seules
+ * méthodes empruntées par l'action « Génération complète » branchée en F2.1. Les autres méthodes
+ * restent synchrones pour ne pas élargir inutilement le périmètre de cette sous-phase (elles
+ * seront élargies en même temps qu'elles seront réellement branchées à Claude, en F2.2+).
  */
 export interface ContentGenerationProvider {
   readonly isSimulated: boolean;
@@ -46,9 +53,9 @@ export interface ContentGenerationProvider {
     context: AIGenerationContext,
     currentVersion: ContentVersion | undefined,
     versions: ContentVersion[]
-  ): PresetResult | null;
+  ): Promise<PresetResult | null>;
   rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string;
-  generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): ContentVersion;
+  generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion>;
   generateHooks(context: AIGenerationContext, count?: number): string[];
   generateCTA(context: AIGenerationContext): string;
   adaptToPlatform(
@@ -93,7 +100,7 @@ function textResultVersion(
 class SimulatedContentGenerationProvider implements ContentGenerationProvider {
   readonly isSimulated = true;
 
-  generateFromPreset(
+  private generateFromPresetSync(
     preset: PromptPreset,
     context: AIGenerationContext,
     currentVersion: ContentVersion | undefined,
@@ -158,11 +165,22 @@ class SimulatedContentGenerationProvider implements ContentGenerationProvider {
     }
   }
 
+  async generateFromPreset(
+    preset: PromptPreset,
+    context: AIGenerationContext,
+    currentVersion: ContentVersion | undefined,
+    versions: ContentVersion[]
+  ): Promise<PresetResult | null> {
+    const result = this.generateFromPresetSync(preset, context, currentVersion, versions);
+    if (!result) return null;
+    return result.kind === "version" ? { ...result, source: "simulated" } : result;
+  }
+
   rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string {
     return rewriteSelectionText(selectedText, instruction, context);
   }
 
-  generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): ContentVersion {
+  async generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion> {
     return buildAIVersion(context, format, versions);
   }
 
@@ -185,9 +203,112 @@ class SimulatedContentGenerationProvider implements ContentGenerationProvider {
   }
 }
 
+interface AtelierGenerationApiSuccess {
+  status: "ok";
+  content: { hook: string; intro: string; body: string; conclusion: string; cta: string; hashtags: string[] };
+}
+interface AtelierGenerationApiError {
+  status: "error";
+  code: string;
+  message: string;
+}
+type AtelierGenerationApiResponse = AtelierGenerationApiSuccess | AtelierGenerationApiError;
+
+type RemoteOutcome = { result: PresetResult } | { reason: string };
+
 /**
- * Implémentation active aujourd'hui. Une future `RemoteAIContentGenerationProvider` (OpenAI,
- * Anthropic…) implémentera la même interface `ContentGenerationProvider` et pourra remplacer
- * cet export sans changer l'UI qui la consomme.
+ * Fournisseur actif par défaut. N'appelle jamais Anthropic directement (aucun SDK importé ici,
+ * ce module est chargé côté client) — uniquement `fetch` vers notre propre route serveur
+ * `/api/ia/atelier/generation-complete`, qui seule détient la clé et décide si un appel réel a
+ * lieu. Toute action non encore branchée à Claude (F2.1 : tout sauf « Génération complète » sur
+ * un preset) est déléguée telle quelle au générateur simulé — aucune logique dupliquée.
  */
-export const contentGenerationProvider: ContentGenerationProvider = new SimulatedContentGenerationProvider();
+class RemoteAIContentGenerationProvider implements ContentGenerationProvider {
+  readonly isSimulated = false;
+  private readonly fallback = new SimulatedContentGenerationProvider();
+
+  private async tryRemoteFullGeneration(
+    context: AIGenerationContext,
+    currentVersion: ContentVersion | undefined,
+    versions: ContentVersion[],
+    presetName: string
+  ): Promise<RemoteOutcome> {
+    try {
+      const response = await fetch("/api/ia/atelier/generation-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ideaId: context.idea.id,
+          tone: context.tone,
+          length: context.length,
+          instructions: context.instructions ?? "",
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as AtelierGenerationApiResponse | null;
+      if (!data) return { reason: `http_${response.status}` };
+      if (data.status !== "ok") return { reason: data.code };
+
+      const transformedBody: TextBody = {
+        hook: data.content.hook,
+        intro: data.content.intro,
+        body: data.content.body,
+        conclusion: data.content.conclusion,
+        cta: data.content.cta,
+        hashtags: data.content.hashtags,
+      };
+      const version = textResultVersion(currentVersion, transformedBody, versions, presetName, context.idea.id);
+      return { result: { kind: "version", version, source: "claude" } };
+    } catch {
+      return { reason: "network_error" };
+    }
+  }
+
+  async generateFromPreset(
+    preset: PromptPreset,
+    context: AIGenerationContext,
+    currentVersion: ContentVersion | undefined,
+    versions: ContentVersion[]
+  ): Promise<PresetResult | null> {
+    if (preset.action !== "full_generation") {
+      return this.fallback.generateFromPreset(preset, context, currentVersion, versions);
+    }
+    const outcome = await this.tryRemoteFullGeneration(context, currentVersion, versions, preset.name);
+    if ("result" in outcome) return outcome.result;
+
+    const fallbackResult = await this.fallback.generateFromPreset(preset, context, currentVersion, versions);
+    if (fallbackResult?.kind === "version") return { ...fallbackResult, fallbackReason: outcome.reason };
+    return fallbackResult;
+  }
+
+  rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string {
+    return this.fallback.rewriteSelection(selectedText, instruction, context);
+  }
+
+  async generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion> {
+    return this.fallback.generateFullContent(context, format, versions);
+  }
+
+  generateHooks(context: AIGenerationContext, count = 5): string[] {
+    return this.fallback.generateHooks(context, count);
+  }
+
+  generateCTA(context: AIGenerationContext): string {
+    return this.fallback.generateCTA(context);
+  }
+
+  adaptToPlatform(
+    context: AIGenerationContext,
+    currentVersion: ContentVersion | undefined,
+    platform: SocialPlatform,
+    versions: ContentVersion[]
+  ): ContentVersion | null {
+    return this.fallback.adaptToPlatform(context, currentVersion, platform, versions);
+  }
+}
+
+/**
+ * Implémentation active aujourd'hui. Le générateur simulé reste utilisé en repli automatique
+ * tant que l'intégration Anthropic n'est pas configurée côté serveur (F2.1), ou si un appel réel
+ * échoue pour quelque raison que ce soit — jamais de blocage de l'interface.
+ */
+export const contentGenerationProvider: ContentGenerationProvider = new RemoteAIContentGenerationProvider();

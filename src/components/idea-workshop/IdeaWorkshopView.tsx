@@ -55,6 +55,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   const [isCreatingPublication, setIsCreatingPublication] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [pendingResult, setPendingResult] = useState<{ preset: PromptPreset; result: PresetResult } | null>(null);
+  const [isRunningPreset, setIsRunningPreset] = useState(false);
   const hasAutoRun = useRef(false);
 
   useEffect(() => {
@@ -70,17 +71,31 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   const versions = idea ? contentVersions.filter((version) => version.ideaId === idea.id) : [];
   const currentVersion = versions.find((version) => version.isCurrent);
 
+  function applyGeneratedVersion(version: ContentVersion) {
+    versions.filter((v) => v.isCurrent).forEach((v) => updateContentVersion(v.id, { ...v, isCurrent: false }));
+    addContentVersion(version);
+    const patch: Partial<Idea> = { activeVersionId: version.id };
+    if (version.format === "text") Object.assign(patch, applyVersionToIdea(version));
+    updateIdea(idea!.id, patch);
+  }
+
   useEffect(() => {
     if (requestedMode !== "ai" || hasAutoRun.current || !idea || !brand) return;
     hasAutoRun.current = true;
     const hasContent = documentToPlainText(idea.documentContent).trim().length > 0 || (idea.body ?? "").trim().length > 0;
     if (hasContent) return;
     const context: AIGenerationContext = { idea, brand, theme, tone: idea.tone ?? "professional", length: "medium", instructions: "" };
-    const version = contentGenerationProvider.generateFullContent(context, idea.format ?? "text", versions);
-    applyGeneratedVersion(version);
-    // Différé hors du corps synchrone de l'effet (règle react-hooks/set-state-in-effect) :
-    // setConfirmation reste un état local, mais ne doit pas être appelé directement dans l'effet.
-    setTimeout(() => setConfirmation("Contenu généré par l'assistant de rédaction (mode démonstration)."), 0);
+    // Différé hors du corps synchrone de l'effet (règle react-hooks/set-state-in-effect) : la
+    // génération automatique à l'ouverture reste sur le générateur simulé en F2.1 (jamais
+    // d'appel Claude déclenché sans action explicite de l'utilisateur, voir generateFullContent
+    // dans RemoteAIContentGenerationProvider).
+    setTimeout(() => {
+      void (async () => {
+        const version = await contentGenerationProvider.generateFullContent(context, idea.format ?? "text", versions);
+        applyGeneratedVersion(version);
+        setConfirmation("Contenu généré par l'assistant de rédaction (mode démonstration).");
+      })();
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestedMode, idea?.id]);
 
@@ -110,14 +125,6 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     if (mapped && mapped !== publication.status) {
       changeStatus(publication.id, mapped, SYNC_ACTOR_NAME);
     }
-  }
-
-  function applyGeneratedVersion(version: ContentVersion) {
-    versions.filter((v) => v.isCurrent).forEach((v) => updateContentVersion(v.id, { ...v, isCurrent: false }));
-    addContentVersion(version);
-    const patch: Partial<Idea> = { activeVersionId: version.id };
-    if (version.format === "text") Object.assign(patch, applyVersionToIdea(version));
-    updateIdea(idea!.id, patch);
   }
 
   function handleSaveNewVersion() {
@@ -160,16 +167,25 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     updateIdea(idea!.id, { documentContent: doc, body: documentToPlainText(doc) });
   }
 
-  function handleRunPreset(preset: PromptPreset) {
+  async function handleRunPreset(preset: PromptPreset) {
     const context = buildContext();
     if (!context) return;
-    const result = contentGenerationProvider.generateFromPreset(preset, context, currentVersion, versions);
-    if (!result) return;
-    if (result.kind === "version") {
-      applyGeneratedVersion(result.version);
-      setConfirmation(`« ${preset.name} » appliqué — nouvelle version enregistrée.`);
-    } else {
-      setPendingResult({ preset, result });
+    setIsRunningPreset(true);
+    try {
+      const result = await contentGenerationProvider.generateFromPreset(preset, context, currentVersion, versions);
+      if (!result) return;
+      if (result.kind === "version") {
+        applyGeneratedVersion(result.version);
+        const sourceLabel = result.source === "claude" ? "Claude" : "mode démonstration";
+        const fallbackNote = result.fallbackReason
+          ? " · IA réelle indisponible pour le moment, résultat simulé utilisé."
+          : "";
+        setConfirmation(`« ${preset.name} » appliqué (${sourceLabel})${fallbackNote}`);
+      } else {
+        setPendingResult({ preset, result });
+      }
+    } finally {
+      setIsRunningPreset(false);
     }
   }
 
@@ -280,6 +296,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
           isCollapsed={isPanelCollapsed}
           onToggleCollapsed={() => setIsPanelCollapsed((prev) => !prev)}
           onRunPreset={handleRunPreset}
+          isRunningPreset={isRunningPreset}
           resultSlot={
             pendingResult ? (
               <div className="mb-3 flex flex-col gap-2 rounded-xl border border-violet-200 bg-violet-50 p-3 dark:border-violet-500/30 dark:bg-violet-500/10">

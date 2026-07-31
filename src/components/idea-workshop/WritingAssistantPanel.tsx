@@ -14,6 +14,9 @@ interface WritingAssistantPanelProps {
   versionsSlot: ReactNode;
   resultSlot?: ReactNode;
   initialTab?: PanelTab;
+  /** Une génération est en cours (locale ou réelle) — désactive les actions pour éviter les
+   * déclenchements multiples, notamment des appels Claude superflus. */
+  isRunningPreset?: boolean;
 }
 
 const CATEGORIES: PromptCategory[] = ["start", "improve", "finish", "adapt", "tone"];
@@ -59,6 +62,7 @@ export function WritingAssistantPanel({
   versionsSlot,
   resultSlot,
   initialTab = "assistant",
+  isRunningPreset = false,
 }: WritingAssistantPanelProps) {
   const [tab, setTab] = useState<PanelTab>(initialTab);
   const [openCategory, setOpenCategory] = useState<PromptCategory | null>("start");
@@ -100,7 +104,8 @@ export function WritingAssistantPanel({
         {tab === "assistant" && (
           <div className="flex flex-col gap-1">
             <p className="mb-2 rounded-lg bg-muted px-2.5 py-2 text-xs text-muted-foreground">
-              Assistant de rédaction en mode démonstration — les propositions sont générées localement.
+              « Génération complète » peut utiliser Claude (IA réelle) si configuré côté serveur ;
+              les autres actions restent générées localement (mode démonstration).
             </p>
             {resultSlot}
             {CATEGORIES.map((category) => {
@@ -125,7 +130,9 @@ export function WritingAssistantPanel({
                           type="button"
                           title={preset.description}
                           onClick={() => onRunPreset(preset)}
-                          className="group rounded-lg px-2.5 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-violet-50 dark:hover:bg-violet-500/10"
+                          disabled={isRunningPreset}
+                          aria-busy={isRunningPreset}
+                          className="group rounded-lg px-2.5 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent dark:hover:bg-violet-500/10"
                         >
                           <span className="group-hover:text-violet-700 dark:group-hover:text-violet-300">{preset.name}</span>
                         </button>
