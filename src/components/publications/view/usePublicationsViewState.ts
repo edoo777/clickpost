@@ -85,6 +85,10 @@ export function usePublicationsViewState() {
     patchPublicationsView({ calendarAnchor });
   }
 
+  function setShowUnplanned(showUnplanned: boolean) {
+    patchPublicationsView({ showUnplanned });
+  }
+
   function selectSavedView(id: string | null) {
     if (!id) {
       patchPublicationsView({ savedViewId: null });
@@ -181,6 +185,7 @@ export function usePublicationsViewState() {
     setColumnWidths,
     setCalendarMode,
     setCalendarAnchor,
+    setShowUnplanned,
     selectSavedView,
     saveAsNewView,
     updateActiveView,

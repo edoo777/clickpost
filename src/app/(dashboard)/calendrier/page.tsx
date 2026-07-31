@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { CalendrierPageView } from "@/components/calendar/CalendrierPageView";
 
 export default function CalendarPage() {
-  redirect("/publications?view=calendar");
+  return <CalendrierPageView />;
 }

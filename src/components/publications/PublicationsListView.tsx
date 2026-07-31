@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { CalendarWorkspace } from "@/components/calendar/CalendarWorkspace";
 import { PublicationCard } from "@/components/publications/PublicationCard";
-import { PublicationsCalendar } from "@/components/publications/PublicationsCalendar";
 import { PublicationsFilters } from "@/components/publications/PublicationsFilters";
 import { PublicationsKanban } from "@/components/publications/PublicationsKanban";
 import { PublicationsList } from "@/components/publications/PublicationsList";
@@ -35,12 +35,12 @@ export function PublicationsListView() {
 
   function handleOpen(id: string) {
     view.saveScrollPosition();
-    router.push(`/publications/${id}`);
+    router.push(`/publications/${id}?from=publications`);
   }
 
   function handleCreateAt(date: string) {
     view.saveScrollPosition();
-    router.push(`/publications/new?date=${date}`);
+    router.push(`/publications/new?date=${date}&from=publications`);
   }
 
   return (
@@ -53,7 +53,7 @@ export function PublicationsListView() {
           </p>
         </div>
         <Link
-          href="/publications/new"
+          href="/publications/new?from=publications"
           onClick={() => view.saveScrollPosition()}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
@@ -96,7 +96,7 @@ export function PublicationsListView() {
       ) : view.viewType === "kanban" ? (
         <PublicationsKanban publications={sorted} onOpen={handleOpen} />
       ) : view.viewType === "calendar" ? (
-        <PublicationsCalendar
+        <CalendarWorkspace
           publications={sorted}
           mode={view.calendarMode}
           onChangeMode={view.setCalendarMode}
@@ -104,6 +104,8 @@ export function PublicationsListView() {
           onChangeAnchor={view.setCalendarAnchor}
           onOpen={handleOpen}
           onCreateAt={handleCreateAt}
+          showUnplanned={view.showUnplanned}
+          onToggleShowUnplanned={() => view.setShowUnplanned(!view.showUnplanned)}
         />
       ) : view.viewType === "list" ? (
         <PublicationsList publications={sorted} onOpen={handleOpen} />

@@ -81,9 +81,13 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { settings } = useSettingsSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
+  const from = searchParams.get("from");
+  const backLabel = from === "calendrier" ? "← Retour au calendrier" : "← Retour à la liste";
+  const returnSuffix = from ? `?from=${from}` : "";
+
   function goBackToList() {
     if (typeof window !== "undefined" && window.history.length > 1) router.back();
-    else router.push("/publications");
+    else router.push(from === "calendrier" ? "/calendrier" : "/publications");
   }
 
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
@@ -101,7 +105,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
           onClick={goBackToList}
           className="w-fit text-sm font-medium text-muted-foreground hover:underline "
         >
-          ← Retour à la liste
+          {backLabel}
         </button>
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Publication introuvable.
@@ -132,7 +136,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (mode === "create") {
       const newPublication: Publication = { ...draft, id: crypto.randomUUID() };
       addPosts([newPublication]);
-      router.push(`/publications/${newPublication.id}`);
+      router.push(`/publications/${newPublication.id}${returnSuffix}`);
       return;
     }
     const historyEntry: PublicationHistoryEntry = {
@@ -191,7 +195,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   function handleCancel() {
     if (mode === "create") {
-      router.push("/publications");
+      goBackToList();
       return;
     }
     if (existing) setDraft(existing);
@@ -207,7 +211,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       status: "draft",
     };
     addPosts([copy]);
-    router.push(`/publications/${copy.id}`);
+    router.push(`/publications/${copy.id}${returnSuffix}`);
   }
 
   function handleEditClick() {
@@ -222,7 +226,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
         onClick={goBackToList}
         className="w-fit text-sm font-medium text-muted-foreground hover:underline "
       >
-        ← Retour à la liste
+        {backLabel}
       </button>
 
       <div className="flex flex-wrap items-start justify-between gap-4">

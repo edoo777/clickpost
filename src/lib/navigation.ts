@@ -26,7 +26,7 @@ export interface NavItem {
  */
 export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
-  { label: "Calendrier", href: "/publications?view=calendar", icon: IconCalendar, aliases: ["/calendrier"] },
+  { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
   { label: "Publications", href: "/publications", icon: IconSend },
   {
     label: "Boîte à idées",
@@ -70,7 +70,7 @@ interface PageTitleEntry {
 const PAGE_TITLES: PageTitleEntry[] = [
   { href: "/", label: "Tableau de bord" },
   { href: "/calendrier-editorial", label: "Calendrier éditorial" },
-  { href: "/calendrier", label: "Calendrier" },
+  { href: "/calendrier", label: "Calendrier éditorial" },
   { href: "/publications/new", label: "Nouvelle publication" },
   { href: "/publications", label: "Publications" },
   { href: "/generateur-idees", label: "Générateur d'idées" },
