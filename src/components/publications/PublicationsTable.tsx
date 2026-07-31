@@ -81,6 +81,19 @@ export function PublicationsTable({
   const [isColumnsOpen, setIsColumnsOpen] = useState(false);
   const resizeRef = useRef<{ key: string; startX: number; startWidth: number } | null>(null);
 
+  // Un changement de filtre ne doit jamais laisser une action groupée s'appliquer à une
+  // publication devenue invisible : on retire de la sélection tout identifiant qui n'apparaît
+  // plus dans la liste affichée, dès que cette liste change (ajustement pendant le rendu, pas
+  // dans un effet — cf. react-hooks/set-state-in-effect déjà évité ainsi ailleurs dans ce module).
+  const visibleIdsKey = publications.map((post) => post.id).join(",");
+  const [lastVisibleIdsKey, setLastVisibleIdsKey] = useState(visibleIdsKey);
+  if (visibleIdsKey !== lastVisibleIdsKey) {
+    setLastVisibleIdsKey(visibleIdsKey);
+    const visibleIds = new Set(publications.map((post) => post.id));
+    const pruned = new Set([...selected].filter((id) => visibleIds.has(id)));
+    if (pruned.size !== selected.size) setSelected(pruned);
+  }
+
   const orderedColumns = visibleProperties
     .map((key) => COLUMNS.find((column) => column.key === key))
     .filter((column): column is ColumnDef => Boolean(column));
@@ -309,15 +322,59 @@ export function PublicationsTable({
     }
   }
 
+  const hasSelection = selected.size > 0;
+  const canOpenSelection = selected.size === 1;
+
+  function openSelected() {
+    if (!canOpenSelection) return;
+    const [id] = selected;
+    onOpen(id);
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
+      <div
+        className={`flex flex-wrap items-center justify-between gap-2 ${
+          hasSelection ? "sticky top-0 z-30 -mx-1 rounded-lg bg-surface/95 px-1 py-1.5 shadow-sm backdrop-blur-sm dark:bg-surface/90" : ""
+        }`}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          {hasSelection && (
             <>
               <span className="text-xs font-medium text-muted-foreground ">
                 {selected.size} sélectionnée{selected.size > 1 ? "s" : ""}
               </span>
+              <div className="group relative">
+                <button
+                  type="button"
+                  onClick={openSelected}
+                  aria-disabled={!canOpenSelection}
+                  aria-describedby={!canOpenSelection ? "table-open-selection-hint" : undefined}
+                  className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    canOpenSelection
+                      ? "border-border text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                      : "cursor-not-allowed border-border text-zinc-300 dark:border-white/[.08] dark:text-zinc-600"
+                  }`}
+                >
+                  Ouvrir
+                </button>
+                {!canOpenSelection && (
+                  <span
+                    id="table-open-selection-hint"
+                    role="tooltip"
+                    className="pointer-events-none absolute left-0 top-full z-50 mt-1 w-max max-w-[220px] rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-xs font-medium text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                  >
+                    Sélectionnez une seule publication pour l&apos;ouvrir.
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={bulkArchive}
+                className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+              >
+                Archiver
+              </button>
               <button
                 type="button"
                 onClick={bulkDuplicate}
@@ -327,10 +384,10 @@ export function PublicationsTable({
               </button>
               <button
                 type="button"
-                onClick={bulkArchive}
-                className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                onClick={() => setSelected(new Set())}
+                className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted "
               >
-                Archiver
+                Annuler la sélection
               </button>
             </>
           )}

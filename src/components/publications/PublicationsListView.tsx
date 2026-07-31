@@ -14,6 +14,7 @@ import { SavedViewsBar } from "@/components/publications/view/SavedViewsBar";
 import { filterPublications, sortPublications } from "@/components/publications/view/filter-sort-publications";
 import { usePublicationsViewState } from "@/components/publications/view/usePublicationsViewState";
 import { usePostsSession } from "@/lib/posts-store";
+import { restoreScrollTop } from "@/lib/scroll-container";
 
 export function PublicationsListView() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export function PublicationsListView() {
     if (hasRestoredScroll.current) return;
     hasRestoredScroll.current = true;
     if (view.scrollY > 0) {
-      requestAnimationFrame(() => window.scrollTo(0, view.scrollY));
+      requestAnimationFrame(() => restoreScrollTop(view.scrollY));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

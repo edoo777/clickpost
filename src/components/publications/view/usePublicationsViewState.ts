@@ -17,6 +17,7 @@ import {
   type PublicationsViewType,
 } from "@/components/publications/view/publications-view-storage";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { getScrollTop } from "@/lib/scroll-container";
 import { getCurrentWorkspaceId } from "@/lib/sync/runtime";
 import type { SavedView, SavedViewSort, SavedViewType } from "@/types/saved-view";
 
@@ -169,8 +170,7 @@ export function usePublicationsViewState() {
       VIEW_TYPE_TO_SAVED[state.viewType] !== activeSavedView.viewType);
 
   function saveScrollPosition() {
-    if (typeof window === "undefined") return;
-    patchPublicationsView({ scrollY: window.scrollY });
+    patchPublicationsView({ scrollY: getScrollTop() });
   }
 
   return {
