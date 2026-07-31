@@ -1,3 +1,4 @@
+import type { DragEvent } from "react";
 import { DayCell } from "@/components/calendar/DayCell";
 import type { Publication } from "@/types/publication";
 
@@ -18,9 +19,28 @@ interface MonthGridProps {
   month: number;
   posts: Publication[];
   onSelectPost: (post: Publication) => void;
+  /** Glisser-déposer pour replanifier et création par case vide — optionnels, ajoutés pour la
+   * vue Calendrier des Publications sans changer le comportement de l'aperçu tableau de bord. */
+  draggable?: boolean;
+  dropTargetDay?: number | null;
+  onDragOverDay?: (event: DragEvent<HTMLDivElement>, day: number) => void;
+  onDragLeaveDay?: () => void;
+  onDropOnDay?: (event: DragEvent<HTMLDivElement>, day: number) => void;
+  onCreateOnDay?: (day: number) => void;
 }
 
-export function MonthGrid({ year, month, posts, onSelectPost }: MonthGridProps) {
+export function MonthGrid({
+  year,
+  month,
+  posts,
+  onSelectPost,
+  draggable,
+  dropTargetDay,
+  onDragOverDay,
+  onDragLeaveDay,
+  onDropOnDay,
+  onCreateOnDay,
+}: MonthGridProps) {
   const cells = buildMonthGrid(year, month);
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
@@ -56,6 +76,12 @@ export function MonthGrid({ year, month, posts, onSelectPost }: MonthGridProps) 
             isToday={isCurrentMonth && day === today.getDate()}
             posts={day !== null ? (postsByDay.get(day) ?? []) : []}
             onSelectPost={onSelectPost}
+            draggable={draggable}
+            isDropTarget={day !== null && dropTargetDay === day}
+            onDragOver={day !== null ? (event) => onDragOverDay?.(event, day) : undefined}
+            onDragLeave={day !== null ? onDragLeaveDay : undefined}
+            onDrop={day !== null ? (event) => onDropOnDay?.(event, day) : undefined}
+            onCreateEmpty={day !== null ? () => onCreateOnDay?.(day) : undefined}
           />
         ))}
       </div>

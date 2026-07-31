@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useBrandsSession } from "@/lib/brands-store";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { PublicationStatus } from "@/types/publication";
 
@@ -19,18 +19,17 @@ const ALL_STATUSES: PublicationStatus[] = [
   "published",
   "failed",
   "rejected",
+  "archived",
 ];
-
-export type ViewMode = "cards" | "table";
 
 export interface PublicationsFiltersValue {
   search: string;
   brand: string | "all";
   platform: SocialPlatform | "all";
   status: PublicationStatus | "all";
+  owner: string | "all";
   dateFrom: string;
   dateTo: string;
-  viewMode: ViewMode;
 }
 
 export const DEFAULT_PUBLICATIONS_FILTERS: PublicationsFiltersValue = {
@@ -38,9 +37,9 @@ export const DEFAULT_PUBLICATIONS_FILTERS: PublicationsFiltersValue = {
   brand: "all",
   platform: "all",
   status: "all",
+  owner: "all",
   dateFrom: "",
   dateTo: "",
-  viewMode: "cards",
 };
 
 const FIELD_CLASS =
@@ -53,109 +52,95 @@ interface PublicationsFiltersProps {
 
 export function PublicationsFilters({ value, onChange }: PublicationsFiltersProps) {
   const { brands } = useBrandsSession();
+  const { members } = useTeamSession();
+  const isDefault = JSON.stringify(value) === JSON.stringify(DEFAULT_PUBLICATIONS_FILTERS);
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="search"
-          value={value.search}
-          onChange={(event) => onChange({ ...value, search: event.target.value })}
-          placeholder="Rechercher une publication…"
-          className={`${FIELD_CLASS} w-full sm:w-64`}
-        />
+    <div className="flex flex-wrap items-center gap-3">
+      <input
+        type="search"
+        value={value.search}
+        onChange={(event) => onChange({ ...value, search: event.target.value })}
+        placeholder="Rechercher une publication…"
+        className={`${FIELD_CLASS} w-full sm:w-64`}
+      />
 
-        <select
-          value={value.brand}
-          onChange={(event) => onChange({ ...value, brand: event.target.value })}
-          className={FIELD_CLASS}
+      <select
+        value={value.brand}
+        onChange={(event) => onChange({ ...value, brand: event.target.value })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Toutes les marques</option>
+        {brands.map((brand) => (
+          <option key={brand.id} value={brand.name}>
+            {brand.name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.platform}
+        onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les réseaux</option>
+        {ALL_PLATFORMS.map((platform) => (
+          <option key={platform} value={platform}>
+            {PLATFORM_LABEL[platform]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.status}
+        onChange={(event) => onChange({ ...value, status: event.target.value as PublicationStatus | "all" })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les statuts</option>
+        {ALL_STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {STATUS_LABEL[status]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={value.owner}
+        onChange={(event) => onChange({ ...value, owner: event.target.value })}
+        className={FIELD_CLASS}
+      >
+        <option value="all">Tous les responsables</option>
+        {members.map((member) => (
+          <option key={member.id} value={member.name}>
+            {member.name}
+          </option>
+        ))}
+      </select>
+
+      <input
+        type="date"
+        value={value.dateFrom}
+        onChange={(event) => onChange({ ...value, dateFrom: event.target.value })}
+        aria-label="Du"
+        className={FIELD_CLASS}
+      />
+      <input
+        type="date"
+        value={value.dateTo}
+        onChange={(event) => onChange({ ...value, dateTo: event.target.value })}
+        aria-label="Au"
+        className={FIELD_CLASS}
+      />
+
+      {!isDefault && (
+        <button
+          type="button"
+          onClick={() => onChange(DEFAULT_PUBLICATIONS_FILTERS)}
+          className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
         >
-          <option value="all">Toutes les marques</option>
-          {brands.map((brand) => (
-            <option key={brand.id} value={brand.name}>
-              {brand.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={value.platform}
-          onChange={(event) =>
-            onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })
-          }
-          className={FIELD_CLASS}
-        >
-          <option value="all">Tous les réseaux</option>
-          {ALL_PLATFORMS.map((platform) => (
-            <option key={platform} value={platform}>
-              {PLATFORM_LABEL[platform]}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={value.status}
-          onChange={(event) =>
-            onChange({ ...value, status: event.target.value as PublicationStatus | "all" })
-          }
-          className={FIELD_CLASS}
-        >
-          <option value="all">Tous les statuts</option>
-          {ALL_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {STATUS_LABEL[status]}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="date"
-          value={value.dateFrom}
-          onChange={(event) => onChange({ ...value, dateFrom: event.target.value })}
-          aria-label="Du"
-          className={FIELD_CLASS}
-        />
-        <input
-          type="date"
-          value={value.dateTo}
-          onChange={(event) => onChange({ ...value, dateTo: event.target.value })}
-          aria-label="Au"
-          className={FIELD_CLASS}
-        />
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 rounded-lg border border-border p-1 ">
-          <button
-            type="button"
-            onClick={() => onChange({ ...value, viewMode: "cards" })}
-            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-              value.viewMode === "cards"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "text-muted-foreground "
-            }`}
-          >
-            Cartes
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange({ ...value, viewMode: "table" })}
-            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-              value.viewMode === "table"
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
-                : "text-muted-foreground "
-            }`}
-          >
-            Tableau
-          </button>
-        </div>
-
-        <Link
-          href="/publications/new"
-          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
-        >
-          + Nouvelle publication
-        </Link>
-      </div>
+          Réinitialiser
+        </button>
+      )}
     </div>
   );
 }

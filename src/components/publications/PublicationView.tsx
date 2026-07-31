@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import { ApprovalActions } from "@/components/publications/ApprovalActions";
@@ -29,7 +28,8 @@ function buildBlankPublication(
   accounts: SocialAccount[],
   settings: AgencySettings,
   members: TeamMember[],
-  brand: Brand | undefined
+  brand: Brand | undefined,
+  defaultDate?: string | null
 ): Publication {
   const account = brand
     ? accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
@@ -38,13 +38,14 @@ function buildBlankPublication(
 
   const defaultOwner = members.find((member) => member.id === settings.workflow.defaultOwnerId)?.name ?? "";
   const defaultApprover = members.find((member) => member.id === settings.workflow.defaultApproverId)?.name ?? "";
+  const dateOnly = defaultDate && /^\d{4}-\d{2}-\d{2}$/.test(defaultDate) ? defaultDate : new Date().toISOString().slice(0, 10);
 
   return {
     id: "",
     brand: brand?.name ?? "",
     accountId: account?.id ?? "",
     platform: account?.platform ?? brand?.socialPlatforms[0] ?? "instagram",
-    scheduledFor: `${new Date().toISOString().slice(0, 10)}T09:00:00`,
+    scheduledFor: `${dateOnly}T09:00:00`,
     timeZone: "America/Toronto",
     theme: "",
     format: "image",
@@ -71,6 +72,7 @@ interface PublicationViewProps {
 
 export function PublicationView({ mode, id }: PublicationViewProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { posts, addPosts, updatePost } = usePostsSession();
   const { updateIdea } = useContentWorkspace();
   const { accounts } = useAccountsSession();
@@ -79,22 +81,28 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { settings } = useSettingsSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
+  function goBackToList() {
+    if (typeof window !== "undefined" && window.history.length > 1) router.back();
+    else router.push("/publications");
+  }
+
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
 
   const [draft, setDraft] = useState<Publication>(
-    () => existing ?? buildBlankPublication(accounts, settings, members, brands[0])
+    () => existing ?? buildBlankPublication(accounts, settings, members, brands[0], searchParams.get("date"))
   );
   const [isEditing, setIsEditing] = useState(mode === "create");
 
   if (mode === "edit" && !existing) {
     return (
       <div className="flex flex-col gap-4">
-        <Link
-          href="/publications"
+        <button
+          type="button"
+          onClick={goBackToList}
           className="w-fit text-sm font-medium text-muted-foreground hover:underline "
         >
           ← Retour à la liste
-        </Link>
+        </button>
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Publication introuvable.
         </p>
@@ -209,12 +217,13 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        href="/publications"
+      <button
+        type="button"
+        onClick={goBackToList}
         className="w-fit text-sm font-medium text-muted-foreground hover:underline "
       >
         ← Retour à la liste
-      </Link>
+      </button>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">

@@ -124,7 +124,7 @@ export function AssistantPreparationView() {
           {activeDays.length === 0 ? (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
               Aucun jour actif dans le calendrier éditorial de cette marque. Configurez-en un dans{" "}
-              <Link href="/calendrier" className="underline">
+              <Link href="/publications?view=calendar" className="underline">
                 le Calendrier
               </Link>
               , ou utilisez la voie manuelle du{" "}
@@ -200,7 +200,7 @@ export function AssistantPreparationView() {
               Voir la Banque d&apos;idées
             </Link>
             <Link
-              href="/calendrier"
+              href="/publications?view=calendar"
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Voir le Calendrier

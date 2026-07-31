@@ -15,6 +15,7 @@ export const STATUS_LABEL: Record<PublicationStatus, string> = {
   published: "Publié",
   failed: "Échec",
   rejected: "Refusée",
+  archived: "Archivée",
 };
 
 export const STATUS_STYLE: Record<PublicationStatus, string> = {
@@ -31,6 +32,7 @@ export const STATUS_STYLE: Record<PublicationStatus, string> = {
   published: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",
   failed: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
   rejected: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400",
+  archived: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-500",
 };
 
 export const PLATFORM_LABEL: Record<SocialPlatform, string> = {

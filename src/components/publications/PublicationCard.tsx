@@ -12,14 +12,16 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 interface PublicationCardProps {
   publication: Publication;
+  onClick?: () => void;
 }
 
-export function PublicationCard({ publication }: PublicationCardProps) {
+export function PublicationCard({ publication, onClick }: PublicationCardProps) {
   const Icon = platformIcons[publication.platform];
 
   return (
     <Link
       href={`/publications/${publication.id}`}
+      onClick={onClick}
       className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-zinc-400   dark:hover:border-white/[.16]"
     >
       <div className="flex items-start justify-between gap-3">

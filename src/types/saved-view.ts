@@ -1,7 +1,9 @@
 export type SavedViewType =
   | "table"
   | "calendar"
-  | "kanban";
+  | "kanban"
+  | "cards"
+  | "list";
 
 export type SavedViewGroupBy =
   | "systemStatus"
@@ -48,6 +50,8 @@ export interface SavedView {
   sorting: SavedViewSort[];
   visibleProperties: string[];
   hiddenGroups: string[];
+  /** Largeurs de colonnes du tableau (px), par nom de propriété — additif, optionnel. */
+  columnWidths?: Record<string, number>;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string;

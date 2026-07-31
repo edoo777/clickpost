@@ -26,7 +26,7 @@ export interface NavItem {
  */
 export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { label: "Tableau de bord", href: "/", icon: IconDashboard },
-  { label: "Calendrier", href: "/calendrier", icon: IconCalendar },
+  { label: "Calendrier", href: "/publications?view=calendar", icon: IconCalendar, aliases: ["/calendrier"] },
   { label: "Publications", href: "/publications", icon: IconSend },
   {
     label: "Boîte à idées",

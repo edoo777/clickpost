@@ -14,7 +14,8 @@ export type PublicationStatus =
   | "scheduled"
   | "published"
   | "failed"
-  | "rejected";
+  | "rejected"
+  | "archived";
 
 export type ContentPriority = "low" | "medium" | "high";
 
