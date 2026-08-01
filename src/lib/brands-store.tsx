@@ -10,6 +10,9 @@ import type { SocialPlatform } from "@/types/dashboard";
 export interface BrandDraft {
   name: string;
   industry?: string;
+  subNiche?: string;
+  positioning?: string;
+  market?: string;
   description?: string;
   productsAndServices?: string[];
   targetAudience?: string;
@@ -90,6 +93,9 @@ export function BrandsSessionProvider({ children }: { children: ReactNode }) {
           workspaceId: workspace?.id ?? "",
           name: draft.name,
           industry: draft.industry ?? "",
+          subNiche: draft.subNiche,
+          positioning: draft.positioning,
+          market: draft.market,
           description: draft.description ?? "",
           productsAndServices: draft.productsAndServices ?? [],
           targetAudience: draft.targetAudience ?? "",

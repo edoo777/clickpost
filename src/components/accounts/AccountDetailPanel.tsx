@@ -19,8 +19,8 @@ interface AccountDetailPanelProps {
   account: SocialAccount;
   scheduledPostsCount: number;
   onClose: () => void;
-  onReconnect: () => void;
-  onDisconnect: () => void;
+  onDeactivate: () => void;
+  onReactivate: () => void;
   onDelete: () => void;
 }
 
@@ -28,14 +28,14 @@ export function AccountDetailPanel({
   account,
   scheduledPostsCount,
   onClose,
-  onReconnect,
-  onDisconnect,
+  onDeactivate,
+  onReactivate,
   onDelete,
 }: AccountDetailPanelProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const color = platformColors[account.platform];
   const Icon = platformIcons[account.platform];
-  const canReconnect = ["disconnected", "expired", "error"].includes(account.status);
+  const isDeactivated = account.status === "disconnected";
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -80,10 +80,32 @@ export function AccountDetailPanel({
         </div>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-muted-foreground ">
+          {account.profileUrl && (
+            <div className="col-span-2">
+              <dt className="font-medium text-muted-foreground ">URL du profil</dt>
+              <dd className="truncate text-zinc-700 dark:text-zinc-300">
+                <a href={account.profileUrl} target="_blank" rel="noreferrer" className="hover:underline">
+                  {account.profileUrl}
+                </a>
+              </dd>
+            </div>
+          )}
+          {account.language && (
+            <div>
+              <dt className="font-medium text-muted-foreground ">Langue</dt>
+              <dd className="text-zinc-700 dark:text-zinc-300">{account.language}</dd>
+            </div>
+          )}
+          {account.audienceOrMarket && (
+            <div>
+              <dt className="font-medium text-muted-foreground ">Audience / marché</dt>
+              <dd className="text-zinc-700 dark:text-zinc-300">{account.audienceOrMarket}</dd>
+            </div>
+          )}
           <div>
             <dt className="font-medium text-muted-foreground ">Dernière synchronisation</dt>
             <dd className="text-zinc-700 dark:text-zinc-300">
-              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : "Jamais"}
+              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : "Jamais (aucune API réelle configurée)"}
             </dd>
           </div>
           <div>
@@ -92,25 +114,10 @@ export function AccountDetailPanel({
           </div>
         </dl>
 
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-medium text-muted-foreground ">
-            Permissions disponibles
-          </span>
-          {account.permissions.length > 0 ? (
-            <ul className="flex flex-col gap-1">
-              {account.permissions.map((permission) => (
-                <li
-                  key={permission}
-                  className="rounded-lg bg-muted px-3 py-1.5 text-xs text-zinc-600  dark:text-zinc-400"
-                >
-                  {permission}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted-foreground ">Aucune permission active.</p>
-          )}
-        </div>
+        <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+          Ce profil ne dispose d&apos;aucune connexion API/OAuth réelle — aucune publication ne peut
+          être envoyée automatiquement à ce réseau depuis ClickPost pour l&apos;instant.
+        </p>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-border pt-4 ">
           {isConfirmingDelete ? (
@@ -137,21 +144,21 @@ export function AccountDetailPanel({
             </div>
           ) : (
             <div className="flex gap-3">
-              {canReconnect ? (
+              {isDeactivated ? (
                 <button
                   type="button"
-                  onClick={onReconnect}
+                  onClick={onReactivate}
                   className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
                 >
-                  Reconnecter
+                  Réactiver
                 </button>
               ) : (
                 <button
                   type="button"
-                  onClick={onDisconnect}
+                  onClick={onDeactivate}
                   className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Déconnecter
+                  Désactiver
                 </button>
               )}
               <button

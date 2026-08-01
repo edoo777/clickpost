@@ -44,4 +44,22 @@ export const platformColors: Record<SocialPlatform, PlatformColor> = {
     border: "border-red-200 dark:border-red-500/20",
     dot: "bg-red-600",
   },
+  threads: {
+    bg: "bg-zinc-100 dark:bg-zinc-500/10",
+    text: "text-zinc-800 dark:text-zinc-200",
+    border: "border-zinc-300 dark:border-zinc-500/20",
+    dot: "bg-zinc-800 dark:bg-zinc-200",
+  },
+  pinterest: {
+    bg: "bg-rose-50 dark:bg-rose-500/10",
+    text: "text-rose-700 dark:text-rose-400",
+    border: "border-rose-200 dark:border-rose-500/20",
+    dot: "bg-rose-600",
+  },
+  other: {
+    bg: "bg-slate-100 dark:bg-slate-500/10",
+    text: "text-slate-700 dark:text-slate-400",
+    border: "border-slate-300 dark:border-slate-500/20",
+    dot: "bg-slate-500",
+  },
 };

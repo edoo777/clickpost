@@ -7,9 +7,16 @@ import { themes as SEED_THEMES } from "@/lib/themes-data";
 import type { Weekday } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 
+export interface ThemeDraft {
+  label?: string;
+  objective?: string;
+  description?: string;
+  keywords?: string[];
+}
+
 interface ThemesSessionValue {
   themes: Theme[];
-  addTheme: (brandId: string) => void;
+  addTheme: (brandId: string, draft?: ThemeDraft) => void;
   updateTheme: (id: string, patch: Partial<Theme>) => void;
   toggleThemeActive: (id: string) => void;
   toggleThemeWeekday: (id: string, day: Weekday) => void;
@@ -25,14 +32,16 @@ export function ThemesSessionProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ThemesSessionValue>(
     () => ({
       themes,
-      addTheme: (brandId) =>
+      addTheme: (brandId, draft) =>
         setThemes((prev) => [
           ...prev,
           {
             id: crypto.randomUUID(),
             brandId,
-            label: "",
-            objective: "",
+            label: draft?.label ?? "",
+            objective: draft?.objective ?? "",
+            description: draft?.description,
+            keywords: draft?.keywords,
             weekdays: [],
             order: nextOrder(prev, brandId),
             active: true,

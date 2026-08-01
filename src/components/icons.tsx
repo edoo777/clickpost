@@ -497,6 +497,35 @@ export function IconYoutube(props: IconProps) {
   );
 }
 
+export function IconThreads(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M12 3c-4.5 0-7 2.8-7 7v4c0 4.2 2.5 7 7 7s7-2.8 7-7" />
+      <path d="M9 10c0-1.8 1.3-3 3-3s3 1.2 3 3c0 2-1.5 2.5-3 3-1.8.5-4 1.3-4 3.5 0 1.8 1.5 2.8 3.3 2.8" />
+    </Base>
+  );
+}
+
+export function IconPinterest(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 17c1-3 1.5-6 2-8.5.3-1.5 2.5-1.5 2.5.3 0 1.3-1 3.7-1.5 5.2-.4 1.3.6 2.3 1.9 2.3 2.2 0 3.6-2.3 3.6-4.8 0-2.6-1.9-4.7-5-4.7-3.6 0-5.7 2.4-5.7 5" />
+    </Base>
+  );
+}
+
+export function IconOtherNetwork(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.5 2.5 2.5 15.5 0 18" />
+      <path d="M12 3c-2.5 2.5-2.5 15.5 0 18" />
+    </Base>
+  );
+}
+
 export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
   instagram: IconInstagram,
   facebook: IconFacebook,
@@ -504,4 +533,7 @@ export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
   tiktok: IconTiktok,
   x: IconX,
   youtube: IconYoutube,
+  threads: IconThreads,
+  pinterest: IconPinterest,
+  other: IconOtherNetwork,
 };

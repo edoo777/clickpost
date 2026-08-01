@@ -6,17 +6,18 @@ import {
   buildDefaultThemeSelection,
   type ThemeSelectionValue,
 } from "@/components/topic-generator/ThemeSelectionPanel";
+import { useAccountsSession } from "@/lib/accounts-store";
 import type { GenerationTone } from "@/lib/assisted-generation";
 import { TONE_LABEL } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL } from "@/lib/post-status";
-import type { SocialPlatform } from "@/types/dashboard";
+import type { Brand } from "@/types/brand";
+import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 import type { TopicVarietyLevel } from "@/types/topic-batch";
 
-const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
 const VARIETY_LEVELS: TopicVarietyLevel[] = ["low", "medium", "high"];
 const VARIETY_LABEL: Record<TopicVarietyLevel, string> = { low: "Basse", medium: "Moyenne", high: "Haute" };
 const TONES: GenerationTone[] = [
@@ -34,6 +35,13 @@ const TONES: GenerationTone[] = [
 
 const FIELD_CLASS =
   "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
+
+/** Plateformes disponibles pour une marque = celles de ses comptes affiliés — jamais un compte
+ * d'une autre marque, jamais la liste complète des réseaux existants. */
+function platformsFromAccounts(accounts: SocialAccount[], brand: Brand): SocialPlatform[] {
+  const brandAccounts = accounts.filter((account) => (account.brandId ? account.brandId === brand.id : account.brand === brand.name));
+  return Array.from(new Set(brandAccounts.map((account) => account.platform)));
+}
 
 const TOGGLE_CLASS = (isSelected: boolean) =>
   `flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -82,6 +90,10 @@ export function TopicGeneratorForm({
   errors,
 }: TopicGeneratorFormProps) {
   const { brands } = useBrandsSession();
+  const { accounts } = useAccountsSession();
+
+  const selectedBrand = brands.find((candidate) => candidate.id === value.brandId);
+  const platformsForBrand = selectedBrand ? platformsFromAccounts(accounts, selectedBrand) : [];
 
   function togglePlatform(platform: SocialPlatform) {
     onChange({
@@ -255,9 +267,11 @@ export function TopicGeneratorForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Réseaux</span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Réseaux (comptes affiliés de la marque)
+        </span>
         <div className="flex flex-wrap gap-2">
-          {ALL_PLATFORMS.map((platform) => {
+          {platformsForBrand.map((platform) => {
             const Icon = platformIcons[platform];
             const isSelected = value.platforms.includes(platform);
             return (
@@ -268,6 +282,11 @@ export function TopicGeneratorForm({
             );
           })}
         </div>
+        {platformsForBrand.length === 0 && (
+          <span className="text-xs text-muted-foreground ">
+            Aucun compte affilié pour cette marque — ajoutez-en un depuis sa fiche (onglet Comptes affiliés).
+          </span>
+        )}
         {errors.platforms && <span className="text-xs font-medium text-red-500">{errors.platforms}</span>}
       </div>
 

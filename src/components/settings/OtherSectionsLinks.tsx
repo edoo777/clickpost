@@ -6,8 +6,13 @@ import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
 const LINKS = [
-  { label: "Marques", description: "Profils de marque et positionnement", href: "/marques", icon: IconBriefcase },
-  { label: "Thématiques", description: "Bibliothèque de thématiques éditoriales", href: "/thematiques", icon: IconTag },
+  {
+    label: "Marques",
+    description: "Niche, positionnement, comptes affiliés et thématiques de chaque marque",
+    href: "/marques",
+    icon: IconBriefcase,
+  },
+  { label: "Thématiques", description: "Bibliothèque complète, toutes marques confondues", href: "/thematiques", icon: IconTag },
   {
     label: "Calendrier éditorial",
     description: "Plans de semaine par marque",

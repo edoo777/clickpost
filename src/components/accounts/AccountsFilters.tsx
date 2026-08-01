@@ -5,8 +5,18 @@ import { ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { AccountStatus, SocialPlatform } from "@/types/dashboard";
 
-const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
-const ALL_STATUSES: AccountStatus[] = ["connected", "disconnected", "expired", "error", "syncing"];
+const ALL_PLATFORMS: SocialPlatform[] = [
+  "instagram",
+  "facebook",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "x",
+  "threads",
+  "pinterest",
+  "other",
+];
+const ALL_STATUSES: AccountStatus[] = ["profile_only", "connected", "disconnected", "expired", "error", "syncing"];
 
 export interface AccountsFiltersValue {
   brand: string | "all";

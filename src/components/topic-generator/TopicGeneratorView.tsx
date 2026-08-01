@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   TopicGeneratorForm,
@@ -61,7 +62,7 @@ function validateForm(value: TopicGeneratorFormValue): TopicGeneratorFormErrors 
 }
 
 export function TopicGeneratorView() {
-  const { brands } = useBrandsSession();
+  const { brands, activeBrandId } = useBrandsSession();
   const { themes } = useThemesSession();
   const {
     topicBatches,
@@ -75,14 +76,16 @@ export function TopicGeneratorView() {
     addIdea,
   } = useContentWorkspace();
 
-  const [formValue, setFormValue] = useState<TopicGeneratorFormValue>(() => buildInitialFormValue(brands[0]));
+  const [formValue, setFormValue] = useState<TopicGeneratorFormValue>(() =>
+    buildInitialFormValue(brands.find((brand) => brand.id === activeBrandId) ?? brands[0])
+  );
   const [formErrors, setFormErrors] = useState<TopicGeneratorFormErrors>({});
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [regenerationRounds, setRegenerationRounds] = useState<Record<string, number>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const activeBrand = brands.find((brand) => brand.id === formValue.brandId);
+  const selectedBrand = brands.find((brand) => brand.id === formValue.brandId);
   const themesForBrand = getActiveThemesForBrand(themes, formValue.brandId);
   const activeGroupBatches = activeGroupId
     ? topicBatches.filter((batch) => (batch.groupId ?? batch.id) === activeGroupId)
@@ -98,8 +101,7 @@ export function TopicGeneratorView() {
 
   function handleFormChange(next: TopicGeneratorFormValue) {
     if (next.brandId !== formValue.brandId) {
-      const brand = brands.find((b) => b.id === next.brandId);
-      setFormValue({ ...next, platforms: brand?.socialPlatforms ?? [] });
+      setFormValue({ ...next, platforms: [] });
     } else {
       setFormValue(next);
     }
@@ -405,6 +407,20 @@ export function TopicGeneratorView() {
             );
           })}
         </div>
+      ) : brands.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16] ">
+          <p className="text-base font-semibold text-foreground ">Aucune marque configurée</p>
+          <p className="max-w-sm text-sm text-muted-foreground ">
+            Le Générateur d&apos;idées a besoin d&apos;une marque (niche, comptes affiliés,
+            thématiques) pour produire du contenu pertinent.
+          </p>
+          <Link
+            href="/marques"
+            className="mt-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
+          >
+            Configurer une marque
+          </Link>
+        </div>
       ) : (
         <>
           <TopicGeneratorForm
@@ -413,7 +429,7 @@ export function TopicGeneratorView() {
             onGenerate={() => void handleGenerate()}
             isGenerating={isGenerating}
             themesForBrand={themesForBrand}
-            niche={activeBrand?.industry ?? ""}
+            niche={selectedBrand?.industry ?? ""}
             errors={formErrors}
           />
           <TopicBatchList batches={topicBatches} themeLabelFor={themeLabelFor} onOpen={handleOpenGroup} />

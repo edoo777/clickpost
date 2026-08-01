@@ -359,6 +359,9 @@ const PLATFORM_MAX_HASHTAGS: Record<SocialPlatform, number> = {
   linkedin: 3,
   facebook: 3,
   youtube: 4,
+  threads: 5,
+  pinterest: 6,
+  other: 5,
 };
 
 export function adaptForPlatform(body: TextBody, platform: SocialPlatform): TextBody {

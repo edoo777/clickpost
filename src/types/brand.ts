@@ -10,7 +10,14 @@ export interface ContentExample {
 export interface BrandProfile {
   id: string;
   name: string;
+  /** Niche — secteur général de la marque (ex. Fitness, Immobilier). */
   industry: string;
+  /** Sous-niche facultative, plus précise que la niche (ex. Musculation pour Fitness). */
+  subNiche?: string;
+  /** Proposition de valeur / positionnement — distinct de `description` (présentation générale). */
+  positioning?: string;
+  /** Marché ou pays cible facultatif. */
+  market?: string;
   description: string;
   productsAndServices: string[];
   targetAudience: string;
@@ -38,7 +45,14 @@ export interface Brand {
   id: string;
   workspaceId: string;
   name: string;
+  /** Niche — secteur général de la marque (ex. Fitness, Immobilier). */
   industry: string;
+  /** Sous-niche facultative, plus précise que la niche. */
+  subNiche?: string;
+  /** Proposition de valeur / positionnement — distinct de `description`. */
+  positioning?: string;
+  /** Marché ou pays cible facultatif. */
+  market?: string;
   description: string;
   productsAndServices: string[];
   targetAudience: string;

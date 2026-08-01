@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { BrandCard } from "@/components/brands/BrandCard";
 import { CreateBrandPanel } from "@/components/brands/CreateBrandPanel";
-import { useBrandsSession } from "@/lib/brands-store";
+import { useBrandsSession, type BrandDraft } from "@/lib/brands-store";
 
 type StatusFilter = "active" | "archived" | "all";
 
@@ -24,7 +24,7 @@ export default function BrandsPage() {
     });
   }, [brands, search, statusFilter]);
 
-  function handleCreate(input: { name: string; industry: string; description: string }) {
+  function handleCreate(input: BrandDraft) {
     const brand = createBrand(input);
     setIsCreating(false);
     router.push(`/marques/${brand.id}`);
@@ -41,16 +41,33 @@ export default function BrandsPage() {
             Gérez les marques de votre workspace et configurez leur identité pour guider la génération de contenu.
           </p>
         </div>
-        {canManageBrands && (
+        {canManageBrands ? (
           <button
             type="button"
             onClick={() => setIsCreating(true)}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
-            + Créer une marque
+            + Nouvelle marque
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            title="Réservé aux rôles Propriétaire et Administrateur du workspace."
+            aria-disabled="true"
+            className="cursor-not-allowed rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+          >
+            + Nouvelle marque
           </button>
         )}
       </header>
+
+      {!canManageBrands && (
+        <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+          Votre rôle actuel permet uniquement de consulter les marques — la création et la
+          modification sont réservées aux rôles Propriétaire et Administrateur du workspace.
+        </p>
+      )}
 
       {hasAnyBrand && (
         <div className="flex flex-wrap items-center gap-3">
@@ -86,20 +103,45 @@ export default function BrandsPage() {
       )}
 
       {!hasAnyBrand ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16] ">
-          <p className="text-base font-semibold text-foreground ">Aucune marque pour le moment</p>
-          <p className="max-w-sm text-sm text-muted-foreground ">
-            Créez votre première marque pour commencer à générer et planifier du contenu qui lui est propre.
-          </p>
-          {canManageBrands && (
+        <div className="flex flex-col items-center gap-5 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16] ">
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-base font-semibold text-foreground ">Aucune marque pour le moment</p>
+            <p className="max-w-sm text-sm text-muted-foreground ">
+              Une marque regroupe sa niche, ses comptes affiliés et ses thématiques éditoriales —
+              tout ce dont le Générateur d&apos;idées a besoin pour produire du contenu pertinent.
+            </p>
+          </div>
+          {canManageBrands ? (
             <button
               type="button"
               onClick={() => setIsCreating(true)}
-              className="mt-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
+              className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
               + Créer ma première marque
             </button>
+          ) : (
+            <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+              Demandez à un Propriétaire ou Administrateur du workspace de créer la première marque.
+            </p>
           )}
+          <ol className="flex max-w-md flex-col gap-2 text-left text-xs text-muted-foreground ">
+            <li className="flex items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">1</span>
+              Créer la marque
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">2</span>
+              Préciser sa niche
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">3</span>
+              Ajouter ses comptes affiliés
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">4</span>
+              Définir ses thématiques
+            </li>
+          </ol>
         </div>
       ) : filteredBrands.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16] ">

@@ -6,7 +6,17 @@ import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { Brand, ContentExample } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 
-const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
+const ALL_PLATFORMS: SocialPlatform[] = [
+  "instagram",
+  "facebook",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "x",
+  "threads",
+  "pinterest",
+  "other",
+];
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-zinc-800 disabled:bg-background disabled:text-zinc-500   dark:text-zinc-200 dark:disabled:bg-zinc-900 dark:disabled:text-zinc-500";
@@ -93,9 +103,7 @@ function PlatformField({
 }) {
   function toggle(platform: SocialPlatform) {
     if (!editable) return;
-    onChange(
-      value.includes(platform) ? value.filter((p) => p !== platform) : [...value, platform]
-    );
+    onChange(value.includes(platform) ? value.filter((p) => p !== platform) : [...value, platform]);
   }
 
   return (
@@ -150,18 +158,13 @@ function ContentExamplesField({
       {value.map((example) => {
         const Icon = platformIcons[example.platform];
         return (
-          <div
-            key={example.id}
-            className="flex flex-col gap-2 rounded-lg border border-border p-3 "
-          >
+          <div key={example.id} className="flex flex-col gap-2 rounded-lg border border-border p-3 ">
             <div className="flex items-center gap-2">
               <Icon className="h-4 w-4 shrink-0 text-muted-foreground " />
               <select
                 disabled={!editable}
                 value={example.platform}
-                onChange={(event) =>
-                  updateExample(example.id, { platform: event.target.value as SocialPlatform })
-                }
+                onChange={(event) => updateExample(example.id, { platform: event.target.value as SocialPlatform })}
                 className={`${INPUT_CLASS} w-auto`}
               >
                 {ALL_PLATFORMS.map((platform) => (
@@ -207,146 +210,107 @@ function ContentExamplesField({
           + Ajouter un exemple
         </button>
       )}
-      {value.length === 0 && !editable && (
-        <p className="text-sm text-muted-foreground ">Aucun exemple renseigné.</p>
-      )}
+      {value.length === 0 && !editable && <p className="text-sm text-muted-foreground ">Aucun exemple renseigné.</p>}
     </div>
   );
 }
+
+export type BrandProfileSection = "identity" | "positioning" | "editorial";
 
 interface BrandProfileFormProps {
   profile: Brand;
   editable: boolean;
   onChange: (profile: Brand) => void;
+  /** Limite le formulaire aux sections pertinentes pour l'onglet actif de la fiche de marque. */
+  section: BrandProfileSection;
 }
 
-export function BrandProfileForm({ profile, editable, onChange }: BrandProfileFormProps) {
+export function BrandProfileForm({ profile, editable, onChange, section }: BrandProfileFormProps) {
   function set<K extends keyof Brand>(key: K, value: Brand[K]) {
     onChange({ ...profile, [key]: value });
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <Section title="Identité">
-        <TextField
-          label="Nom de la marque"
-          value={profile.name}
-          editable={editable}
-          onChange={(v) => set("name", v)}
-        />
-        <TextField
-          label="Secteur d'activité"
-          value={profile.industry}
-          editable={editable}
-          onChange={(v) => set("industry", v)}
-        />
-        <div className="md:col-span-2">
-          <TextField
-            label="Description de l'entreprise"
-            value={profile.description}
-            editable={editable}
-            multiline
-            onChange={(v) => set("description", v)}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <ListField
-            label="Produits et services"
-            value={profile.productsAndServices}
-            editable={editable}
-            onChange={(v) => set("productsAndServices", v)}
-          />
-        </div>
-      </Section>
+      {section === "identity" && (
+        <>
+          <Section title="Identité">
+            <TextField label="Nom de la marque" value={profile.name} editable={editable} onChange={(v) => set("name", v)} />
+            <TextField label="Site Web (optionnel)" value={profile.website ?? ""} editable={editable} onChange={(v) => set("website", v)} />
+            <div className="md:col-span-2">
+              <TextField label="Description" value={profile.description} editable={editable} multiline onChange={(v) => set("description", v)} />
+            </div>
+            <div className="md:col-span-2">
+              <ListField label="Produits et services" value={profile.productsAndServices} editable={editable} onChange={(v) => set("productsAndServices", v)} />
+            </div>
+          </Section>
 
-      <Section title="Audience & objectifs">
-        <div className="md:col-span-2">
-          <TextField
-            label="Clientèle cible"
-            value={profile.targetAudience}
-            editable={editable}
-            multiline
-            onChange={(v) => set("targetAudience", v)}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <ListField
-            label="Objectifs de communication"
-            value={profile.communicationGoals}
-            editable={editable}
-            onChange={(v) => set("communicationGoals", v)}
-          />
-        </div>
-      </Section>
+          <Section title="Image de marque">
+            <TextField label="Logo — URL (optionnel)" value={profile.logoUrl ?? ""} editable={editable} onChange={(v) => set("logoUrl", v)} />
+            <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Couleur de marque (optionnel)
+              <input
+                type="color"
+                disabled={!editable}
+                value={profile.colorPrimary || "#7c3aed"}
+                onChange={(event) => set("colorPrimary", event.target.value)}
+                className={`${INPUT_CLASS} h-10 p-1`}
+              />
+            </label>
+          </Section>
+        </>
+      )}
 
-      <Section title="Ton & langues">
-        <TextField
-          label="Ton de voix"
-          value={profile.toneOfVoice}
-          editable={editable}
-          multiline
-          onChange={(v) => set("toneOfVoice", v)}
-        />
-        <ListField
-          label="Langues utilisées"
-          value={profile.languages}
-          editable={editable}
-          onChange={(v) => set("languages", v)}
-        />
-      </Section>
+      {section === "positioning" && (
+        <>
+          <Section title="Niche">
+            <TextField label="Niche (secteur général)" value={profile.industry} editable={editable} onChange={(v) => set("industry", v)} />
+            <TextField label="Sous-niche (optionnel)" value={profile.subNiche ?? ""} editable={editable} onChange={(v) => set("subNiche", v)} />
+            <TextField label="Pays / marché (optionnel)" value={profile.market ?? ""} editable={editable} onChange={(v) => set("market", v)} />
+            <div className="md:col-span-2">
+              <TextField label="Proposition de valeur" value={profile.positioning ?? ""} editable={editable} multiline onChange={(v) => set("positioning", v)} />
+            </div>
+          </Section>
 
-      <Section title="Sujets & mots-clés">
-        <ListField
-          label="Sujets prioritaires"
-          value={profile.priorityTopics}
-          editable={editable}
-          onChange={(v) => set("priorityTopics", v)}
-        />
-        <ListField
-          label="Sujets à éviter"
-          value={profile.topicsToAvoid}
-          editable={editable}
-          onChange={(v) => set("topicsToAvoid", v)}
-        />
-        <ListField
-          label="Mots et expressions à privilégier"
-          value={profile.preferredPhrases}
-          editable={editable}
-          onChange={(v) => set("preferredPhrases", v)}
-        />
-        <ListField
-          label="Mots interdits"
-          value={profile.forbiddenWords}
-          editable={editable}
-          onChange={(v) => set("forbiddenWords", v)}
-        />
-        <div className="md:col-span-2">
-          <ListField
-            label="Appels à l'action préférés"
-            value={profile.preferredCtas}
-            editable={editable}
-            onChange={(v) => set("preferredCtas", v)}
-          />
-        </div>
-      </Section>
+          <Section title="Audience & objectifs">
+            <div className="md:col-span-2">
+              <TextField label="Clientèle cible" value={profile.targetAudience} editable={editable} multiline onChange={(v) => set("targetAudience", v)} />
+            </div>
+            <div className="md:col-span-2">
+              <ListField label="Objectifs de communication" value={profile.communicationGoals} editable={editable} onChange={(v) => set("communicationGoals", v)} />
+            </div>
+          </Section>
 
-      <Section title="Réseaux utilisés">
-        <div className="md:col-span-2">
-          <PlatformField
-            value={profile.socialPlatforms}
-            editable={editable}
-            onChange={(v) => set("socialPlatforms", v)}
-          />
-        </div>
-      </Section>
+          <Section title="Ton & langues">
+            <TextField label="Ton de voix" value={profile.toneOfVoice} editable={editable} multiline onChange={(v) => set("toneOfVoice", v)} />
+            <ListField label="Langues utilisées" value={profile.languages} editable={editable} onChange={(v) => set("languages", v)} />
+          </Section>
+        </>
+      )}
 
-      <Section title="Exemples de contenus représentatifs">
-        <ContentExamplesField
-          value={profile.contentExamples}
-          editable={editable}
-          onChange={(v) => set("contentExamples", v)}
-        />
-      </Section>
+      {section === "editorial" && (
+        <>
+          <Section title="Sujets & mots-clés">
+            <ListField label="Sujets prioritaires" value={profile.priorityTopics} editable={editable} onChange={(v) => set("priorityTopics", v)} />
+            <ListField label="Sujets à éviter" value={profile.topicsToAvoid} editable={editable} onChange={(v) => set("topicsToAvoid", v)} />
+            <ListField label="Mots et expressions à privilégier" value={profile.preferredPhrases} editable={editable} onChange={(v) => set("preferredPhrases", v)} />
+            <ListField label="Mots interdits" value={profile.forbiddenWords} editable={editable} onChange={(v) => set("forbiddenWords", v)} />
+            <div className="md:col-span-2">
+              <ListField label="Appels à l'action préférés" value={profile.preferredCtas} editable={editable} onChange={(v) => set("preferredCtas", v)} />
+            </div>
+          </Section>
+
+          <Section title="Réseaux utilisés">
+            <div className="md:col-span-2">
+              <PlatformField value={profile.socialPlatforms} editable={editable} onChange={(v) => set("socialPlatforms", v)} />
+            </div>
+          </Section>
+
+          <Section title="Exemples de contenus représentatifs">
+            <ContentExamplesField value={profile.contentExamples} editable={editable} onChange={(v) => set("contentExamples", v)} />
+          </Section>
+        </>
+      )}
     </div>
   );
 }

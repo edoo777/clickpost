@@ -2,24 +2,43 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BrandProfileForm } from "@/components/brands/BrandProfileForm";
+import { BrandAccountsSection } from "@/components/brands/BrandAccountsSection";
+import { BrandProfileForm, type BrandProfileSection } from "@/components/brands/BrandProfileForm";
+import { BrandThemesSection } from "@/components/brands/BrandThemesSection";
 import { CompletenessBar } from "@/components/brands/CompletenessBar";
+import { ConfigurationProgress } from "@/components/brands/ConfigurationProgress";
+import { useAccountsSession } from "@/lib/accounts-store";
 import { getBrandCompleteness } from "@/lib/brand-completeness";
+import { getBrandConfigurationProgress } from "@/lib/brand-configuration-progress";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useThemesSession } from "@/lib/themes-store";
 import type { Brand } from "@/types/brand";
 
 interface BrandProfileViewProps {
   brand: Brand;
 }
 
+type Tab = "identity" | "positioning" | "accounts" | "themes" | "editorial";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "identity", label: "Identité" },
+  { id: "positioning", label: "Positionnement" },
+  { id: "accounts", label: "Comptes affiliés" },
+  { id: "themes", label: "Thématiques" },
+  { id: "editorial", label: "Préférences éditoriales" },
+];
+
 export function BrandProfileView({ brand }: BrandProfileViewProps) {
   const router = useRouter();
   const { canManageBrands, activeBrandId, setActiveBrandId, updateBrand, archiveBrand, restoreBrand, deleteBrand } =
     useBrandsSession();
+  const { accounts } = useAccountsSession();
+  const { themes } = useThemesSession();
 
   const [draft, setDraft] = useState(brand);
   const [isEditing, setIsEditing] = useState(false);
   const [initializedForId, setInitializedForId] = useState(brand.id);
+  const [tab, setTab] = useState<Tab>("identity");
 
   if (initializedForId !== brand.id) {
     setInitializedForId(brand.id);
@@ -28,6 +47,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
   }
 
   const { percent } = getBrandCompleteness(draft);
+  const progress = getBrandConfigurationProgress(brand, accounts, themes);
   const isActive = activeBrandId === brand.id;
   const isArchived = brand.status === "archived";
 
@@ -66,13 +86,9 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground ">
-            Profil de marque
-          </span>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-            {draft.name}
-          </h1>
-          <p className="text-sm text-muted-foreground ">{draft.industry || "Secteur non renseigné"}</p>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground ">Profil de marque</span>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{draft.name}</h1>
+          <p className="text-sm text-muted-foreground ">Niche : {draft.industry || "Non précisée"}</p>
           <div className="flex flex-wrap items-center gap-2">
             {isActive && (
               <span className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -88,6 +104,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
           <div className="w-64">
             <CompletenessBar percent={percent} />
           </div>
+          <ConfigurationProgress steps={progress} />
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-3">
@@ -162,11 +179,34 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
 
       {!canManageBrands && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Seuls les administrateurs du workspace peuvent modifier, archiver ou supprimer une marque.
+          Votre rôle actuel permet uniquement de consulter cette marque — la création, la
+          modification et l&apos;archivage sont réservés aux rôles Propriétaire et Administrateur du
+          workspace.
         </p>
       )}
 
-      <BrandProfileForm profile={draft} editable={isEditing} onChange={setDraft} />
+      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border p-1 w-fit">
+        {TABS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => setTab(option.id)}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              tab === option.id
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
+                : "text-muted-foreground hover:text-foreground "
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      {(tab === "identity" || tab === "positioning" || tab === "editorial") && (
+        <BrandProfileForm profile={draft} editable={isEditing} onChange={setDraft} section={tab as BrandProfileSection} />
+      )}
+      {tab === "accounts" && <BrandAccountsSection brand={brand} canManage={canManageBrands} />}
+      {tab === "themes" && <BrandThemesSection brand={brand} canManage={canManageBrands} />}
     </div>
   );
 }
