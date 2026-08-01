@@ -12,21 +12,25 @@ import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
 import { ProfileSection } from "@/components/settings/ProfileSection";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
 import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
+import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
 import { DEFAULT_AGENCY_SETTINGS } from "@/lib/settings-data";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { AgencySettings } from "@/types/settings";
 
 export function SettingsView() {
   const { settings, setSettings } = useSettingsSession();
-  const { members, currentUserId } = useTeamSession();
+  const { members } = useTeamSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
+  const { isAdmin, isLoading: isWorkspaceLoading, workspaceError, refresh } = useWorkspaceSession();
 
-  const currentMember = members.find((member) => member.id === currentUserId);
-  const canEdit = currentMember?.role === "owner" || currentMember?.role === "admin";
+  // Source réelle des permissions (Supabase workspace_members), jamais le sélecteur local
+  // « Connecté en tant que » — voir la correction du problème d'autorisation des marques.
+  const canEdit = !isWorkspaceLoading && !workspaceError && isAdmin;
 
   const [draft, setDraft] = useState<AgencySettings>(settings);
   const [isEditing, setIsEditing] = useState(false);
@@ -94,7 +98,15 @@ export function SettingsView() {
         )}
       </div>
 
-      {!canEdit && (
+      {isWorkspaceLoading && (
+        <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+          Chargement de votre workspace et de votre rôle…
+        </p>
+      )}
+
+      {workspaceError && <WorkspaceErrorNotice error={workspaceError} onRetry={() => void refresh()} />}
+
+      {!isWorkspaceLoading && !workspaceError && !canEdit && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
           Réservé aux rôles Propriétaire et Administrateur — lecture seule pour votre rôle actuel.
         </p>

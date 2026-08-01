@@ -4,13 +4,16 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { BrandCard } from "@/components/brands/BrandCard";
 import { CreateBrandPanel } from "@/components/brands/CreateBrandPanel";
+import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useBrandsSession, type BrandDraft } from "@/lib/brands-store";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
 type StatusFilter = "active" | "archived" | "all";
 
 export default function BrandsPage() {
   const router = useRouter();
   const { brands, activeBrandId, canManageBrands, createBrand } = useBrandsSession();
+  const { isLoading: isWorkspaceLoading, workspaceError, refresh } = useWorkspaceSession();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
   const [isCreating, setIsCreating] = useState(false);
@@ -31,6 +34,9 @@ export default function BrandsPage() {
   }
 
   const hasAnyBrand = brands.length > 0;
+  // Un rôle réel n'est confirmé qu'une fois le workspace chargé sans erreur — tant que ce n'est
+  // pas le cas, on ne se prononce jamais sur la permission (ni activé, ni « lecture seule »).
+  const hasResolvedRole = !isWorkspaceLoading && !workspaceError;
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,7 +47,18 @@ export default function BrandsPage() {
             Gérez les marques de votre workspace et configurez leur identité pour guider la génération de contenu.
           </p>
         </div>
-        {canManageBrands ? (
+        {!hasResolvedRole ? (
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            aria-busy={isWorkspaceLoading}
+            title={workspaceError ? "Rôle indéterminé — le workspace n'a pas pu être chargé." : "Chargement de votre rôle…"}
+            className="cursor-not-allowed rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
+          >
+            + Nouvelle marque
+          </button>
+        ) : canManageBrands ? (
           <button
             type="button"
             onClick={() => setIsCreating(true)}
@@ -62,7 +79,15 @@ export default function BrandsPage() {
         )}
       </header>
 
-      {!canManageBrands && (
+      {isWorkspaceLoading && (
+        <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+          Chargement de votre workspace et de votre rôle…
+        </p>
+      )}
+
+      {workspaceError && <WorkspaceErrorNotice error={workspaceError} onRetry={() => void refresh()} />}
+
+      {hasResolvedRole && !canManageBrands && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
           Votre rôle actuel permet uniquement de consulter les marques — la création et la
           modification sont réservées aux rôles Propriétaire et Administrateur du workspace.
@@ -111,7 +136,11 @@ export default function BrandsPage() {
               tout ce dont le Générateur d&apos;idées a besoin pour produire du contenu pertinent.
             </p>
           </div>
-          {canManageBrands ? (
+          {!hasResolvedRole ? (
+            <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+              {workspaceError ? "Rôle indéterminé — réessayez le chargement ci-dessus." : "Chargement de votre rôle…"}
+            </p>
+          ) : canManageBrands ? (
             <button
               type="button"
               onClick={() => setIsCreating(true)}

@@ -11,14 +11,26 @@ interface UpdateResult {
   error: string | null;
 }
 
+export interface WorkspaceLoadError {
+  code: string;
+  message: string;
+}
+
 interface WorkspaceSessionValue {
   userId: string | null;
   email: string;
   profile: ProfileRow | null;
   workspace: WorkspaceRow | null;
   branding: WorkspaceBrandingRow | null;
+  /** Rôle brut tel que chargé depuis workspace_members — `null` tant qu'il n'a pas été résolu
+   * avec succès. Ne jamais traiter `null` comme « membre en lecture seule » : vérifier d'abord
+   * `isLoading` et `workspaceError`. */
+  role: string | null;
   isLoading: boolean;
   isAdmin: boolean;
+  /** Erreur de chargement du workspace (RPC de bootstrap ou lecture de l'appartenance) — jamais
+   * silencieuse. `null` une fois le workspace correctement chargé. */
+  workspaceError: WorkspaceLoadError | null;
   refresh: () => Promise<void>;
   updateProfile: (patch: Partial<ProfileRow>) => Promise<UpdateResult>;
   updateWorkspace: (patch: Partial<WorkspaceRow>) => Promise<UpdateResult>;
@@ -26,6 +38,18 @@ interface WorkspaceSessionValue {
 }
 
 const WorkspaceSessionContext = createContext<WorkspaceSessionValue | null>(null);
+
+/** Journalise une erreur de chargement du workspace en développement uniquement — jamais de
+ * jeton, clé ou secret, seulement code/message/détails utiles au diagnostic. */
+function logWorkspaceError(context: string, error: { code?: string; message: string; details?: string; hint?: string }) {
+  if (process.env.NODE_ENV === "production") return;
+  console.error(`[workspace] ${context}`, {
+    code: error.code ?? "unknown",
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+  });
+}
 
 /**
  * Charge le profil, le workspace actif et son identité visuelle depuis Supabase.
@@ -43,9 +67,13 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
   const [branding, setBranding] = useState<WorkspaceBrandingRow | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [workspaceError, setWorkspaceError] = useState<WorkspaceLoadError | null>(null);
   const hasBootstrapped = useRef(false);
 
   const load = useCallback(async () => {
+    setIsLoading(true);
+    setWorkspaceError(null);
+
     const supabase = createSupabaseBrowserClient();
     const {
       data: { user },
@@ -57,6 +85,7 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
       setWorkspace(null);
       setBranding(null);
       setRole(null);
+      setWorkspaceError(null);
       setIsLoading(false);
       configureSyncContext(null, null);
       return;
@@ -74,26 +103,49 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
 
     if (!activeWorkspaceId && !hasBootstrapped.current) {
       hasBootstrapped.current = true;
-      const { data: bootstrapRows } = await supabase.rpc("ensure_default_workspace");
+      const { data: bootstrapRows, error: bootstrapError } = await supabase.rpc("ensure_default_workspace");
+
+      if (bootstrapError) {
+        logWorkspaceError("ensure_default_workspace() a échoué", bootstrapError);
+        // Autorise une nouvelle tentative (bouton « Réessayer ») plutôt que de bloquer
+        // définitivement cette instance du composant.
+        hasBootstrapped.current = false;
+        setWorkspaceError({ code: bootstrapError.code || "bootstrap_failed", message: bootstrapError.message });
+        setIsLoading(false);
+        configureSyncContext(null, user.id);
+        return;
+      }
+
       const bootstrapResult = Array.isArray(bootstrapRows) ? bootstrapRows[0] : bootstrapRows;
       activeWorkspaceId = (bootstrapResult?.workspace_id as string | undefined) ?? null;
       justCreated = Boolean(bootstrapResult?.is_new);
     }
 
+    if (!activeWorkspaceId) {
+      // Aucune erreur RPC explicite mais toujours aucun workspace actif — jamais interprété
+      // comme un rôle « membre » : état d'erreur explicite à la place.
+      setWorkspaceError({ code: "no_workspace", message: "Aucun espace de travail actif n'a pu être déterminé." });
+      setWorkspace(null);
+      setRole(null);
+      setIsLoading(false);
+      configureSyncContext(null, user.id);
+      return;
+    }
+
     const [profileResult, workspaceResult, brandingResult, memberResult] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
-      activeWorkspaceId
-        ? supabase.from("workspaces").select("*").eq("id", activeWorkspaceId).single()
-        : Promise.resolve({ data: null }),
-      activeWorkspaceId
-        ? supabase.from("workspace_branding").select("*").eq("workspace_id", activeWorkspaceId).single()
-        : Promise.resolve({ data: null }),
-      activeWorkspaceId
-        ? supabase.from("workspace_members").select("role").eq("workspace_id", activeWorkspaceId).eq("user_id", user.id).single()
-        : Promise.resolve({ data: null }),
+      supabase.from("workspaces").select("*").eq("id", activeWorkspaceId).single(),
+      supabase.from("workspace_branding").select("*").eq("workspace_id", activeWorkspaceId).single(),
+      supabase.from("workspace_members").select("role").eq("workspace_id", activeWorkspaceId).eq("user_id", user.id).single(),
     ]);
 
-    const resolvedBranding = (brandingResult.data as WorkspaceBrandingRow | null) ?? (activeWorkspaceId ? buildDefaultBranding(activeWorkspaceId) : null);
+    if (memberResult.error) {
+      logWorkspaceError("lecture de workspace_members a échoué", memberResult.error);
+      setWorkspaceError({ code: memberResult.error.code || "member_lookup_failed", message: memberResult.error.message });
+    }
+
+    const resolvedBranding =
+      (brandingResult.data as WorkspaceBrandingRow | null) ?? (activeWorkspaceId ? buildDefaultBranding(activeWorkspaceId) : null);
 
     setProfile((profileResult.data as ProfileRow | null) ?? null);
     setWorkspace((workspaceResult.data as WorkspaceRow | null) ?? null);
@@ -175,8 +227,10 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
     profile,
     workspace,
     branding,
+    role,
     isLoading,
     isAdmin: role === "owner" || role === "admin",
+    workspaceError,
     refresh: load,
     updateProfile,
     updateWorkspace,
