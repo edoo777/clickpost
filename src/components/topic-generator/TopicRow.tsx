@@ -2,6 +2,7 @@
 
 import { IconLock } from "@/components/icons";
 import { DevelopMenu } from "@/components/shared/DevelopMenu";
+import { CONTENT_TYPE_LABEL } from "@/lib/content-types";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
 
 interface TopicRowProps {
@@ -44,6 +45,11 @@ export function TopicRow({
         aria-label="Modifier le libellé du sujet"
         className="flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-zinc-200 focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
       />
+      {topic.contentType && (
+        <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ">
+          {CONTENT_TYPE_LABEL[topic.contentType]}
+        </span>
+      )}
       {isDuplicate && (
         <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
           Doublon potentiel

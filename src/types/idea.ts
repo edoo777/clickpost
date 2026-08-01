@@ -1,4 +1,5 @@
 import type { GenerationTone } from "@/lib/assisted-generation";
+import type { ContentType } from "@/lib/content-types";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { ContentPriority, ContentSource, PublicationMedia } from "@/types/publication";
@@ -66,4 +67,7 @@ export interface Idea {
   workshopDisplayMode?: "document" | "structured";
   /** Ton éditorial préféré pour cette idée (affiché en propriété, préselectionne la catégorie « Ton »). */
   tone?: GenerationTone;
+  /** Type de contenu (angle éditorial : Conseil, Preuve, Offre…) — distinct de `themeId` (le
+   * sujet). Ne jamais y placer un libellé de thématique, ni l'inverse. */
+  contentType?: ContentType;
 }

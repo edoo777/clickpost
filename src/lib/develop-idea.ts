@@ -34,6 +34,7 @@ export function useDevelopIdea() {
       format: batch.formats[0],
       objective: batch.objective,
       targetAudience: batch.targetAudience,
+      contentType: topic.contentType,
       createdAt: now,
       updatedAt: now,
     };
