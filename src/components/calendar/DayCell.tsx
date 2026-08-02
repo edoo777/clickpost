@@ -1,5 +1,7 @@
 import type { DragEvent } from "react";
+import { HolidayBadge } from "@/components/calendar/HolidayBadge";
 import { PostChip } from "@/components/calendar/PostChip";
+import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
 const MAX_VISIBLE = 3;
@@ -17,6 +19,10 @@ interface DayCellProps {
   onDragLeave?: (event: DragEvent<HTMLDivElement>) => void;
   onDrop?: (event: DragEvent<HTMLDivElement>) => void;
   onCreateEmpty?: () => void;
+  /** Congés à afficher ce jour — optionnel, fourni uniquement par la page /calendrier dédiée
+   * (jamais par la vue Calendrier intégrée dans Publications, qui ne passe pas cette prop). */
+  holidays?: HolidayEvent[];
+  onSelectHoliday?: (holiday: HolidayEvent) => void;
 }
 
 export function DayCell({
@@ -30,6 +36,8 @@ export function DayCell({
   onDragLeave,
   onDrop,
   onCreateEmpty,
+  holidays,
+  onSelectHoliday,
 }: DayCellProps) {
   if (day === null) {
     return <div className="min-h-[6.5rem] rounded-lg" />;
@@ -69,6 +77,9 @@ export function DayCell({
         )}
       </div>
       <div className="flex flex-col gap-1">
+        {holidays?.map((holiday) => (
+          <HolidayBadge key={holiday.id} holiday={holiday} onClick={() => onSelectHoliday?.(holiday)} />
+        ))}
         {visible.map((post) => (
           <PostChip
             key={post.id}

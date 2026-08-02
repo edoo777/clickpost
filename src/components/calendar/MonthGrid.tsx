@@ -1,5 +1,6 @@
 import type { DragEvent } from "react";
 import { DayCell } from "@/components/calendar/DayCell";
+import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -27,6 +28,9 @@ interface MonthGridProps {
   onDragLeaveDay?: () => void;
   onDropOnDay?: (event: DragEvent<HTMLDivElement>, day: number) => void;
   onCreateOnDay?: (day: number) => void;
+  /** Congés — optionnel, fourni uniquement par /calendrier (jamais par Publications). */
+  holidays?: HolidayEvent[];
+  onSelectHoliday?: (holiday: HolidayEvent) => void;
 }
 
 export function MonthGrid({
@@ -40,6 +44,8 @@ export function MonthGrid({
   onDragLeaveDay,
   onDropOnDay,
   onCreateOnDay,
+  holidays,
+  onSelectHoliday,
 }: MonthGridProps) {
   const cells = buildMonthGrid(year, month);
   const today = new Date();
@@ -56,6 +62,19 @@ export function MonthGrid({
   }
   for (const list of postsByDay.values()) {
     list.sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime());
+  }
+
+  const holidaysByDay = new Map<number, HolidayEvent[]>();
+  for (const holiday of holidays ?? []) {
+    const start = new Date(`${holiday.startDate}T00:00:00`);
+    const end = new Date(`${holiday.endDate}T00:00:00`);
+    for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+      if (cursor.getFullYear() !== year || cursor.getMonth() !== month) continue;
+      const day = cursor.getDate();
+      const list = holidaysByDay.get(day) ?? [];
+      list.push(holiday);
+      holidaysByDay.set(day, list);
+    }
   }
 
   return (
@@ -82,6 +101,8 @@ export function MonthGrid({
             onDragLeave={day !== null ? onDragLeaveDay : undefined}
             onDrop={day !== null ? (event) => onDropOnDay?.(event, day) : undefined}
             onCreateEmpty={day !== null ? () => onCreateOnDay?.(day) : undefined}
+            holidays={day !== null ? (holidaysByDay.get(day) ?? []) : []}
+            onSelectHoliday={onSelectHoliday}
           />
         ))}
       </div>

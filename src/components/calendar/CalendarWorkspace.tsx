@@ -7,6 +7,7 @@ import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { PostChip } from "@/components/calendar/PostChip";
 import { WeekView } from "@/components/calendar/WeekView";
 import { usePostsSession } from "@/lib/posts-store";
+import type { HolidayEvent } from "@/types/holiday";
 import type { Publication, PublicationStatus } from "@/types/publication";
 
 export type CalendarMode = "month" | "week" | "day";
@@ -44,6 +45,10 @@ interface CalendarWorkspaceProps {
    * Publications ne la fournit pas : elle réutilise la barre de filtres déjà affichée par la
    * coquille Publications, pour ne jamais l'afficher deux fois. */
   filterBar?: ReactNode;
+  /** Congés — optionnel, fourni uniquement par la page dédiée /calendrier (jamais par la vue
+   * Calendrier intégrée dans Publications, qui ne passe pas ces props). */
+  holidayEvents?: HolidayEvent[];
+  onSelectHoliday?: (holiday: HolidayEvent) => void;
 }
 
 /**
@@ -64,6 +69,8 @@ export function CalendarWorkspace({
   showUnplanned,
   onToggleShowUnplanned,
   filterBar,
+  holidayEvents,
+  onSelectHoliday,
 }: CalendarWorkspaceProps) {
   const { patchPost, changeStatus } = usePostsSession();
   const [dropTargetKey, setDropTargetKey] = useState<string | number | null>(null);
@@ -147,6 +154,17 @@ export function CalendarWorkspace({
             </div>
           </div>
 
+          {holidayEvents && holidayEvents.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground ">
+              <span className="flex items-center gap-1">
+                <span aria-hidden="true">🟢</span> Congé officiel
+              </span>
+              <span className="flex items-center gap-1">
+                <span aria-hidden="true">•</span> Congé informatif
+              </span>
+            </div>
+          )}
+
           {mode === "month" && (
             <MonthGrid
               year={year}
@@ -172,6 +190,8 @@ export function CalendarWorkspace({
                 const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                 onCreateAt(dateKey);
               }}
+              holidays={holidayEvents}
+              onSelectHoliday={onSelectHoliday}
             />
           )}
 
@@ -193,6 +213,8 @@ export function CalendarWorkspace({
                 if (id) reschedule(id, dateKey);
               }}
               onCreateOnDay={(dateKey) => onCreateAt(dateKey)}
+              holidays={holidayEvents}
+              onSelectHoliday={onSelectHoliday}
             />
           )}
 
@@ -214,6 +236,8 @@ export function CalendarWorkspace({
                 if (id) reschedule(id, anchor);
               }}
               onCreateEmpty={() => onCreateAt(anchor)}
+              holidays={holidayEvents}
+              onSelectHoliday={onSelectHoliday}
             />
           )}
         </div>

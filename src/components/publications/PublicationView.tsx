@@ -29,7 +29,8 @@ function buildBlankPublication(
   settings: AgencySettings,
   members: TeamMember[],
   brand: Brand | undefined,
-  defaultDate?: string | null
+  defaultDate?: string | null,
+  defaultTitle?: string | null
 ): Publication {
   const account = brand
     ? accounts.find((candidate) => candidate.brand === brand.name && candidate.status === "connected") ??
@@ -50,7 +51,7 @@ function buildBlankPublication(
     theme: "",
     format: "image",
     objective: "",
-    excerpt: "",
+    excerpt: defaultTitle ?? "",
     text: "",
     cta: "",
     hashtags: [],
@@ -91,9 +92,13 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   }
 
   const existing = mode === "edit" ? posts.find((post) => post.id === id) : undefined;
+  const brandIdParam = searchParams.get("brandId");
+  const defaultBrand = (brandIdParam ? brands.find((brand) => brand.id === brandIdParam) : undefined) ?? brands[0];
 
   const [draft, setDraft] = useState<Publication>(
-    () => existing ?? buildBlankPublication(accounts, settings, members, brands[0], searchParams.get("date"))
+    () =>
+      existing ??
+      buildBlankPublication(accounts, settings, members, defaultBrand, searchParams.get("date"), searchParams.get("title"))
   );
   const [isEditing, setIsEditing] = useState(mode === "create");
 

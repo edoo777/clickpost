@@ -1,6 +1,8 @@
 import type { DragEvent } from "react";
 import { platformIcons } from "@/components/icons";
+import { HolidayBadge } from "@/components/calendar/HolidayBadge";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
 const timeFormatter = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -14,12 +16,27 @@ interface DayViewProps {
   onDragLeave: () => void;
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onCreateEmpty: () => void;
+  /** Congés — optionnel, fourni uniquement par /calendrier (jamais par Publications). */
+  holidays?: HolidayEvent[];
+  onSelectHoliday?: (holiday: HolidayEvent) => void;
 }
 
-export function DayView({ date, posts, onSelectPost, isDropTarget, onDragOver, onDragLeave, onDrop, onCreateEmpty }: DayViewProps) {
+export function DayView({
+  date,
+  posts,
+  onSelectPost,
+  isDropTarget,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onCreateEmpty,
+  holidays,
+  onSelectHoliday,
+}: DayViewProps) {
   const dayPosts = posts
     .filter((post) => post.scheduledFor.slice(0, 10) === date)
     .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime());
+  const dayHolidays = (holidays ?? []).filter((holiday) => holiday.startDate <= date && date <= holiday.endDate);
 
   return (
     <div
@@ -44,6 +61,13 @@ export function DayView({ date, posts, onSelectPost, isDropTarget, onDragOver, o
       </div>
 
       <div className="flex flex-col gap-2">
+        {dayHolidays.length > 0 && (
+          <div className="flex flex-col gap-1">
+            {dayHolidays.map((holiday) => (
+              <HolidayBadge key={holiday.id} holiday={holiday} onClick={() => onSelectHoliday?.(holiday)} />
+            ))}
+          </div>
+        )}
         {dayPosts.map((post) => {
           const Icon = platformIcons[post.platform];
           return (

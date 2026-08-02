@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { IconClose } from "@/components/icons";
 import { ALL_IMPORTANT_DATE_CATEGORIES, type ImportantDatesFiltersValue } from "@/components/calendar/calendrier-page-state";
 import { useBrandsSession } from "@/lib/brands-store";
+import { ANNUAL_EVENT_DEFINITIONS } from "@/lib/holidays/annual-events";
 import { type ImportantDateDraft, useImportantDatesSession } from "@/lib/important-dates-store";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { ImportantDate, ImportantDateCategory } from "@/types/important-date";
@@ -50,6 +51,9 @@ interface ImportantDatesPanelProps {
   filters: ImportantDatesFiltersValue;
   onChangeFilters: (value: ImportantDatesFiltersValue) => void;
   onCreatePublicationFromEvent: (entry: ImportantDate) => void;
+  /** Section « Congés officiels » (date-holidays) — rendue au-dessus des couches manuelles.
+   * Optionnelle pour ne rien changer au comportement du panneau si jamais absente. */
+  holidaysSlot?: ReactNode;
 }
 
 /** Panneau « Dates importantes » — propre à /calendrier, jamais rendu dans la vue Calendrier
@@ -63,6 +67,7 @@ export function ImportantDatesPanel({
   filters,
   onChangeFilters,
   onCreatePublicationFromEvent,
+  holidaysSlot,
 }: ImportantDatesPanelProps) {
   const { importantDates, addImportantDate, updateImportantDate, archiveImportantDate, restoreImportantDate } =
     useImportantDatesSession();
@@ -160,6 +165,8 @@ export function ImportantDatesPanel({
         </div>
       </div>
 
+      {holidaysSlot}
+
       {!canManage && !isWorkspaceLoading && !workspaceError && (
         <p className="rounded-lg bg-zinc-100 px-2.5 py-2 text-[11px] text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
           Lecture seule — la création et la modification sont réservées aux rôles Propriétaire et Administrateur.
@@ -243,6 +250,31 @@ export function ImportantDatesPanel({
               </option>
             ))}
           </select>
+          {draft.category === "annual_event" && (
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] text-muted-foreground ">
+                Suggestions (préremplissent le formulaire — jamais créées automatiquement) :
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {ANNUAL_EVENT_DEFINITIONS.map((definition) => (
+                  <button
+                    key={definition.key}
+                    type="button"
+                    onClick={() => {
+                      const year = draft.startDate ? new Date(`${draft.startDate}T00:00:00`).getFullYear() : new Date().getFullYear();
+                      const computed = definition.compute(year);
+                      setDraft({ ...draft, title: definition.label, startDate: computed.startDate, endDate: computed.endDate });
+                    }}
+                    className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground hover:border-zinc-400 dark:hover:border-white/[.16]"
+                    title={definition.approximate ? "Date approximative — convention courante, à vérifier" : undefined}
+                  >
+                    {definition.label}
+                    {definition.approximate ? " *" : ""}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="Titre" className={FIELD_CLASS} />
           <input value={draft.description ?? ""} onChange={(event) => setDraft({ ...draft, description: event.target.value })} placeholder="Description (optionnel)" className={FIELD_CLASS} />
           <div className="grid grid-cols-2 gap-2">

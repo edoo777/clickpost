@@ -24,6 +24,32 @@ export const DEFAULT_IMPORTANT_DATES_FILTERS: ImportantDatesFiltersValue = {
   activeCategories: ALL_IMPORTANT_DATE_CATEGORIES,
 };
 
+export interface HolidaysLayerState {
+  /** null = pays non déterminé — le panneau invite alors l'utilisateur à en choisir un. */
+  countryCode: string | null;
+  regionCode: string | null;
+  year: number;
+  locale: string;
+  searchQuery: string;
+  /** Affichage dans le calendrier — indépendant de la présence dans la liste du panneau. */
+  layerEnabled: boolean;
+  /** Résolution automatique (profil/marque) déjà tentée une fois cette session — évite de
+   * ré-écraser un choix manuel explicite de l'utilisateur à chaque montage. */
+  autoResolveAttempted: boolean;
+}
+
+const CURRENT_YEAR = new Date().getFullYear();
+
+const DEFAULT_HOLIDAYS_STATE: HolidaysLayerState = {
+  countryCode: null,
+  regionCode: null,
+  year: CURRENT_YEAR,
+  locale: "fr",
+  searchQuery: "",
+  layerEnabled: true,
+  autoResolveAttempted: false,
+};
+
 export interface CalendrierPageState {
   mode: CalendarMode;
   anchor: string;
@@ -33,6 +59,7 @@ export interface CalendrierPageState {
   /** Panneau « Dates importantes » — replié sur desktop (persisté, comme la sidebar). */
   isImportantDatesPanelCollapsed: boolean;
   importantDatesFilters: ImportantDatesFiltersValue;
+  holidays: HolidaysLayerState;
 }
 
 const DEFAULT_STATE: CalendrierPageState = {
@@ -43,6 +70,7 @@ const DEFAULT_STATE: CalendrierPageState = {
   scrollY: 0,
   isImportantDatesPanelCollapsed: false,
   importantDatesFilters: DEFAULT_IMPORTANT_DATES_FILTERS,
+  holidays: DEFAULT_HOLIDAYS_STATE,
 };
 
 /** État d'affichage propre à la page dédiée /calendrier — distinct de celui de la vue Calendrier

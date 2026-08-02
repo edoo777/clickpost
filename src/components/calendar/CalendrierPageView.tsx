@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { CalendarWorkspace } from "@/components/calendar/CalendarWorkspace";
+import { HolidaysSection } from "@/components/calendar/HolidaysSection";
 import { ImportantDatesPanel } from "@/components/calendar/ImportantDatesPanel";
 import {
   getCalendrierPageServerSnapshot,
@@ -12,7 +13,13 @@ import {
 } from "@/components/calendar/calendrier-page-state";
 import { PublicationsFilters } from "@/components/publications/PublicationsFilters";
 import { filterPublications } from "@/components/publications/view/filter-sort-publications";
+import { useBrandsSession } from "@/lib/brands-store";
+import { resolveDefaultCountryCode } from "@/lib/holidays/resolve-default-region";
+import { useHolidayOptions } from "@/lib/holidays/use-holiday-options";
+import { useHolidays } from "@/lib/holidays/use-holidays";
 import { usePostsSession } from "@/lib/posts-store";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
+import type { HolidayEvent } from "@/types/holiday";
 import type { ImportantDate } from "@/types/important-date";
 
 /**
@@ -25,11 +32,24 @@ import type { ImportantDate } from "@/types/important-date";
 export function CalendrierPageView() {
   const router = useRouter();
   const { posts } = usePostsSession();
+  const { profile } = useWorkspaceSession();
+  const { activeBrand, activeBrandId } = useBrandsSession();
   const state = useSyncExternalStore(subscribeCalendrierPage, getCalendrierPageSnapshot, getCalendrierPageServerSnapshot);
   const hasRestoredScroll = useRef(false);
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+  const [selectedHoliday, setSelectedHoliday] = useState<HolidayEvent | null>(null);
 
   const filtered = filterPublications(posts, state.filters);
+  const holidaysState = state.holidays;
+
+  const { countries, regions, isLoading: optionsLoading } = useHolidayOptions(holidaysState.countryCode, holidaysState.locale);
+  const holidaysResult = useHolidays({
+    countryCode: holidaysState.countryCode,
+    regionCode: holidaysState.regionCode,
+    year: holidaysState.year,
+    locale: holidaysState.locale,
+    enabled: holidaysState.layerEnabled && Boolean(holidaysState.countryCode),
+  });
 
   useEffect(() => {
     if (hasRestoredScroll.current) return;
@@ -39,6 +59,14 @@ export function CalendrierPageView() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Résolution automatique du pays par défaut (profil puis marché de la marque active) — une
+  // seule fois par session, jamais bloquante, jamais réécrite sur un choix manuel explicite.
+  useEffect(() => {
+    if (holidaysState.countryCode || holidaysState.autoResolveAttempted || countries.length === 0) return;
+    const resolved = resolveDefaultCountryCode(profile?.country, activeBrand?.market, countries);
+    patchCalendrierPage({ holidays: { ...holidaysState, countryCode: resolved, autoResolveAttempted: true } });
+  }, [holidaysState, countries, profile, activeBrand]);
 
   function saveScrollPosition() {
     if (typeof window === "undefined") return;
@@ -60,6 +88,15 @@ export function CalendrierPageView() {
     // l'utilisateur doit toujours l'enregistrer lui-même (voir PublicationView.tsx, inchangé).
     saveScrollPosition();
     router.push(`/publications/new?date=${entry.startDate}&from=calendrier`);
+  }
+
+  function handleCreatePublicationFromHoliday(holiday: HolidayEvent) {
+    // Même principe : préremplissage date + titre + marque active, jamais d'enregistrement
+    // automatique (voir buildBlankPublication dans PublicationView.tsx).
+    saveScrollPosition();
+    const params = new URLSearchParams({ date: holiday.startDate, title: holiday.title, from: "calendrier" });
+    if (activeBrandId) params.set("brandId", activeBrandId);
+    router.push(`/publications/new?${params.toString()}`);
   }
 
   return (
@@ -95,6 +132,8 @@ export function CalendrierPageView() {
             filterBar={
               <PublicationsFilters value={state.filters} onChange={(filters) => patchCalendrierPage({ filters })} />
             }
+            holidayEvents={holidaysState.layerEnabled ? holidaysResult.holidays : undefined}
+            onSelectHoliday={setSelectedHoliday}
           />
         </div>
 
@@ -103,6 +142,19 @@ export function CalendrierPageView() {
           onToggleCollapsed={() => patchCalendrierPage({ isImportantDatesPanelCollapsed: !state.isImportantDatesPanelCollapsed })}
           isMobileOpen={isMobilePanelOpen}
           onCloseMobile={() => setIsMobilePanelOpen(false)}
+          holidaysSlot={
+            <HolidaysSection
+              value={holidaysState}
+              onChange={(patch) => patchCalendrierPage({ holidays: { ...holidaysState, ...patch } })}
+              countries={countries}
+              regions={regions}
+              optionsLoading={optionsLoading}
+              holidaysResult={holidaysResult}
+              selectedHoliday={selectedHoliday}
+              onSelectHoliday={setSelectedHoliday}
+              onCreatePublicationFromHoliday={handleCreatePublicationFromHoliday}
+            />
+          }
           filters={state.importantDatesFilters}
           onChangeFilters={(importantDatesFilters) => patchCalendrierPage({ importantDatesFilters })}
           onCreatePublicationFromEvent={handleCreatePublicationFromEvent}

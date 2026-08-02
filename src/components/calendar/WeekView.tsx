@@ -1,5 +1,7 @@
 import type { DragEvent } from "react";
+import { HolidayBadge } from "@/components/calendar/HolidayBadge";
 import { PostChip } from "@/components/calendar/PostChip";
+import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
 const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -25,6 +27,9 @@ interface WeekViewProps {
   onDragLeaveDay: () => void;
   onDropOnDay: (event: DragEvent<HTMLDivElement>, date: string) => void;
   onCreateOnDay: (date: string) => void;
+  /** Congés — optionnel, fourni uniquement par /calendrier (jamais par Publications). */
+  holidays?: HolidayEvent[];
+  onSelectHoliday?: (holiday: HolidayEvent) => void;
 }
 
 export function WeekView({
@@ -36,6 +41,8 @@ export function WeekView({
   onDragLeaveDay,
   onDropOnDay,
   onCreateOnDay,
+  holidays,
+  onSelectHoliday,
 }: WeekViewProps) {
   const start = startOfWeek(anchor);
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -54,6 +61,18 @@ export function WeekView({
   }
   for (const list of postsByDate.values()) {
     list.sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime());
+  }
+
+  const holidaysByDate = new Map<string, HolidayEvent[]>();
+  for (const holiday of holidays ?? []) {
+    const start = new Date(`${holiday.startDate}T00:00:00`);
+    const end = new Date(`${holiday.endDate}T00:00:00`);
+    for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+      const key = isoDate(cursor);
+      const list = holidaysByDate.get(key) ?? [];
+      list.push(holiday);
+      holidaysByDate.set(key, list);
+    }
   }
 
   return (
@@ -87,6 +106,9 @@ export function WeekView({
               </button>
             </div>
             <div className="flex flex-col gap-1">
+              {(holidaysByDate.get(key) ?? []).map((holiday) => (
+                <HolidayBadge key={holiday.id} holiday={holiday} onClick={() => onSelectHoliday?.(holiday)} />
+              ))}
               {dayPosts.map((post) => (
                 <PostChip
                   key={post.id}
