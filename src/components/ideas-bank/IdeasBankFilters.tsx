@@ -14,7 +14,7 @@ import type { ContentPriority, ContentSource } from "@/types/publication";
 import type { TopicBatch } from "@/types/topic-batch";
 
 export type IdeasBankGroupBy = "none" | "theme" | "batch" | "campaign";
-export type IdeasBankViewMode = "cards" | "table" | "kanban";
+export type IdeasBankViewMode = "cards" | "table" | "kanban" | "notes";
 
 export interface IdeasBankFiltersValue {
   search: string;
@@ -79,6 +79,8 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
 
   return (
     <div className="flex flex-col gap-3">
+      {value.viewMode !== "notes" && (
+        <>
       <div className="flex flex-wrap items-center gap-3">
         <input
           type="search"
@@ -253,6 +255,8 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
           <option value="campaign">Regrouper par campagne</option>
         </select>
       </div>
+        </>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1 rounded-lg border border-border p-1 ">
@@ -289,15 +293,28 @@ export function IdeasBankFilters({ value, onChange, batches, onNewIdea }: IdeasB
           >
             Kanban
           </button>
+          <button
+            type="button"
+            onClick={() => onChange({ ...value, viewMode: "notes" })}
+            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              value.viewMode === "notes"
+                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20"
+                : "text-muted-foreground "
+            }`}
+          >
+            Notes
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={onNewIdea}
-          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
-        >
-          + Nouvelle idée
-        </button>
+        {value.viewMode !== "notes" && (
+          <button
+            type="button"
+            onClick={onNewIdea}
+            className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
+          >
+            + Nouvelle idée
+          </button>
+        )}
       </div>
     </div>
   );

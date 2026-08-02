@@ -1,19 +1,27 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/lib/ai/anthropic-client";
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
-import { buildQuickActionPrompt } from "@/lib/ai/quick-action-prompt";
+import { buildNoteQuickActionPrompt, buildQuickActionPrompt, type QuickActionPrompt } from "@/lib/ai/quick-action-prompt";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
-import { validateQuickActionRequest } from "@/lib/ai/validate-quick-action-request";
+import {
+  isNoteQuickActionKind,
+  validateNoteQuickActionRequest,
+  validateQuickActionRequest,
+} from "@/lib/ai/validate-quick-action-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-/** Action IA rapide et ciblée sur un seul champ court d'une idée de la Banque (voir
- * src/lib/ai/quick-actions.ts pour le catalogue). Réutilise le client Anthropic serveur, le
- * rate-limit et l'authentification déjà en place pour /api/ia/generateur/topics et
- * /api/ia/atelier/generation-complete — aucun second moteur IA. Ne lit ni n'écrit aucune donnée
- * Supabase : seul le texte transmis explicitement par le client (titre, description courte,
- * ton de marque, plateforme cible) est envoyé à Claude, jamais le profil complet de la marque. */
+/** Action IA rapide et ciblée — soit sur un seul champ court d'une idée de la Banque, soit sur le
+ * contenu d'une note (voir src/lib/ai/quick-actions.ts pour les deux catalogues). Réutilise le
+ * client Anthropic serveur, le rate-limit et l'authentification déjà en place pour
+ * /api/ia/generateur/topics et /api/ia/atelier/generation-complete — aucun second moteur IA, une
+ * seule route pour les deux familles d'actions. Ne lit ni n'écrit aucune donnée Supabase : seul
+ * le texte transmis explicitement par le client est envoyé à Claude, jamais le profil complet de
+ * la marque ni l'historique de conversation. */
 
-const MAX_TOKENS = 700;
+const MAX_TOKENS_FIELD = 700;
+const MAX_TOKENS_NOTE = 2500;
+const MAX_ITEM_LENGTH_FIELD = 800;
+const MAX_ITEM_LENGTH_NOTE = 8000;
 
 function errorResponse(code: string, message: string, status: number) {
   return NextResponse.json({ status: "error", code, message }, { status });
@@ -32,14 +40,32 @@ export async function POST(request: Request) {
   }
 
   const rawBody = await request.json().catch(() => null);
-  const validation = validateQuickActionRequest(rawBody);
-  if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
+  const isNoteAction = isNoteQuickActionKind((rawBody as Record<string, unknown> | null)?.action);
+
+  let prompt: QuickActionPrompt;
+  let actionKey: string;
+  let maxTokens: number;
+  let maxItemLength: number;
+
+  if (isNoteAction) {
+    const validation = validateNoteQuickActionRequest(rawBody);
+    if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
+    prompt = buildNoteQuickActionPrompt(validation.value);
+    actionKey = validation.value.action;
+    maxTokens = MAX_TOKENS_NOTE;
+    maxItemLength = MAX_ITEM_LENGTH_NOTE;
+  } else {
+    const validation = validateQuickActionRequest(rawBody);
+    if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
+    prompt = buildQuickActionPrompt(validation.value);
+    actionKey = validation.value.action;
+    maxTokens = MAX_TOKENS_FIELD;
+    maxItemLength = MAX_ITEM_LENGTH_FIELD;
+  }
 
   if (!isAnthropicConfigured()) {
     return errorResponse("not_configured", "Intégration Claude non configurée sur ce serveur.", 503);
   }
-
-  const prompt = buildQuickActionPrompt(validation.value);
 
   try {
     const client = getAnthropicClient();
@@ -47,7 +73,7 @@ export async function POST(request: Request) {
 
     const response = await client.messages.create({
       model,
-      max_tokens: MAX_TOKENS,
+      max_tokens: maxTokens,
       system: prompt.system,
       messages: [{ role: "user", content: prompt.user }],
     });
@@ -73,12 +99,12 @@ export async function POST(request: Request) {
     console.info("[ia/banque/quick-action] exécutée", {
       userId: user.id,
       model,
-      action: validation.value.action,
+      action: actionKey,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     });
 
-    return NextResponse.json({ status: "ok", items: items.map((item) => item.slice(0, 800)) });
+    return NextResponse.json({ status: "ok", items: items.map((item) => item.slice(0, maxItemLength)) });
   } catch (error) {
     const classified = classifyAnthropicError(error);
     if (classified.code === "unknown_error") {

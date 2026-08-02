@@ -3,6 +3,7 @@ import type { Campaign } from "@/types/campaign";
 import type { ContentVersion } from "@/types/content-version";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
+import type { IdeaNote } from "@/types/idea-note";
 import type { ImportantDate } from "@/types/important-date";
 import type { Publication } from "@/types/publication";
 import type { SavedView } from "@/types/saved-view";
@@ -28,6 +29,7 @@ export interface WorkspaceData {
   topicBatches: TopicBatch[];
   topics: Topic[];
   ideas: Idea[];
+  ideaNotes: IdeaNote[];
   contentVersions: ContentVersion[];
   workflowStages: WorkflowStage[];
   savedViews: SavedView[];

@@ -66,3 +66,62 @@ export interface QuickActionRequestInput {
   brandTone?: string;
   targetPlatform?: SocialPlatform;
 }
+
+/**
+ * Actions IA rapides de la vue Notes — opèrent sur un contenu long (note entière ou sélection
+ * de texte dans l'éditeur), jamais sur un champ structuré unique comme les actions ci-dessus.
+ * Même route serveur, même architecture Anthropic — un second lot d'actions, pas un second moteur.
+ */
+export type NoteQuickActionKind =
+  | "note_clarify"
+  | "note_structure"
+  | "note_summarize"
+  | "note_expand"
+  | "note_three_angles"
+  | "note_plan"
+  | "note_hook"
+  | "note_reformulate"
+  | "note_correct"
+  | "note_brand_tone"
+  | "note_to_publication";
+
+export interface NoteQuickActionDefinition {
+  key: NoteQuickActionKind;
+  label: string;
+  isList: boolean;
+  requiresBrandTone?: boolean;
+}
+
+export const NOTE_QUICK_ACTIONS: NoteQuickActionDefinition[] = [
+  { key: "note_clarify", label: "Clarifier la note", isList: false },
+  { key: "note_structure", label: "Structurer la réflexion", isList: false },
+  { key: "note_summarize", label: "Résumer", isList: false },
+  { key: "note_expand", label: "Développer l'idée", isList: false },
+  { key: "note_three_angles", label: "Proposer trois angles", isList: true },
+  { key: "note_plan", label: "Transformer en plan", isList: false },
+  { key: "note_hook", label: "Générer une accroche", isList: false },
+  { key: "note_reformulate", label: "Reformuler", isList: false },
+  { key: "note_correct", label: "Corriger le texte", isList: false },
+  { key: "note_brand_tone", label: "Adapter au ton de la marque", isList: false, requiresBrandTone: true },
+  { key: "note_to_publication", label: "Transformer en publication", isList: false },
+];
+
+export const ALL_NOTE_QUICK_ACTION_KEYS: NoteQuickActionKind[] = NOTE_QUICK_ACTIONS.map((action) => action.key);
+
+export function getNoteQuickAction(key: NoteQuickActionKind): NoteQuickActionDefinition {
+  const found = NOTE_QUICK_ACTIONS.find((action) => action.key === key);
+  if (!found) throw new Error(`Action IA rapide inconnue : ${key}`);
+  return found;
+}
+
+export type AnyQuickActionKind = QuickActionKind | NoteQuickActionKind;
+
+export interface NoteQuickActionRequestInput {
+  action: NoteQuickActionKind;
+  /** Titre de la note — contexte informatif facultatif, jamais le champ ciblé par l'action. */
+  title?: string;
+  /** Contenu sur lequel appliquer l'action : la note entière, ou uniquement le texte sélectionné
+   * dans l'éditeur. Toujours du texte brut (jamais le JSON Tiptap envoyé au serveur). */
+  content: string;
+  brandTone?: string;
+}

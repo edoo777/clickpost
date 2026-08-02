@@ -6,6 +6,7 @@ export type SyncEntityType =
   | "topicBatches"
   | "topics"
   | "ideas"
+  | "ideaNotes"
   | "contentVersions"
   | "workflowStages"
   | "savedViews"
@@ -20,6 +21,7 @@ export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   topicBatches: "topic_batches",
   topics: "topics",
   ideas: "ideas",
+  ideaNotes: "idea_notes",
   contentVersions: "content_versions",
   workflowStages: "workflow_stages",
   savedViews: "saved_views",

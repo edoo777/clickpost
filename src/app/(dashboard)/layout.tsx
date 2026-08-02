@@ -8,6 +8,7 @@ import { AccountsSessionProvider } from "@/lib/accounts-store";
 import { BrandsSessionProvider } from "@/lib/brands-store";
 import { CampaignsSessionProvider } from "@/lib/campaigns-store";
 import { ContentWorkspaceProvider } from "@/lib/content-workspace-store";
+import { IdeaNotesSessionProvider } from "@/lib/idea-notes-store";
 import { ImportantDatesSessionProvider } from "@/lib/important-dates-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
 import { SettingsSessionProvider } from "@/lib/settings-store";
@@ -27,18 +28,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <ThemesSessionProvider>
                   <CampaignsSessionProvider>
                     <ContentWorkspaceProvider>
-                      <ImportantDatesSessionProvider>
-                        <UserProfileSessionProvider>
-                          <SidebarStateProvider>
-                            <div className="flex h-dvh w-full flex-col bg-background">
-                              <Sidebar />
-                              <TopBar />
-                              <DashboardMainContent>{children}</DashboardMainContent>
-                              <FloatingAssistantButton />
-                            </div>
-                          </SidebarStateProvider>
-                        </UserProfileSessionProvider>
-                      </ImportantDatesSessionProvider>
+                      <IdeaNotesSessionProvider>
+                        <ImportantDatesSessionProvider>
+                          <UserProfileSessionProvider>
+                            <SidebarStateProvider>
+                              <div className="flex h-dvh w-full flex-col bg-background">
+                                <Sidebar />
+                                <TopBar />
+                                <DashboardMainContent>{children}</DashboardMainContent>
+                                <FloatingAssistantButton />
+                              </div>
+                            </SidebarStateProvider>
+                          </UserProfileSessionProvider>
+                        </ImportantDatesSessionProvider>
+                      </IdeaNotesSessionProvider>
                     </ContentWorkspaceProvider>
                   </CampaignsSessionProvider>
                 </ThemesSessionProvider>

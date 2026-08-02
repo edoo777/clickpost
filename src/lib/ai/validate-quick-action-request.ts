@@ -1,9 +1,12 @@
-import { ALL_QUICK_ACTION_KEYS, type QuickActionKind } from "@/lib/ai/quick-actions";
+import { ALL_NOTE_QUICK_ACTION_KEYS, ALL_QUICK_ACTION_KEYS, type NoteQuickActionKind, type QuickActionKind } from "@/lib/ai/quick-actions";
 import type { SocialPlatform } from "@/types/dashboard";
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest", "other"];
 const MAX_TITLE_LENGTH = 200;
 const MAX_TEXT_LENGTH = 800;
+/** Une note peut être bien plus longue qu'une description d'idée — plafond généreux mais borné,
+ * cohérent avec les autres limites de texte envoyées à Claude côté serveur. */
+const MAX_NOTE_CONTENT_LENGTH = 8000;
 
 export interface ValidatedQuickActionRequest {
   action: QuickActionKind;
@@ -48,4 +51,35 @@ export function validateQuickActionRequest(body: unknown): QuickActionRequestVal
   }
 
   return { valid: true, value: { action: action as QuickActionKind, title, description, brandTone, targetPlatform } };
+}
+
+export interface ValidatedNoteQuickActionRequest {
+  action: NoteQuickActionKind;
+  title?: string;
+  content: string;
+  brandTone?: string;
+}
+
+export type NoteQuickActionRequestValidation =
+  | { valid: true; value: ValidatedNoteQuickActionRequest }
+  | { valid: false; message: string };
+
+export function isNoteQuickActionKind(action: unknown): action is NoteQuickActionKind {
+  return typeof action === "string" && ALL_NOTE_QUICK_ACTION_KEYS.includes(action as NoteQuickActionKind);
+}
+
+export function validateNoteQuickActionRequest(body: unknown): NoteQuickActionRequestValidation {
+  if (typeof body !== "object" || body === null) return { valid: false, message: "Corps de requête invalide." };
+  const record = body as Record<string, unknown>;
+
+  const action = record.action;
+  if (!isNoteQuickActionKind(action)) return { valid: false, message: "Action IA rapide invalide." };
+
+  const content = boundedText(record.content, MAX_NOTE_CONTENT_LENGTH);
+  if (!content) return { valid: false, message: "Contenu requis." };
+
+  const title = boundedText(record.title, MAX_TITLE_LENGTH);
+  const brandTone = boundedText(record.brandTone, 200);
+
+  return { valid: true, value: { action, title, content, brandTone } };
 }

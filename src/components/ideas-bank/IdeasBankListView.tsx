@@ -12,6 +12,7 @@ import {
 import { IdeasBankKanban } from "@/components/ideas-bank/IdeasBankKanban";
 import { IdeasBankTable } from "@/components/ideas-bank/IdeasBankTable";
 import { IdeaQuickEditPanel, type IdeaQuickEditValue } from "@/components/ideas-bank/IdeaQuickEditPanel";
+import { NotesView } from "@/components/ideas-bank/notes/NotesView";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
@@ -232,7 +233,7 @@ export function IdeasBankListView() {
 
       <IdeasBankFilters value={filters} onChange={setFilters} batches={topicBatches} onNewIdea={openCreatePanel} />
 
-      {selectedIds.size > 0 && (
+      {filters.viewMode !== "notes" && selectedIds.size > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-zinc-50 px-3 py-2  dark:bg-zinc-900/40">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {selectedIds.size} idée{selectedIds.size > 1 ? "s" : ""} sélectionnée{selectedIds.size > 1 ? "s" : ""}
@@ -284,7 +285,9 @@ export function IdeasBankListView() {
         </div>
       )}
 
-      {filters.viewMode === "kanban" ? (
+      {filters.viewMode === "notes" ? (
+        <NotesView />
+      ) : filters.viewMode === "kanban" ? (
         filters.brandId === "all" ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
             Sélectionnez une marque pour afficher le Kanban.
