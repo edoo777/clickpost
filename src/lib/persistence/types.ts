@@ -3,6 +3,7 @@ import type { Campaign } from "@/types/campaign";
 import type { ContentVersion } from "@/types/content-version";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
+import type { ImportantDate } from "@/types/important-date";
 import type { Publication } from "@/types/publication";
 import type { SavedView } from "@/types/saved-view";
 import type { AgencySettings } from "@/types/settings";
@@ -31,6 +32,7 @@ export interface WorkspaceData {
   workflowStages: WorkflowStage[];
   savedViews: SavedView[];
   userProfiles: Record<string, UserProfileExtra>;
+  importantDates: ImportantDate[];
 }
 
 export type WorkspaceKey = keyof WorkspaceData;

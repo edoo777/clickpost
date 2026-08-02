@@ -14,6 +14,7 @@ export const CONFLICT_ENTITY_LABEL: Record<SyncEntityType, string> = {
   workflowStages: "Étape de workflow",
   savedViews: "Vue enregistrée",
   posts: "Publication",
+  importantDates: "Date importante",
 };
 
 const TITLE_FIELD_BY_ENTITY: Partial<Record<SyncEntityType, string>> = {
@@ -28,6 +29,7 @@ const TITLE_FIELD_BY_ENTITY: Partial<Record<SyncEntityType, string>> = {
   workflowStages: "name",
   savedViews: "name",
   posts: "excerpt",
+  importantDates: "title",
 };
 
 function readStringField(record: Record<string, unknown> | null | undefined, field: string): string | undefined {

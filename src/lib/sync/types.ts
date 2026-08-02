@@ -9,7 +9,8 @@ export type SyncEntityType =
   | "contentVersions"
   | "workflowStages"
   | "savedViews"
-  | "posts";
+  | "posts"
+  | "importantDates";
 
 export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   accounts: "accounts",
@@ -23,6 +24,7 @@ export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   workflowStages: "workflow_stages",
   savedViews: "saved_views",
   posts: "publications",
+  importantDates: "important_dates",
 };
 
 export type SyncOperationKind = "upsert" | "delete";

@@ -1,6 +1,28 @@
 import type { CalendarMode } from "@/components/calendar/CalendarWorkspace";
 import { DEFAULT_PUBLICATIONS_FILTERS, type PublicationsFiltersValue } from "@/components/publications/PublicationsFilters";
 import { createSessionStore } from "@/lib/session-storage-store";
+import type { ImportantDateCategory } from "@/types/important-date";
+
+export const ALL_IMPORTANT_DATE_CATEGORIES: ImportantDateCategory[] = [
+  "holiday",
+  "annual_event",
+  "organization",
+  "brand_campaign",
+];
+
+export interface ImportantDatesFiltersValue {
+  country: string | "all";
+  region: string | "all";
+  brandId: string | "all";
+  activeCategories: ImportantDateCategory[];
+}
+
+export const DEFAULT_IMPORTANT_DATES_FILTERS: ImportantDatesFiltersValue = {
+  country: "all",
+  region: "all",
+  brandId: "all",
+  activeCategories: ALL_IMPORTANT_DATE_CATEGORIES,
+};
 
 export interface CalendrierPageState {
   mode: CalendarMode;
@@ -8,6 +30,9 @@ export interface CalendrierPageState {
   filters: PublicationsFiltersValue;
   showUnplanned: boolean;
   scrollY: number;
+  /** Panneau « Dates importantes » — replié sur desktop (persisté, comme la sidebar). */
+  isImportantDatesPanelCollapsed: boolean;
+  importantDatesFilters: ImportantDatesFiltersValue;
 }
 
 const DEFAULT_STATE: CalendrierPageState = {
@@ -16,6 +41,8 @@ const DEFAULT_STATE: CalendrierPageState = {
   filters: DEFAULT_PUBLICATIONS_FILTERS,
   showUnplanned: true,
   scrollY: 0,
+  isImportantDatesPanelCollapsed: false,
+  importantDatesFilters: DEFAULT_IMPORTANT_DATES_FILTERS,
 };
 
 /** État d'affichage propre à la page dédiée /calendrier — distinct de celui de la vue Calendrier

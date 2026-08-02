@@ -8,6 +8,7 @@ import { AccountsSessionProvider } from "@/lib/accounts-store";
 import { BrandsSessionProvider } from "@/lib/brands-store";
 import { CampaignsSessionProvider } from "@/lib/campaigns-store";
 import { ContentWorkspaceProvider } from "@/lib/content-workspace-store";
+import { ImportantDatesSessionProvider } from "@/lib/important-dates-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
 import { SettingsSessionProvider } from "@/lib/settings-store";
 import { SidebarStateProvider } from "@/lib/sidebar-store";
@@ -26,16 +27,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <ThemesSessionProvider>
                   <CampaignsSessionProvider>
                     <ContentWorkspaceProvider>
-                      <UserProfileSessionProvider>
-                        <SidebarStateProvider>
-                          <div className="flex h-dvh w-full flex-col bg-background">
-                            <Sidebar />
-                            <TopBar />
-                            <DashboardMainContent>{children}</DashboardMainContent>
-                            <FloatingAssistantButton />
-                          </div>
-                        </SidebarStateProvider>
-                      </UserProfileSessionProvider>
+                      <ImportantDatesSessionProvider>
+                        <UserProfileSessionProvider>
+                          <SidebarStateProvider>
+                            <div className="flex h-dvh w-full flex-col bg-background">
+                              <Sidebar />
+                              <TopBar />
+                              <DashboardMainContent>{children}</DashboardMainContent>
+                              <FloatingAssistantButton />
+                            </div>
+                          </SidebarStateProvider>
+                        </UserProfileSessionProvider>
+                      </ImportantDatesSessionProvider>
                     </ContentWorkspaceProvider>
                   </CampaignsSessionProvider>
                 </ThemesSessionProvider>
