@@ -40,6 +40,11 @@ interface CalendarWorkspaceProps {
   onCreateAt: (date: string) => void;
   showUnplanned: boolean;
   onToggleShowUnplanned: () => void;
+  /** Panneau « Non planifiées » — affiché par défaut (comportement inchangé pour la vue
+   * Calendrier intégrée dans Publications). La page dédiée /calendrier le désactive : cette
+   * fonctionnalité y est retirée pour laisser toute la largeur au calendrier, mais reste
+   * disponible telle quelle dans Publications. */
+  showUnplannedPanel?: boolean;
   /** Barre de filtres propre à l'appelant (recherche, marque, réseau, statut, responsable) —
    * rendue au-dessus du calendrier uniquement si fournie. La vue Calendrier intégrée dans
    * Publications ne la fournit pas : elle réutilise la barre de filtres déjà affichée par la
@@ -68,6 +73,7 @@ export function CalendarWorkspace({
   onCreateAt,
   showUnplanned,
   onToggleShowUnplanned,
+  showUnplannedPanel = true,
   filterBar,
   holidayEvents,
   onSelectHoliday,
@@ -242,44 +248,46 @@ export function CalendarWorkspace({
           )}
         </div>
 
-        <aside className="flex w-full flex-col gap-2 rounded-xl border border-border bg-surface p-3 lg:w-64  ">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground ">
-              Non planifiées ({unplanned.length})
-            </h2>
-            <button
-              type="button"
-              onClick={onToggleShowUnplanned}
-              className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
-            >
-              {showUnplanned ? "Masquer" : "Afficher"}
-            </button>
-          </div>
-          {showUnplanned && (
-            <>
-              <p className="text-[11px] text-muted-foreground ">
-                Glissez une publication vers une date pour la planifier.
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {unplanned.map((post) => (
-                  <PostChip
-                    key={post.id}
-                    post={post}
-                    onClick={() => onOpen(post.id)}
-                    draggable
-                    onDragStart={(event: DragEvent<HTMLButtonElement>) => {
-                      event.dataTransfer.setData("text/plain", post.id);
-                      event.dataTransfer.effectAllowed = "move";
-                    }}
-                  />
-                ))}
-                {unplanned.length === 0 && (
-                  <p className="text-xs text-muted-foreground ">Aucune publication non planifiée.</p>
-                )}
-              </div>
-            </>
-          )}
-        </aside>
+        {showUnplannedPanel && (
+          <aside className="flex w-full flex-col gap-2 rounded-xl border border-border bg-surface p-3 lg:w-64  ">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground ">
+                Non planifiées ({unplanned.length})
+              </h2>
+              <button
+                type="button"
+                onClick={onToggleShowUnplanned}
+                className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
+              >
+                {showUnplanned ? "Masquer" : "Afficher"}
+              </button>
+            </div>
+            {showUnplanned && (
+              <>
+                <p className="text-[11px] text-muted-foreground ">
+                  Glissez une publication vers une date pour la planifier.
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {unplanned.map((post) => (
+                    <PostChip
+                      key={post.id}
+                      post={post}
+                      onClick={() => onOpen(post.id)}
+                      draggable
+                      onDragStart={(event: DragEvent<HTMLButtonElement>) => {
+                        event.dataTransfer.setData("text/plain", post.id);
+                        event.dataTransfer.effectAllowed = "move";
+                      }}
+                    />
+                  ))}
+                  {unplanned.length === 0 && (
+                    <p className="text-xs text-muted-foreground ">Aucune publication non planifiée.</p>
+                  )}
+                </div>
+              </>
+            )}
+          </aside>
+        )}
       </div>
     </div>
   );

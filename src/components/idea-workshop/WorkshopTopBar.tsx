@@ -42,7 +42,7 @@ export function WorkshopTopBar({
     <div className="sticky top-0 z-20 flex flex-col gap-3 border-b border-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">
-          <Link href="/banque-idees" className="shrink-0 text-xs font-medium text-muted-foreground hover:underline">
+          <Link href="/boite-idees?tab=banque" className="shrink-0 text-xs font-medium text-muted-foreground hover:underline">
             ← Banque d&apos;idées
           </Link>
           <span className="text-xs text-muted-foreground">

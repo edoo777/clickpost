@@ -1,3 +1,4 @@
+import type { ContentType } from "@/lib/content-types";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { Idea, IdeaStatus } from "@/types/idea";
@@ -12,6 +13,8 @@ export interface NewIdeaInput {
   themeId?: string;
   campaignId?: string;
   description?: string;
+  contentType?: ContentType;
+  objective?: string;
   priority?: ContentPriority;
   platform?: SocialPlatform;
   format?: ContentFormat;
@@ -29,6 +32,8 @@ export function buildNewIdea(input: NewIdeaInput): Idea {
     campaignId: input.campaignId,
     title: input.title,
     description: input.description,
+    contentType: input.contentType,
+    objective: input.objective,
     source: "manual",
     status: "idea",
     priority: input.priority,

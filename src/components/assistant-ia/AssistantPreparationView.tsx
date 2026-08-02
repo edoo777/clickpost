@@ -128,7 +128,7 @@ export function AssistantPreparationView() {
                 le Calendrier
               </Link>
               , ou utilisez la voie manuelle du{" "}
-              <Link href="/generateur-idees" className="underline">
+              <Link href="/boite-idees?tab=generateur" className="underline">
                 Générateur de sujets
               </Link>
               .
@@ -194,7 +194,7 @@ export function AssistantPreparationView() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/banque-idees"
+              href="/boite-idees?tab=banque"
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
               Voir la Banque d&apos;idées

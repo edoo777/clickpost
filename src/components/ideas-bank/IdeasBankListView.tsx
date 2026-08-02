@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { BulkQuickActionModal } from "@/components/ideas-bank/BulkQuickActionModal";
 import { BulkScheduleModal } from "@/components/ideas-bank/BulkScheduleModal";
 import { IdeaBankCard } from "@/components/ideas-bank/IdeaBankCard";
 import {
@@ -49,6 +50,7 @@ export function IdeasBankListView() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [panelState, setPanelState] = useState<{ mode: "create" | "edit"; idea: Idea | null } | null>(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isBulkAiModalOpen, setIsBulkAiModalOpen] = useState(false);
 
   const selectedIdeas = useMemo(() => ideas.filter((idea) => selectedIds.has(idea.id)), [ideas, selectedIds]);
   const selectedBrandIds = useMemo(
@@ -146,6 +148,8 @@ export function IdeasBankListView() {
       themeId: value.themeId || undefined,
       campaignId: value.campaignId || undefined,
       description: value.description.trim() || undefined,
+      contentType: value.contentType || undefined,
+      objective: value.objective.trim() || undefined,
       priority: value.priority || undefined,
       platform: value.platform || undefined,
       format: value.format || undefined,
@@ -190,7 +194,15 @@ export function IdeasBankListView() {
 
   function renderIdeas(list: Idea[]) {
     if (filters.viewMode === "table") {
-      return <IdeasBankTable ideas={list} selectedIds={selectedIds} onToggleSelect={toggleSelect} onOpen={openEditPanel} />;
+      return (
+        <IdeasBankTable
+          ideas={list}
+          selectedIds={selectedIds}
+          onToggleSelect={toggleSelect}
+          onOpen={openEditPanel}
+          defaultBrandId={filters.brandId !== "all" ? filters.brandId : (brands[0]?.id ?? "")}
+        />
+      );
     }
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -246,6 +258,13 @@ export function IdeasBankListView() {
               className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
               Planifier la sélection
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBulkAiModalOpen(true)}
+              className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+            >
+              Améliorer avec l&apos;IA
             </button>
             <button
               type="button"
@@ -321,6 +340,14 @@ export function IdeasBankListView() {
           themes={themes}
           onClose={() => setIsScheduleModalOpen(false)}
           onConfirm={handleConfirmSchedule}
+        />
+      )}
+
+      {isBulkAiModalOpen && (
+        <BulkQuickActionModal
+          ideas={selectedIdeas}
+          onClose={() => setIsBulkAiModalOpen(false)}
+          onDone={() => setSelectedIds(new Set())}
         />
       )}
     </div>

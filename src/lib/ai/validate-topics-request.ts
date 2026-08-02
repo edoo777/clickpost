@@ -18,18 +18,34 @@ const TONES: GenerationTone[] = [
   "provocative",
 ];
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
-const MAX_TOTAL_IDEAS = 100;
+/** Plafond par thématique dans UN appel serveur — le client ne doit jamais envoyer plus qu'un lot
+ * (voir DEFAULT_LOT_SIZE dans topic-generator.ts, 20 par défaut) ; une marge est laissée ici pour
+ * ne pas coupler strictement les deux constantes. Les plafonds "100 par thématique" et "200 par
+ * génération" annoncés à l'utilisateur sont appliqués côté formulaire, avant tout découpage en
+ * lots — cette limite-ci est un garde-fou serveur indépendant contre un appel direct hors client. */
+const MAX_REQUESTED_PER_THEME_PER_CALL = 25;
+const MAX_TOTAL_PER_CALL = 100;
 const MAX_THEMES = 10;
 const MAX_TEXT_LENGTH = 1000;
+const MAX_LABEL_LENGTH = 120;
 
 export interface ValidatedThemeRequest {
   themeId: string;
+  isAdhoc: boolean;
+  /** Requis et utilisé uniquement lorsque isAdhoc est vrai — sinon le libellé réel de la
+   * thématique (paramètres de la marque) fait toujours foi. */
+  themeLabel?: string;
   requestedCount: number;
   distribution: Partial<Record<ContentType, number>>;
 }
 
 export interface ValidatedTopicsRequest {
-  brandId: string;
+  /** Absent en mode ponctuel (standalone) — aucune marque réelle associée. */
+  brandId?: string;
+  standalone: boolean;
+  /** Requis et utilisé uniquement en mode ponctuel — sinon brand.industry (base de données)
+   * fait toujours foi. */
+  niche?: string;
   themes: ValidatedThemeRequest[];
   formats: ContentFormat[];
   platforms: SocialPlatform[];
@@ -49,9 +65,21 @@ export function validateTopicsRequest(body: unknown): TopicsRequestValidation {
   if (typeof body !== "object" || body === null) return { valid: false, message: "Corps de requête invalide." };
   const record = body as Record<string, unknown>;
 
-  const brandId = record.brandId;
-  if (typeof brandId !== "string" || !UUID_PATTERN.test(brandId)) {
-    return { valid: false, message: "Identifiant de marque invalide." };
+  const standalone = Boolean(record.standalone);
+  let brandId: string | undefined;
+  let niche: string | undefined;
+  if (standalone) {
+    const nicheRaw = record.niche;
+    if (typeof nicheRaw !== "string" || nicheRaw.trim().length === 0) {
+      return { valid: false, message: "Niche requise pour une génération ponctuelle." };
+    }
+    niche = nicheRaw.trim().slice(0, MAX_LABEL_LENGTH);
+  } else {
+    const brandIdRaw = record.brandId;
+    if (typeof brandIdRaw !== "string" || !UUID_PATTERN.test(brandIdRaw)) {
+      return { valid: false, message: "Identifiant de marque invalide." };
+    }
+    brandId = brandIdRaw;
   }
 
   const themesRaw = record.themes;
@@ -68,9 +96,26 @@ export function validateTopicsRequest(body: unknown): TopicsRequestValidation {
     if (typeof themeId !== "string" || !UUID_PATTERN.test(themeId)) {
       return { valid: false, message: "Identifiant de thématique invalide." };
     }
+    const isAdhoc = Boolean(themeEntry.isAdhoc);
+    if (standalone && !isAdhoc) {
+      return { valid: false, message: "Une génération ponctuelle ne peut utiliser que des thématiques ponctuelles." };
+    }
+    let themeLabel: string | undefined;
+    if (isAdhoc) {
+      const labelRaw = themeEntry.themeLabel;
+      if (typeof labelRaw !== "string" || labelRaw.trim().length === 0) {
+        return { valid: false, message: "Libellé requis pour une thématique ponctuelle." };
+      }
+      themeLabel = labelRaw.trim().slice(0, MAX_LABEL_LENGTH);
+    }
     const requestedCount = themeEntry.requestedCount;
-    if (typeof requestedCount !== "number" || !Number.isFinite(requestedCount) || requestedCount < 1 || requestedCount > MAX_TOTAL_IDEAS) {
-      return { valid: false, message: "Nombre d'idées invalide pour une thématique." };
+    if (
+      typeof requestedCount !== "number" ||
+      !Number.isFinite(requestedCount) ||
+      requestedCount < 1 ||
+      requestedCount > MAX_REQUESTED_PER_THEME_PER_CALL
+    ) {
+      return { valid: false, message: `Nombre d'idées invalide pour une thématique (maximum ${MAX_REQUESTED_PER_THEME_PER_CALL} par appel).` };
     }
     totalRequested += requestedCount;
 
@@ -89,11 +134,11 @@ export function validateTopicsRequest(body: unknown): TopicsRequestValidation {
       }
     }
 
-    themes.push({ themeId, requestedCount, distribution });
+    themes.push({ themeId, isAdhoc, themeLabel, requestedCount, distribution });
   }
 
-  if (totalRequested > MAX_TOTAL_IDEAS) {
-    return { valid: false, message: `Le total d'idées demandées ne peut pas dépasser ${MAX_TOTAL_IDEAS}.` };
+  if (totalRequested > MAX_TOTAL_PER_CALL) {
+    return { valid: false, message: `Le total d'idées demandées dans un même appel ne peut pas dépasser ${MAX_TOTAL_PER_CALL}.` };
   }
 
   const formatsRaw = record.formats;
@@ -115,6 +160,8 @@ export function validateTopicsRequest(body: unknown): TopicsRequestValidation {
     valid: true,
     value: {
       brandId,
+      standalone,
+      niche,
       themes,
       formats: formatsRaw as ContentFormat[],
       platforms: platformsRaw as SocialPlatform[],

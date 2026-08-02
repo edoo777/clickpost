@@ -8,10 +8,11 @@ import { validateTopicsRequest } from "@/lib/ai/validate-topics-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 
-/** Génération multi-thématiques du Générateur d'idées — un seul appel Claude pour toutes les
- * thématiques d'une même demande (voir topic-generator.ts côté client). Jamais appelée
- * automatiquement : uniquement au clic explicite sur « Générer les idées ». Route distincte de
- * /api/ia/atelier/generation-complete, qui n'est ni modifiée ni réutilisée directement — seuls
+/** Génération de sujets du Générateur d'idées, un lot à la fois (voir generateTopicsLot dans
+ * topic-generator.ts côté client — la fiabilité des grosses demandes repose sur plusieurs appels
+ * successifs à cette route, jamais sur un unique appel géant). Jamais appelée automatiquement :
+ * uniquement au clic explicite sur « Générer les idées » ou « Reprendre ce lot ». Route distincte
+ * de /api/ia/atelier/generation-complete, qui n'est ni modifiée ni réutilisée directement — seuls
  * le client Anthropic, le rate-limit et l'authentification le sont. */
 
 const TOKENS_PER_IDEA = 150;
@@ -37,33 +38,47 @@ export async function POST(request: Request) {
   const rawBody = await request.json().catch(() => null);
   const validation = validateTopicsRequest(rawBody);
   if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
-  const { brandId, themes, formats, platforms, objective, targetAudience, tone, instructions } = validation.value;
+  const { brandId, standalone, niche, themes, formats, platforms, objective, targetAudience, tone, instructions } = validation.value;
 
   if (!isAnthropicConfigured()) {
     return errorResponse("not_configured", "Intégration Claude non configurée sur ce serveur.", 503);
   }
 
-  const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
-  if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
-  const brand = mapRowToRecord(brandRow) as unknown as { name: string; industry: string };
-
-  const themeIds = themes.map((theme) => theme.themeId);
-  const { data: themeRows, error: themeError } = await supabase.from("themes").select("*").in("id", themeIds).eq("brand_id", brandId);
-  if (themeError || !themeRows || themeRows.length !== themeIds.length) {
-    return errorResponse("unauthorized", "Une ou plusieurs thématiques sont introuvables ou inaccessibles.", 404);
+  // Génération ponctuelle (sans marque) : aucune ligne brands/themes en base, la niche saisie
+  // manuellement par l'utilisateur fait foi telle quelle — jamais de marque devinée ou inventée.
+  let promptNiche = niche ?? "";
+  let brandName = "Non précisée (génération ponctuelle)";
+  if (!standalone) {
+    const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
+    if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
+    const brand = mapRowToRecord(brandRow) as unknown as { name: string; industry: string };
+    promptNiche = brand.industry;
+    brandName = brand.name;
   }
-  const themeById = new Map(themeRows.map((row) => [row.id as string, mapRowToRecord(row) as unknown as { id: string; label: string }]));
+
+  // Les thématiques ponctuelles (isAdhoc) ne sont jamais enregistrées dans la table themes tant
+  // que l'utilisateur n'a pas confirmé leur ajout aux paramètres de la marque (voir addTheme côté
+  // client) — seules les thématiques réelles sont vérifiées ici, jamais devinées ni inventées.
+  const realThemeIds = themes.filter((theme) => !theme.isAdhoc).map((theme) => theme.themeId);
+  let themeById = new Map<string, { id: string; label: string }>();
+  if (realThemeIds.length > 0) {
+    const { data: themeRows, error: themeError } = await supabase.from("themes").select("*").in("id", realThemeIds).eq("brand_id", brandId);
+    if (themeError || !themeRows || themeRows.length !== realThemeIds.length) {
+      return errorResponse("unauthorized", "Une ou plusieurs thématiques sont introuvables ou inaccessibles.", 404);
+    }
+    themeById = new Map(themeRows.map((row) => [row.id as string, mapRowToRecord(row) as unknown as { id: string; label: string }]));
+  }
 
   const promptThemes: GenerateurPromptTheme[] = themes.map((theme) => ({
     themeId: theme.themeId,
-    label: themeById.get(theme.themeId)?.label ?? theme.themeId,
+    label: theme.isAdhoc ? (theme.themeLabel as string) : (themeById.get(theme.themeId)?.label ?? theme.themeId),
     requestedCount: theme.requestedCount,
     distribution: theme.distribution,
   }));
 
   const prompt = buildGenerateurPrompt({
-    niche: brand.industry,
-    brandName: brand.name,
+    niche: promptNiche,
+    brandName,
     themes: promptThemes,
     formats,
     platforms,
@@ -94,7 +109,7 @@ export async function POST(request: Request) {
     const textBlock = response.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") return errorResponse("invalid_response", "Réponse Claude sans contenu texte.", 502);
 
-    const groups = parseTopicsResponse(textBlock.text, themeIds);
+    const groups = parseTopicsResponse(textBlock.text, themes.map((theme) => theme.themeId));
     if (!groups || groups.length === 0) {
       return errorResponse("invalid_response", "Réponse Claude dans un format inattendu.", 502);
     }

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import {
   ThemeSelectionPanel,
@@ -12,6 +14,7 @@ import { TONE_LABEL } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL } from "@/lib/post-status";
+import { useThemesSession } from "@/lib/themes-store";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -36,6 +39,8 @@ const TONES: GenerationTone[] = [
 const FIELD_CLASS =
   "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
+const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest"];
+
 /** Plateformes disponibles pour une marque = celles de ses comptes affiliés — jamais un compte
  * d'une autre marque, jamais la liste complète des réseaux existants. */
 function platformsFromAccounts(accounts: SocialAccount[], brand: Brand): SocialPlatform[] {
@@ -52,6 +57,8 @@ const TOGGLE_CLASS = (isSelected: boolean) =>
 
 export interface TopicGeneratorFormValue {
   brandId: string;
+  /** Niche saisie manuellement — utilisée uniquement en mode ponctuel (brandId vide). */
+  standaloneNiche: string;
   name: string;
   themeSelections: ThemeSelectionValue[];
   targetAudience: string;
@@ -89,11 +96,15 @@ export function TopicGeneratorForm({
   niche,
   errors,
 }: TopicGeneratorFormProps) {
-  const { brands } = useBrandsSession();
+  const { brands, canManageBrands } = useBrandsSession();
   const { accounts } = useAccountsSession();
+  const { addTheme } = useThemesSession();
+  const [adhocLabel, setAdhocLabel] = useState("");
 
+  const isStandalone = !value.brandId;
   const selectedBrand = brands.find((candidate) => candidate.id === value.brandId);
   const platformsForBrand = selectedBrand ? platformsFromAccounts(accounts, selectedBrand) : [];
+  const platformChoices = isStandalone ? ALL_PLATFORMS : platformsForBrand;
 
   function togglePlatform(platform: SocialPlatform) {
     onChange({
@@ -111,14 +122,24 @@ export function TopicGeneratorForm({
     });
   }
 
-  function toggleTheme(themeId: string) {
-    const exists = value.themeSelections.some((selection) => selection.themeId === themeId);
+  function toggleTheme(theme: Theme) {
+    const exists = value.themeSelections.some((selection) => selection.themeId === theme.id);
     onChange({
       ...value,
       themeSelections: exists
-        ? value.themeSelections.filter((selection) => selection.themeId !== themeId)
-        : [...value.themeSelections, buildDefaultThemeSelection(themeId)],
+        ? value.themeSelections.filter((selection) => selection.themeId !== theme.id)
+        : [...value.themeSelections, buildDefaultThemeSelection(theme.id, theme.label || "Sans titre")],
     });
+  }
+
+  function addAdhocTheme() {
+    const label = adhocLabel.trim();
+    if (!label) return;
+    onChange({
+      ...value,
+      themeSelections: [...value.themeSelections, buildDefaultThemeSelection(crypto.randomUUID(), label, true)],
+    });
+    setAdhocLabel("");
   }
 
   function updateThemeSelection(themeId: string, next: ThemeSelectionValue) {
@@ -132,28 +153,70 @@ export function TopicGeneratorForm({
     onChange({ ...value, themeSelections: value.themeSelections.filter((selection) => selection.themeId !== themeId) });
   }
 
+  function duplicateThemeSelection(themeId: string) {
+    const source = value.themeSelections.find((selection) => selection.themeId === themeId);
+    if (!source) return;
+    // Duplique la configuration (quantité, répartition, personnalisations) vers un nouveau
+    // brouillon ponctuel — la thématique d'origine reste inchangée, jamais dupliquée elle-même
+    // (une même thématique réelle ne peut apparaître qu'une fois dans la liste).
+    onChange({
+      ...value,
+      themeSelections: [
+        ...value.themeSelections,
+        { ...source, themeId: crypto.randomUUID(), isAdhoc: true, themeLabel: `${source.themeLabel} (copie)` },
+      ],
+    });
+  }
+
+  function handleAddToBrandSettings(selection: ThemeSelectionValue) {
+    if (!canManageBrands) return;
+    const newThemeId = addTheme(value.brandId, { label: selection.themeLabel });
+    updateThemeSelection(selection.themeId, { ...selection, themeId: newThemeId, isAdhoc: false });
+  }
+
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Marque
-          <select
-            value={value.brandId}
-            onChange={(event) => onChange({ ...value, brandId: event.target.value, themeSelections: [] })}
-            className={FIELD_CLASS}
-          >
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.name}
-              </option>
-            ))}
-          </select>
-        </label>
+      {isStandalone && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          Génération ponctuelle — sans marque associée. Rien n&apos;est enregistré dans les paramètres tant que vous ne le
+          confirmez pas explicitement.
+        </p>
+      )}
 
-        <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Niche
-          <span className={`${FIELD_CLASS} text-muted-foreground`}>{niche || "Non précisée sur la marque"}</span>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {brands.length > 0 && (
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Marque
+            <select
+              value={value.brandId}
+              onChange={(event) => onChange({ ...value, brandId: event.target.value, themeSelections: [] })}
+              className={FIELD_CLASS}
+            >
+              {brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>
+                  {brand.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {isStandalone ? (
+          <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Niche
+            <input
+              value={value.standaloneNiche}
+              placeholder="Ex. Fitness"
+              onChange={(event) => onChange({ ...value, standaloneNiche: event.target.value })}
+              className={FIELD_CLASS}
+            />
+          </label>
+        ) : (
+          <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Niche
+            <span className={`${FIELD_CLASS} text-muted-foreground`}>{niche || "Non précisée sur la marque"}</span>
+          </div>
+        )}
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Nom de la génération
@@ -176,7 +239,7 @@ export function TopicGeneratorForm({
           {themesForBrand.map((theme) => {
             const isSelected = value.themeSelections.some((selection) => selection.themeId === theme.id);
             return (
-              <button key={theme.id} type="button" onClick={() => toggleTheme(theme.id)} className={TOGGLE_CLASS(isSelected)}>
+              <button key={theme.id} type="button" onClick={() => toggleTheme(theme)} className={TOGGLE_CLASS(isSelected)}>
                 {theme.label || "Sans titre"}
               </button>
             );
@@ -184,26 +247,47 @@ export function TopicGeneratorForm({
         </div>
         {errors.themes && <span className="text-xs font-medium text-red-500">{errors.themes}</span>}
         {themesForBrand.length === 0 && (
-          <span className="text-xs text-muted-foreground ">
-            Aucune thématique active pour cette marque — gérez-les dans « Thématiques ».
-          </span>
+          <p className="text-xs text-muted-foreground ">
+            Aucune thématique active pour cette marque —{" "}
+            <Link href="/marques" className="text-violet-600 hover:underline dark:text-violet-400">
+              configurez-les dans les paramètres de la marque
+            </Link>
+            , ou utilisez une thématique ponctuelle ci-dessous.
+          </p>
         )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={adhocLabel}
+            onChange={(event) => setAdhocLabel(event.target.value)}
+            placeholder="Autre thématique…"
+            className={`${FIELD_CLASS} w-56`}
+          />
+          <button
+            type="button"
+            onClick={addAdhocTheme}
+            disabled={!adhocLabel.trim()}
+            className="rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-violet-300 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[.16] dark:hover:border-violet-500/30 dark:hover:text-violet-300"
+          >
+            + Ajouter cette thématique à la génération
+          </button>
+        </div>
 
         {value.themeSelections.length > 0 && (
           <div className="flex flex-col gap-2">
-            {value.themeSelections.map((selection) => {
-              const theme = themesForBrand.find((candidate) => candidate.id === selection.themeId);
-              if (!theme) return null;
-              return (
-                <ThemeSelectionPanel
-                  key={selection.themeId}
-                  theme={theme}
-                  value={selection}
-                  onChange={(next) => updateThemeSelection(selection.themeId, next)}
-                  onRemove={() => removeThemeSelection(selection.themeId)}
-                />
-              );
-            })}
+            {value.themeSelections.map((selection) => (
+              <ThemeSelectionPanel
+                key={selection.themeId}
+                value={selection}
+                onChange={(next) => updateThemeSelection(selection.themeId, next)}
+                onRemove={() => removeThemeSelection(selection.themeId)}
+                onDuplicate={() => duplicateThemeSelection(selection.themeId)}
+                availablePlatforms={platformsForBrand}
+                onAddToBrandSettings={
+                  selection.isAdhoc && canManageBrands ? () => handleAddToBrandSettings(selection) : undefined
+                }
+              />
+            ))}
           </div>
         )}
       </div>
@@ -268,10 +352,10 @@ export function TopicGeneratorForm({
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Réseaux (comptes affiliés de la marque)
+          {isStandalone ? "Réseaux" : "Réseaux (comptes affiliés de la marque)"}
         </span>
         <div className="flex flex-wrap gap-2">
-          {platformsForBrand.map((platform) => {
+          {platformChoices.map((platform) => {
             const Icon = platformIcons[platform];
             const isSelected = value.platforms.includes(platform);
             return (
@@ -282,7 +366,7 @@ export function TopicGeneratorForm({
             );
           })}
         </div>
-        {platformsForBrand.length === 0 && (
+        {!isStandalone && platformsForBrand.length === 0 && (
           <span className="text-xs text-muted-foreground ">
             Aucun compte affilié pour cette marque — ajoutez-en un depuis sa fiche (onglet Comptes affiliés).
           </span>

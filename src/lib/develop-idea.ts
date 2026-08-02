@@ -26,6 +26,7 @@ export function useDevelopIdea() {
       id: crypto.randomUUID(),
       brandId: batch.brandId,
       themeId: batch.themeId,
+      adhocThemeLabel: batch.themeId ? undefined : batch.adhocThemeLabel,
       batchId: batch.id,
       title: topic.label,
       source: "generated",

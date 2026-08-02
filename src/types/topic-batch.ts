@@ -10,7 +10,17 @@ export type TopicVarietyLevel = "low" | "medium" | "high";
 export interface TopicBatch {
   id: string;
   brandId: string;
-  themeId: string;
+  /** Absent pour un bloc généré à partir d'une thématique ponctuelle jamais enregistrée dans les
+   * paramètres de la marque (voir adhocThemeLabel) — le champ reste optionnel plutôt qu'une
+   * chaîne vide, pour ne jamais laisser croire à une vraie thématique inexistante. */
+  themeId?: string;
+  /** Libellé de la thématique ponctuelle saisie pour cette génération — présent uniquement
+   * lorsque themeId est absent. Jamais synchronisé vers la table themes tant que l'utilisateur
+   * n'a pas explicitement confirmé « Ajouter cette thématique aux paramètres de la marque ». */
+  adhocThemeLabel?: string;
+  /** Niche saisie manuellement pour une génération ponctuelle sans marque (brandId vide) —
+   * absent dès qu'une vraie marque est utilisée (la niche vient alors de brand.industry). */
+  standaloneNiche?: string;
   name: string;
   requestedCount: number;
   generatedCount: number;

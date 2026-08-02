@@ -27,6 +27,13 @@ export interface Idea {
   id: string;
   brandId: string;
   themeId?: string;
+  /** Libellé de la thématique ponctuelle d'origine — présent uniquement lorsque themeId est
+   * absent (idée issue d'une thématique saisie manuellement au Générateur, jamais enregistrée
+   * dans les paramètres de la marque). */
+  adhocThemeLabel?: string;
+  /** Niche saisie manuellement pour une idée issue d'une génération ponctuelle sans marque —
+   * absent dès que brandId référence une vraie marque. */
+  standaloneNiche?: string;
   batchId?: string;
   campaignId?: string;
   title: string;

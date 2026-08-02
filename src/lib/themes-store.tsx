@@ -16,7 +16,10 @@ export interface ThemeDraft {
 
 interface ThemesSessionValue {
   themes: Theme[];
-  addTheme: (brandId: string, draft?: ThemeDraft) => void;
+  /** Retourne l'id de la thématique créée — permet à un appelant (ex. thématique ponctuelle du
+   * Générateur d'idées) de basculer immédiatement une sélection ad hoc vers une thématique réelle
+   * après confirmation explicite de l'utilisateur. */
+  addTheme: (brandId: string, draft?: ThemeDraft) => string;
   updateTheme: (id: string, patch: Partial<Theme>) => void;
   toggleThemeActive: (id: string) => void;
   toggleThemeWeekday: (id: string, day: Weekday) => void;
@@ -32,11 +35,12 @@ export function ThemesSessionProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ThemesSessionValue>(
     () => ({
       themes,
-      addTheme: (brandId, draft) =>
+      addTheme: (brandId, draft) => {
+        const id = crypto.randomUUID();
         setThemes((prev) => [
           ...prev,
           {
-            id: crypto.randomUUID(),
+            id,
             brandId,
             label: draft?.label ?? "",
             objective: draft?.objective ?? "",
@@ -47,7 +51,9 @@ export function ThemesSessionProvider({ children }: { children: ReactNode }) {
             active: true,
             createdAt: new Date().toISOString(),
           },
-        ]),
+        ]);
+        return id;
+      },
       updateTheme: (id, patch) =>
         setThemes((prev) => prev.map((theme) => (theme.id === id ? { ...theme, ...patch } : theme))),
       toggleThemeActive: (id) =>

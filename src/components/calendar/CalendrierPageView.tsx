@@ -127,8 +127,9 @@ export function CalendrierPageView() {
             onChangeAnchor={(anchor) => patchCalendrierPage({ anchor })}
             onOpen={handleOpen}
             onCreateAt={handleCreateAt}
-            showUnplanned={state.showUnplanned}
-            onToggleShowUnplanned={() => patchCalendrierPage({ showUnplanned: !state.showUnplanned })}
+            showUnplanned={false}
+            onToggleShowUnplanned={() => {}}
+            showUnplannedPanel={false}
             filterBar={
               <PublicationsFilters value={state.filters} onChange={(filters) => patchCalendrierPage({ filters })} />
             }

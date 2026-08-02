@@ -102,7 +102,7 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   if (!idea) {
     return (
       <div className="flex flex-col gap-4 p-6">
-        <Link href="/banque-idees" className="w-fit text-sm font-medium text-muted-foreground hover:underline">
+        <Link href="/boite-idees?tab=banque" className="w-fit text-sm font-medium text-muted-foreground hover:underline">
           ← Retour à la banque d&apos;idées
         </Link>
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12]">

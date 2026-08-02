@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
+import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
 import { PLATFORM_LABEL } from "@/lib/post-status";
@@ -26,6 +27,8 @@ export interface IdeaQuickEditValue {
   themeId: string;
   campaignId: string;
   description: string;
+  contentType: ContentType | "";
+  objective: string;
   priority: ContentPriority | "";
   platform: SocialPlatform | "";
   format: ContentFormat | "";
@@ -42,6 +45,8 @@ function buildValueFromIdea(idea: Idea): IdeaQuickEditValue {
     themeId: idea.themeId ?? "",
     campaignId: idea.campaignId ?? "",
     description: idea.description ?? "",
+    contentType: idea.contentType ?? "",
+    objective: idea.objective ?? "",
     priority: idea.priority ?? "",
     platform: idea.platform ?? "",
     format: idea.format ?? "",
@@ -59,6 +64,8 @@ function buildBlankValue(defaultBrandId: string): IdeaQuickEditValue {
     themeId: "",
     campaignId: "",
     description: "",
+    contentType: "",
+    objective: "",
     priority: "",
     platform: "",
     format: "",
@@ -233,6 +240,27 @@ export function IdeaQuickEditPanel({
             </select>
           </label>
         </div>
+
+        <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Type de contenu
+          <select
+            value={value.contentType}
+            onChange={(event) => set("contentType", event.target.value as ContentType | "")}
+            className={FIELD_CLASS}
+          >
+            <option value="">Non défini</option>
+            {ALL_CONTENT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {CONTENT_TYPE_LABEL[type]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Objectif
+          <input value={value.objective} onChange={(event) => set("objective", event.target.value)} className={FIELD_CLASS} />
+        </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Priorité

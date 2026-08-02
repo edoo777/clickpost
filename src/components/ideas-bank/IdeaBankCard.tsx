@@ -1,6 +1,7 @@
 "use client";
 
 import { DevelopMenu } from "@/components/shared/DevelopMenu";
+import { QuickActionsMenu } from "@/components/ideas-bank/QuickActionsMenu";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Idea } from "@/types/idea";
@@ -21,7 +22,7 @@ interface IdeaBankCardProps {
 
 export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaBankCardProps) {
   const { themes } = useThemesSession();
-  const themeLabel = themes.find((theme) => theme.id === idea.themeId)?.label;
+  const themeLabel = themes.find((theme) => theme.id === idea.themeId)?.label ?? idea.adhocThemeLabel;
 
   return (
     <div
@@ -43,6 +44,7 @@ export function IdeaBankCard({ idea, isSelected, onToggleSelect, onOpen }: IdeaB
             {IDEA_STATUS_LABEL[idea.status]}
           </span>
           <DevelopMenu variant="idea" idea={idea} compact />
+          <QuickActionsMenu idea={idea} compact />
         </div>
       </div>
 

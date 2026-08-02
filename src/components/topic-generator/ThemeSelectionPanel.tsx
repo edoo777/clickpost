@@ -1,5 +1,6 @@
 "use client";
 
+import { platformIcons } from "@/components/icons";
 import {
   ALL_CONTENT_TYPES,
   CONTENT_TYPE_LABEL,
@@ -7,24 +8,40 @@ import {
   sumDistribution,
   type ContentType,
 } from "@/lib/content-types";
-import type { Theme } from "@/types/theme";
+import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
+import { PLATFORM_LABEL } from "@/lib/post-status";
+import type { SocialPlatform } from "@/types/dashboard";
+import type { ContentFormat } from "@/types/editorial-calendar";
 
 export interface ThemeSelectionValue {
   themeId: string;
+  /** true = thématique ponctuelle saisie manuellement, absente des paramètres de la marque. */
+  isAdhoc: boolean;
+  /** Toujours renseigné : libellé réel de la thématique, ou libellé ponctuel saisi. */
+  themeLabel: string;
   requestedCount: number;
   distributionMode: "auto" | "custom";
   /** Types de contenu à répartir automatiquement, ou clés de la répartition personnalisée. */
   selectedContentTypes: ContentType[];
   customDistribution: Partial<Record<ContentType, number>>;
+  /** Option avancée « Personnaliser pour cette thématique » — remplace formats/plateformes/
+   * objectif globaux uniquement pour cette ligne lorsqu'activée. */
+  customizeOverrides: boolean;
+  formats?: ContentFormat[];
+  platforms?: SocialPlatform[];
+  objective?: string;
 }
 
-export function buildDefaultThemeSelection(themeId: string): ThemeSelectionValue {
+export function buildDefaultThemeSelection(themeId: string, themeLabel: string, isAdhoc = false): ThemeSelectionValue {
   return {
     themeId,
+    isAdhoc,
+    themeLabel,
     requestedCount: 10,
     distributionMode: "auto",
     selectedContentTypes: ["advice", "information", "proof"],
     customDistribution: {},
+    customizeOverrides: false,
   };
 }
 
@@ -40,14 +57,34 @@ export function resolvedDistributionTotal(selection: ThemeSelectionValue): numbe
 
 const FIELD_CLASS = "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
 
+const TOGGLE_CLASS = (isSelected: boolean) =>
+  `flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+    isSelected
+      ? "border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"
+      : "border-border text-zinc-600  dark:text-zinc-400"
+  }`;
+
 interface ThemeSelectionPanelProps {
-  theme: Theme;
   value: ThemeSelectionValue;
   onChange: (value: ThemeSelectionValue) => void;
   onRemove: () => void;
+  onDuplicate: () => void;
+  /** Plateformes disponibles pour la marque active (comptes affiliés) — pour l'option
+   * « Personnaliser pour cette thématique ». */
+  availablePlatforms: SocialPlatform[];
+  /** Visible uniquement pour une thématique ponctuelle non encore ajoutée aux paramètres de la
+   * marque, et seulement si l'utilisateur a la permission de gérer les marques (owner/admin). */
+  onAddToBrandSettings?: () => void;
 }
 
-export function ThemeSelectionPanel({ theme, value, onChange, onRemove }: ThemeSelectionPanelProps) {
+export function ThemeSelectionPanel({
+  value,
+  onChange,
+  onRemove,
+  onDuplicate,
+  availablePlatforms,
+  onAddToBrandSettings,
+}: ThemeSelectionPanelProps) {
   const total = resolvedDistributionTotal(value);
   const totalMismatch = value.distributionMode === "custom" && total !== value.requestedCount;
 
@@ -74,14 +111,60 @@ export function ThemeSelectionPanel({ theme, value, onChange, onRemove }: ThemeS
     onChange({ ...value, distributionMode: mode });
   }
 
+  function toggleOverrides(enabled: boolean) {
+    if (enabled) {
+      onChange({ ...value, customizeOverrides: true, formats: value.formats ?? [...CONTENT_FORMATS], platforms: value.platforms ?? [...availablePlatforms] });
+    } else {
+      onChange({ ...value, customizeOverrides: false });
+    }
+  }
+
+  function toggleOverrideFormat(format: ContentFormat) {
+    const current = value.formats ?? [];
+    onChange({
+      ...value,
+      formats: current.includes(format) ? current.filter((f) => f !== format) : [...current, format],
+    });
+  }
+
+  function toggleOverridePlatform(platform: SocialPlatform) {
+    const current = value.platforms ?? [];
+    onChange({
+      ...value,
+      platforms: current.includes(platform) ? current.filter((p) => p !== platform) : [...current, platform],
+    });
+  }
+
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-3 ">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{theme.label}</span>
-        <button type="button" onClick={onRemove} className="text-xs font-medium text-red-500 hover:underline">
-          Retirer
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{value.themeLabel}</span>
+          {value.isAdhoc && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+              Ponctuelle — non enregistrée
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={onDuplicate} className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400">
+            Dupliquer
+          </button>
+          <button type="button" onClick={onRemove} className="text-xs font-medium text-red-500 hover:underline">
+            Retirer
+          </button>
+        </div>
       </div>
+
+      {value.isAdhoc && onAddToBrandSettings && (
+        <button
+          type="button"
+          onClick={onAddToBrandSettings}
+          className="w-fit rounded-lg border border-violet-300 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/10"
+        >
+          Ajouter cette thématique aux paramètres de la marque
+        </button>
+      )}
 
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         Nombre d&apos;idées pour cette thématique
@@ -173,6 +256,50 @@ export function ThemeSelectionPanel({ theme, value, onChange, onRemove }: ThemeS
             {value.requestedCount > 1 ? "s" : ""}
             {totalMismatch && " — la répartition doit correspondre exactement au nombre demandé."}
           </span>
+        </div>
+      )}
+
+      <label className="flex items-center gap-2 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+        <input type="checkbox" checked={value.customizeOverrides} onChange={(event) => toggleOverrides(event.target.checked)} />
+        Personnaliser pour cette thématique (formats, plateformes, objectif)
+      </label>
+
+      {value.customizeOverrides && (
+        <div className="flex flex-col gap-2 rounded-lg bg-zinc-50 p-2.5 dark:bg-zinc-900/40">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground ">Formats pour cette thématique</span>
+            <div className="flex flex-wrap gap-1.5">
+              {CONTENT_FORMATS.map((format) => (
+                <button key={format} type="button" onClick={() => toggleOverrideFormat(format)} className={TOGGLE_CLASS((value.formats ?? []).includes(format))}>
+                  {FORMAT_LABEL[format]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground ">Plateformes pour cette thématique</span>
+            <div className="flex flex-wrap gap-1.5">
+              {availablePlatforms.map((platform) => {
+                const Icon = platformIcons[platform];
+                return (
+                  <button key={platform} type="button" onClick={() => toggleOverridePlatform(platform)} className={TOGGLE_CLASS((value.platforms ?? []).includes(platform))}>
+                    <Icon className="h-3.5 w-3.5" />
+                    {PLATFORM_LABEL[platform]}
+                  </button>
+                );
+              })}
+              {availablePlatforms.length === 0 && <span className="text-xs text-muted-foreground ">Aucun compte affilié.</span>}
+            </div>
+          </div>
+          <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            Objectif pour cette thématique
+            <input
+              value={value.objective ?? ""}
+              placeholder="Ex. générer des inscriptions"
+              onChange={(event) => onChange({ ...value, objective: event.target.value })}
+              className={FIELD_CLASS}
+            />
+          </label>
         </div>
       )}
     </div>

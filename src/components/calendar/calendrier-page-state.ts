@@ -54,7 +54,6 @@ export interface CalendrierPageState {
   mode: CalendarMode;
   anchor: string;
   filters: PublicationsFiltersValue;
-  showUnplanned: boolean;
   scrollY: number;
   /** Panneau « Dates importantes » — replié sur desktop (persisté, comme la sidebar). */
   isImportantDatesPanelCollapsed: boolean;
@@ -66,7 +65,6 @@ const DEFAULT_STATE: CalendrierPageState = {
   mode: "month",
   anchor: new Date().toISOString().slice(0, 10),
   filters: DEFAULT_PUBLICATIONS_FILTERS,
-  showUnplanned: true,
   scrollY: 0,
   isImportantDatesPanelCollapsed: false,
   importantDatesFilters: DEFAULT_IMPORTANT_DATES_FILTERS,

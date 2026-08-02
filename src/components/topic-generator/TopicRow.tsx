@@ -9,6 +9,9 @@ interface TopicRowProps {
   topic: Topic;
   batch: TopicBatch;
   isDuplicate: boolean;
+  /** true si une idée au libellé équivalent existe déjà dans le workspace — signalé, jamais
+   * bloquant (voir detectExistingIdeaMatches). */
+  isExistingInBank?: boolean;
   onToggleSelect: () => void;
   onToggleLock: () => void;
   onChangeLabel: (label: string) => void;
@@ -19,6 +22,7 @@ export function TopicRow({
   topic,
   batch,
   isDuplicate,
+  isExistingInBank,
   onToggleSelect,
   onToggleLock,
   onChangeLabel,
@@ -53,6 +57,11 @@ export function TopicRow({
       {isDuplicate && (
         <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
           Doublon potentiel
+        </span>
+      )}
+      {isExistingInBank && (
+        <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-500/20 dark:text-sky-400">
+          Déjà dans la Banque
         </span>
       )}
       <DevelopMenu variant="topic" topic={topic} batch={batch} />
