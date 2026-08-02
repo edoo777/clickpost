@@ -402,6 +402,15 @@ export function IconChevronDown(props: IconProps) {
   );
 }
 
+export function IconTrendingUp(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M3 17 9.5 10.5 13.5 14.5 21 6" />
+      <path d="M15 6h6v6" />
+    </Base>
+  );
+}
+
 export function IconAlertTriangle(props: IconProps) {
   return (
     <Base {...props}>

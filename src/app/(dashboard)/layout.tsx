@@ -11,6 +11,7 @@ import { ContentWorkspaceProvider } from "@/lib/content-workspace-store";
 import { IdeaNotesSessionProvider } from "@/lib/idea-notes-store";
 import { ImportantDatesSessionProvider } from "@/lib/important-dates-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
+import { SavedTrendsSessionProvider } from "@/lib/saved-trends-store";
 import { SettingsSessionProvider } from "@/lib/settings-store";
 import { SidebarStateProvider } from "@/lib/sidebar-store";
 import { TeamSessionProvider } from "@/lib/team-store";
@@ -30,16 +31,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <ContentWorkspaceProvider>
                       <IdeaNotesSessionProvider>
                         <ImportantDatesSessionProvider>
-                          <UserProfileSessionProvider>
-                            <SidebarStateProvider>
-                              <div className="flex h-dvh w-full flex-col bg-background">
-                                <Sidebar />
-                                <TopBar />
-                                <DashboardMainContent>{children}</DashboardMainContent>
-                                <FloatingAssistantButton />
-                              </div>
-                            </SidebarStateProvider>
-                          </UserProfileSessionProvider>
+                          <SavedTrendsSessionProvider>
+                            <UserProfileSessionProvider>
+                              <SidebarStateProvider>
+                                <div className="flex h-dvh w-full flex-col bg-background">
+                                  <Sidebar />
+                                  <TopBar />
+                                  <DashboardMainContent>{children}</DashboardMainContent>
+                                  <FloatingAssistantButton />
+                                </div>
+                              </SidebarStateProvider>
+                            </UserProfileSessionProvider>
+                          </SavedTrendsSessionProvider>
                         </ImportantDatesSessionProvider>
                       </IdeaNotesSessionProvider>
                     </ContentWorkspaceProvider>

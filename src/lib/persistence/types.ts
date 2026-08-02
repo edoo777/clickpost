@@ -11,6 +11,7 @@ import type { AgencySettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
 import type { Theme } from "@/types/theme";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
+import type { SavedTrend } from "@/types/trend";
 import type { UserProfileExtra } from "@/types/user-profile";
 import type { WorkflowStage } from "@/types/workflow-stage";
 
@@ -35,6 +36,7 @@ export interface WorkspaceData {
   savedViews: SavedView[];
   userProfiles: Record<string, UserProfileExtra>;
   importantDates: ImportantDate[];
+  savedTrends: SavedTrend[];
 }
 
 export type WorkspaceKey = keyof WorkspaceData;

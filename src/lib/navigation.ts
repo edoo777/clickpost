@@ -8,6 +8,7 @@ import {
   IconLightbulb,
   IconSend,
   IconSettingsGear,
+  IconTrendingUp,
   IconUsers,
   IconWand,
 } from "@/components/icons";
@@ -39,6 +40,7 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
+  { label: "Tendances", href: "/tendances", icon: IconTrendingUp },
 ];
 
 /**
@@ -77,6 +79,7 @@ const PAGE_TITLES: PageTitleEntry[] = [
   { href: "/banque-idees", label: "Banque d'idées" },
   { href: "/boite-idees", label: "Boîte à idées" },
   { href: "/assistant-ia", label: "Assistant IA" },
+  { href: "/tendances", label: "Tendances" },
   { href: "/atelier", label: "Atelier" },
   { href: "/comptes", label: "Comptes" },
   { href: "/equipe", label: "Équipe" },
