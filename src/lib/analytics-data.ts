@@ -1,21 +1,49 @@
 import { toISODate } from "@/lib/date-utils";
+import type { DailyMetricPoint, MetricValues, PublicationPerformance } from "@/types/analytics";
 import type { SocialPlatform } from "@/types/dashboard";
-import type { DailyMetricPoint, PublicationPerformance } from "@/types/analytics";
 
-export const PUBLICATION_PERFORMANCE: Record<string, PublicationPerformance> = {
-  "post-1": { publicationId: "post-1", impressions: 3200, reach: 2600, interactions: 140, clicks: 45, newFollowers: 6 },
-  "post-4": { publicationId: "post-4", impressions: 1800, reach: 1500, interactions: 95, clicks: 20, newFollowers: 3 },
-  "post-5": { publicationId: "post-5", impressions: 4100, reach: 3400, interactions: 260, clicks: 80, newFollowers: 9 },
-  "post-7": { publicationId: "post-7", impressions: 8200, reach: 6900, interactions: 720, clicks: 210, newFollowers: 34 },
-  "post-9": { publicationId: "post-9", impressions: 2600, reach: 2100, interactions: 180, clicks: 30, newFollowers: 5 },
-  "post-10": { publicationId: "post-10", impressions: 2100, reach: 1900, interactions: 75, clicks: 25, newFollowers: 2 },
-  "post-11": { publicationId: "post-11", impressions: 7400, reach: 6100, interactions: 540, clicks: 260, newFollowers: 22 },
-  "post-15": { publicationId: "post-15", impressions: 2000, reach: 1650, interactions: 110, clicks: 18, newFollowers: 4 },
-  "post-16": { publicationId: "post-16", impressions: 2300, reach: 2050, interactions: 88, clicks: 30, newFollowers: 3 },
-  "post-18": { publicationId: "post-18", impressions: 12500, reach: 10800, interactions: 1450, clicks: 190, newFollowers: 68 },
-  "post-19": { publicationId: "post-19", impressions: 2900, reach: 2400, interactions: 130, clicks: 40, newFollowers: 5 },
-  "post-20": { publicationId: "post-20", impressions: 9100, reach: 7600, interactions: 890, clicks: 240, newFollowers: 41 },
+/** Données de démonstration uniquement — jamais affichées sans activation explicite (voir
+ * src/lib/demo-data-preference.ts). Toutes les valeurs renvoyées portent `source: "demo"`. */
+export const DEMO_PUBLICATION_PERFORMANCE: Record<string, PublicationPerformance> = {
+  "post-1": buildDemoPerformance("post-1", 3200, 2600, 140, 45, 6),
+  "post-4": buildDemoPerformance("post-4", 1800, 1500, 95, 20, 3),
+  "post-5": buildDemoPerformance("post-5", 4100, 3400, 260, 80, 9),
+  "post-7": buildDemoPerformance("post-7", 8200, 6900, 720, 210, 34),
+  "post-9": buildDemoPerformance("post-9", 2600, 2100, 180, 30, 5),
+  "post-10": buildDemoPerformance("post-10", 2100, 1900, 75, 25, 2),
+  "post-11": buildDemoPerformance("post-11", 7400, 6100, 540, 260, 22),
+  "post-15": buildDemoPerformance("post-15", 2000, 1650, 110, 18, 4),
+  "post-16": buildDemoPerformance("post-16", 2300, 2050, 88, 30, 3),
+  "post-18": buildDemoPerformance("post-18", 12500, 10800, 1450, 190, 68),
+  "post-19": buildDemoPerformance("post-19", 2900, 2400, 130, 40, 5),
+  "post-20": buildDemoPerformance("post-20", 9100, 7600, 890, 240, 41),
 };
+
+function buildDemoPerformance(
+  publicationId: string,
+  impressions: number,
+  reach: number,
+  interactions: number,
+  clicks: number,
+  newFollowers: number
+): PublicationPerformance {
+  const seed = hashString(publicationId);
+  return {
+    publicationId,
+    impressions,
+    reach,
+    views: Math.round(impressions * (0.4 + (seed % 20) / 100)),
+    interactions,
+    reactions: Math.round(interactions * 0.7),
+    comments: Math.round(interactions * 0.15),
+    shares: Math.round(interactions * 0.1),
+    saves: Math.round(interactions * 0.05),
+    clicks,
+    newFollowers,
+    conversions: Math.round(clicks * 0.08),
+    source: "demo",
+  };
+}
 
 const BRAND_BASE_IMPRESSIONS: Partial<Record<string, Partial<Record<SocialPlatform, [number, number]>>>> = {
   "Nova Cosmetics": { instagram: [1800, 2600], tiktok: [2200, 3400] },
@@ -35,12 +63,30 @@ function seededRange(seed: string, min: number, max: number): number {
   return min + (hashString(seed) % (max - min + 1));
 }
 
-export function generateDailySeries(
-  brand: string,
-  platform: SocialPlatform,
-  endDate: Date,
-  days: number
-): DailyMetricPoint[] {
+function buildMetrics(seedBase: string, impressions: number): MetricValues {
+  const reach = Math.round(impressions * (0.65 + seededRange(`${seedBase}-reach`, 0, 15) / 100));
+  const interactions = Math.round(reach * (0.03 + seededRange(`${seedBase}-eng`, 0, 6) / 100));
+  const clicks = Math.round(impressions * (0.005 + seededRange(`${seedBase}-clicks`, 0, 15) / 1000));
+  return {
+    impressions,
+    reach,
+    views: Math.round(impressions * (0.4 + seededRange(`${seedBase}-views`, 0, 20) / 100)),
+    interactions,
+    reactions: Math.round(interactions * 0.7),
+    comments: Math.round(interactions * 0.15),
+    shares: Math.round(interactions * 0.1),
+    saves: Math.round(interactions * 0.05),
+    clicks,
+    newFollowers: seededRange(`${seedBase}-followers`, 0, 12),
+    conversions: Math.round(clicks * 0.08),
+  };
+}
+
+/** Uniquement appelée quand la démonstration est explicitement activée (voir
+ * demo-data-preference.ts) — jamais par défaut. Retourne `[]` pour toute marque hors des trois
+ * marques de démonstration (aucune collision de nom possible avec de vraies données : ce garde-
+ * fou existait déjà, mais l'appel est désormais conditionné explicitement en amont, pas implicite). */
+export function generateDailySeries(brand: string, platform: SocialPlatform, endDate: Date, days: number): DailyMetricPoint[] {
   const range = BRAND_BASE_IMPRESSIONS[brand]?.[platform];
   if (!range) return [];
 
@@ -58,12 +104,8 @@ export function generateDailySeries(
 
     const seedBase = `${brand}-${platform}-${isoDate}`;
     const impressions = Math.round(seededRange(`${seedBase}-impressions`, min, max) * weekendFactor);
-    const reach = Math.round(impressions * (0.65 + seededRange(`${seedBase}-reach`, 0, 15) / 100));
-    const interactions = Math.round(reach * (0.03 + seededRange(`${seedBase}-eng`, 0, 6) / 100));
-    const clicks = Math.round(impressions * (0.005 + seededRange(`${seedBase}-clicks`, 0, 15) / 1000));
-    const newFollowers = seededRange(`${seedBase}-followers`, 0, 12);
 
-    points.push({ date: isoDate, brand, platform, impressions, reach, interactions, clicks, newFollowers });
+    points.push({ date: isoDate, brand, platform, source: "demo", ...buildMetrics(seedBase, impressions) });
   }
 
   return points;

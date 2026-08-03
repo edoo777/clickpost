@@ -7,6 +7,8 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { getTopPublications } from "@/lib/analytics-report";
 import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
+import { isDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { usePostsSession } from "@/lib/posts-store";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
@@ -20,9 +22,11 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
-  const { perfFilters } = buildDashboardPerformancePoints(filters, accounts, brands);
+  const { importedMetrics } = useImportedMetricsSession();
+  const demoEnabled = isDemoAnalyticsEnabled();
+  const { perfFilters } = buildDashboardPerformancePoints(filters, accounts, brands, posts, importedMetrics, demoEnabled);
 
-  const top = getTopPublications(posts, perfFilters, 8)
+  const top = getTopPublications(posts, perfFilters, importedMetrics, demoEnabled, 8)
     .filter((publication) => filters.status === "all" || publication.status === filters.status)
     .filter((publication) => filters.format === "all" || publication.format === filters.format)
     .slice(0, 3);

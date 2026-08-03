@@ -10,6 +10,7 @@ import { CampaignsSessionProvider } from "@/lib/campaigns-store";
 import { ContentWorkspaceProvider } from "@/lib/content-workspace-store";
 import { IdeaNotesSessionProvider } from "@/lib/idea-notes-store";
 import { ImportantDatesSessionProvider } from "@/lib/important-dates-store";
+import { ImportedMetricsSessionProvider } from "@/lib/imported-metrics-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
 import { SavedTrendsSessionProvider } from "@/lib/saved-trends-store";
 import { SettingsSessionProvider } from "@/lib/settings-store";
@@ -32,16 +33,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       <IdeaNotesSessionProvider>
                         <ImportantDatesSessionProvider>
                           <SavedTrendsSessionProvider>
-                            <UserProfileSessionProvider>
-                              <SidebarStateProvider>
-                                <div className="flex h-dvh w-full flex-col bg-background">
-                                  <Sidebar />
-                                  <TopBar />
-                                  <DashboardMainContent>{children}</DashboardMainContent>
-                                  <FloatingAssistantButton />
-                                </div>
-                              </SidebarStateProvider>
-                            </UserProfileSessionProvider>
+                            <ImportedMetricsSessionProvider>
+                              <UserProfileSessionProvider>
+                                <SidebarStateProvider>
+                                  <div className="flex h-dvh w-full flex-col bg-background">
+                                    <Sidebar />
+                                    <TopBar />
+                                    <DashboardMainContent>{children}</DashboardMainContent>
+                                    <FloatingAssistantButton />
+                                  </div>
+                                </SidebarStateProvider>
+                              </UserProfileSessionProvider>
+                            </ImportedMetricsSessionProvider>
                           </SavedTrendsSessionProvider>
                         </ImportantDatesSessionProvider>
                       </IdeaNotesSessionProvider>

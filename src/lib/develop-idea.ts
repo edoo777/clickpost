@@ -3,9 +3,46 @@
 import { useRouter } from "next/navigation";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { useIdeaNotesSession } from "@/lib/idea-notes-store";
+import { plainTextToDocument } from "@/lib/rich-document";
+import type { SocialPlatform } from "@/types/dashboard";
+import type { ContentFormat } from "@/types/editorial-calendar";
 import type { Idea } from "@/types/idea";
 import type { IdeaNote } from "@/types/idea-note";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
+
+export interface IdeaSeed {
+  brandId: string;
+  title: string;
+  description?: string;
+  platform?: SocialPlatform;
+  format?: ContentFormat;
+  body?: string;
+  quickNotes?: string;
+}
+
+/** Construit une nouvelle Idée à partir d'un point de départ arbitraire (recyclage d'une
+ * publication, variante, test éditorial…) — jamais persistée ici, seulement construite ; à passer
+ * à `addIdea` par l'appelant. Centralise cette construction pour éviter que chaque point d'entrée
+ * (Tendances, Recycler une publication, Optimisation) ne la réimplémente légèrement différemment. */
+export function buildIdeaFromSeed(seed: IdeaSeed): Idea {
+  const now = new Date().toISOString();
+  return {
+    id: crypto.randomUUID(),
+    brandId: seed.brandId,
+    title: seed.title,
+    description: seed.description,
+    source: "manual",
+    status: "idea",
+    platform: seed.platform,
+    format: seed.format,
+    documentContent: seed.body ? plainTextToDocument(seed.body) : undefined,
+    body: seed.body,
+    quickNotes: seed.quickNotes,
+    workshopDisplayMode: "document",
+    createdAt: now,
+    updatedAt: now,
+  };
+}
 
 export type DevelopMode = "manual" | "ai";
 

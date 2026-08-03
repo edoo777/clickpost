@@ -1,9 +1,10 @@
-import { PUBLICATION_PERFORMANCE, generateDailySeries } from "@/lib/analytics-data";
+import { DEMO_PUBLICATION_PERFORMANCE, generateDailySeries } from "@/lib/analytics-data";
+import { CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { toISODate } from "@/lib/date-utils";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
-import type { DailyMetricPoint, PublicationPerformance } from "@/types/analytics";
+import type { DailyMetricPoint, ImportedMetricRecord, MetricsSource, MetricValues, PublicationPerformance } from "@/types/analytics";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { Publication } from "@/types/publication";
 
@@ -13,6 +14,20 @@ export interface PerformanceFilters {
   platform: SocialPlatform | "all";
   startDate: string;
   endDate: string;
+}
+
+/** Jamais un mélange silencieux : toute vue agrégée doit pouvoir afficher d'où viennent les
+ * chiffres qu'elle montre. */
+export interface DataSourceSummary {
+  hasImported: boolean;
+  hasDemo: boolean;
+}
+
+export function mergeSourceSummaries(...summaries: DataSourceSummary[]): DataSourceSummary {
+  return {
+    hasImported: summaries.some((summary) => summary.hasImported),
+    hasDemo: summaries.some((summary) => summary.hasDemo),
+  };
 }
 
 const TIME_SLOTS = [
@@ -28,46 +43,154 @@ function getTimeSlot(hour: number): (typeof TIME_SLOTS)[number] {
   return TIME_SLOTS.find((slot) => hour >= slot.from && hour < slot.to) ?? TIME_SLOTS[0];
 }
 
+/** Résout la performance d'une publication : priorité absolue à une importation manuelle réelle
+ * (la plus récente pour cette publication) ; sinon, uniquement si la démonstration est activée
+ * explicitement, une valeur de démonstration ; sinon `null` (état vide honnête). */
+function resolvePublicationPerformance(
+  publication: Publication,
+  importedByPublicationId: Map<string, ImportedMetricRecord>,
+  demoEnabled: boolean
+): PublicationPerformance | null {
+  const imported = importedByPublicationId.get(publication.id);
+  if (imported) {
+    return {
+      publicationId: publication.id,
+      impressions: imported.impressions,
+      reach: imported.reach,
+      views: imported.views,
+      interactions: imported.interactions,
+      reactions: imported.reactions,
+      comments: imported.comments,
+      shares: imported.shares,
+      saves: imported.saves,
+      clicks: imported.clicks,
+      newFollowers: imported.newFollowers,
+      conversions: imported.conversions,
+      source: "imported",
+    };
+  }
+  if (demoEnabled) return DEMO_PUBLICATION_PERFORMANCE[publication.id] ?? null;
+  return null;
+}
+
+function matchesFilters(publication: Publication, filters: PerformanceFilters): boolean {
+  if (filters.brand !== "all" && publication.brand !== filters.brand) return false;
+  if (filters.platform !== "all" && publication.platform !== filters.platform) return false;
+  if (filters.accountId !== "all" && publication.accountId !== filters.accountId) return false;
+  const date = publication.scheduledFor.slice(0, 10);
+  if (date < filters.startDate || date > filters.endDate) return false;
+  return true;
+}
+
+export type PerformedPublication = Publication & { performance: PublicationPerformance; engagementRate: number };
+
+export function getMatchingPerformedPublications(
+  publications: Publication[],
+  filters: PerformanceFilters,
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean
+): PerformedPublication[] {
+  const importedByPublicationId = new Map(importedMetrics.map((record) => [record.publicationId, record]));
+  return publications
+    .filter((publication) => matchesFilters(publication, filters))
+    .map((publication) => {
+      const performance = resolvePublicationPerformance(publication, importedByPublicationId, demoEnabled);
+      if (!performance) return null;
+      const engagementRate = performance.reach > 0 ? (performance.interactions / performance.reach) * 100 : 0;
+      return { ...publication, performance, engagementRate };
+    })
+    .filter((value): value is PerformedPublication => value !== null);
+}
+
+/** Le seul chiffre garanti réel indépendamment de tout import ou de la démonstration : le nombre
+ * de publications réellement marquées « Publié » (voir ManualPublishPanel, Phase D) sur la
+ * période. Ne dépend jamais de la résolution d'une performance. */
+export function getPublishedCount(publications: Publication[], filters: PerformanceFilters): number {
+  return publications.filter((publication) => matchesFilters(publication, filters) && publication.status === "published").length;
+}
+
 export function getDailySeries(
   filters: PerformanceFilters,
   accounts: SocialAccount[],
-  brands: Brand[]
-): DailyMetricPoint[] {
-  const brandNames = filters.brand === "all" ? brands.map((brand) => brand.name) : [filters.brand];
-  const start = new Date(`${filters.startDate}T00:00:00`);
-  const end = new Date(`${filters.endDate}T00:00:00`);
-  const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
-  if (days <= 0) return [];
-
+  brands: Brand[],
+  publications: Publication[],
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean
+): { points: DailyMetricPoint[]; sources: DataSourceSummary } {
+  const importedByPublicationId = new Map(importedMetrics.map((record) => [record.publicationId, record]));
   const points: DailyMetricPoint[] = [];
+  const importedBrandPlatformKeys = new Set<string>();
 
-  for (const brandName of brandNames) {
-    const brandProfile = brands.find((brand) => brand.name === brandName);
-    if (!brandProfile) continue;
+  for (const publication of publications) {
+    if (!matchesFilters(publication, filters)) continue;
+    const imported = importedByPublicationId.get(publication.id);
+    if (!imported) continue;
+    importedBrandPlatformKeys.add(`${publication.brand}-${publication.platform}`);
+    points.push({
+      date: publication.scheduledFor.slice(0, 10),
+      brand: publication.brand,
+      platform: publication.platform,
+      source: "imported",
+      impressions: imported.impressions,
+      reach: imported.reach,
+      views: imported.views,
+      interactions: imported.interactions,
+      reactions: imported.reactions,
+      comments: imported.comments,
+      shares: imported.shares,
+      saves: imported.saves,
+      clicks: imported.clicks,
+      newFollowers: imported.newFollowers,
+      conversions: imported.conversions,
+    });
+  }
 
-    let platforms: SocialPlatform[] = brandProfile.socialPlatforms;
-    if (filters.platform !== "all") {
-      platforms = platforms.filter((platform) => platform === filters.platform);
-    }
-    if (filters.accountId !== "all") {
-      const account = accounts.find((candidate) => candidate.id === filters.accountId);
-      platforms = account ? platforms.filter((platform) => platform === account.platform) : [];
-    }
+  let hasDemo = false;
+  if (demoEnabled) {
+    const brandNames = filters.brand === "all" ? brands.map((brand) => brand.name) : [filters.brand];
+    const start = new Date(`${filters.startDate}T00:00:00`);
+    const end = new Date(`${filters.endDate}T00:00:00`);
+    const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
 
-    for (const platform of platforms) {
-      points.push(...generateDailySeries(brandName, platform, end, days));
+    if (days > 0) {
+      for (const brandName of brandNames) {
+        const brandProfile = brands.find((brand) => brand.name === brandName);
+        if (!brandProfile) continue;
+
+        let platforms: SocialPlatform[] = brandProfile.socialPlatforms;
+        if (filters.platform !== "all") platforms = platforms.filter((platform) => platform === filters.platform);
+        if (filters.accountId !== "all") {
+          const account = accounts.find((candidate) => candidate.id === filters.accountId);
+          platforms = account ? platforms.filter((platform) => platform === account.platform) : [];
+        }
+
+        for (const platform of platforms) {
+          // Jamais de démonstration superposée à une importation réelle pour le même couple
+          // marque/plateforme — évite un mélange silencieux au sein d'une même série.
+          if (importedBrandPlatformKeys.has(`${brandName}-${platform}`)) continue;
+          const demoPoints = generateDailySeries(brandName, platform, end, days);
+          if (demoPoints.length > 0) hasDemo = true;
+          points.push(...demoPoints);
+        }
+      }
     }
   }
 
-  return points;
+  return { points, sources: { hasImported: points.some((point) => point.source === "imported"), hasDemo } };
 }
 
 export interface PerformanceTotals {
   impressions: number;
   reach: number;
+  views: number;
   interactions: number;
+  reactions: number;
+  comments: number;
+  shares: number;
+  saves: number;
   clicks: number;
   newFollowers: number;
+  conversions: number;
   engagementRate: number;
 }
 
@@ -76,17 +199,20 @@ export function aggregateTotals(points: DailyMetricPoint[]): PerformanceTotals {
     (acc, point) => ({
       impressions: acc.impressions + point.impressions,
       reach: acc.reach + point.reach,
+      views: acc.views + point.views,
       interactions: acc.interactions + point.interactions,
+      reactions: acc.reactions + point.reactions,
+      comments: acc.comments + point.comments,
+      shares: acc.shares + point.shares,
+      saves: acc.saves + point.saves,
       clicks: acc.clicks + point.clicks,
       newFollowers: acc.newFollowers + point.newFollowers,
+      conversions: acc.conversions + point.conversions,
     }),
-    { impressions: 0, reach: 0, interactions: 0, clicks: 0, newFollowers: 0 }
+    { impressions: 0, reach: 0, views: 0, interactions: 0, reactions: 0, comments: 0, shares: 0, saves: 0, clicks: 0, newFollowers: 0, conversions: 0 }
   );
 
-  return {
-    ...totals,
-    engagementRate: totals.reach > 0 ? (totals.interactions / totals.reach) * 100 : 0,
-  };
+  return { ...totals, engagementRate: totals.reach > 0 ? (totals.interactions / totals.reach) * 100 : 0 };
 }
 
 export function getPreviousPeriodFilters(filters: PerformanceFilters): PerformanceFilters {
@@ -102,7 +228,7 @@ export function getPreviousPeriodFilters(filters: PerformanceFilters): Performan
   return { ...filters, startDate: toISODate(previousStart), endDate: toISODate(previousEnd) };
 }
 
-export type NumericMetricKey = "impressions" | "reach" | "interactions" | "clicks" | "newFollowers";
+export type NumericMetricKey = keyof MetricValues;
 
 export function sumByDate(points: DailyMetricPoint[], metric: NumericMetricKey): { date: string; value: number }[] {
   const totals = new Map<string, number>();
@@ -114,61 +240,50 @@ export function sumByDate(points: DailyMetricPoint[], metric: NumericMetricKey):
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
 
-function matchesFilters(publication: Publication, filters: PerformanceFilters): boolean {
-  if (filters.brand !== "all" && publication.brand !== filters.brand) return false;
-  if (filters.platform !== "all" && publication.platform !== filters.platform) return false;
-  if (filters.accountId !== "all" && publication.accountId !== filters.accountId) return false;
-  const date = publication.scheduledFor.slice(0, 10);
-  if (date < filters.startDate || date > filters.endDate) return false;
-  return true;
-}
-
-export function getMatchingPerformedPublications(
+export function getTopPublications(
   publications: Publication[],
-  filters: PerformanceFilters
-): Array<Publication & { performance: PublicationPerformance; engagementRate: number }> {
-  return publications
-    .filter((publication) => matchesFilters(publication, filters))
-    .map((publication) => {
-      const performance = PUBLICATION_PERFORMANCE[publication.id];
-      if (!performance) return null;
-      const engagementRate = performance.reach > 0 ? (performance.interactions / performance.reach) * 100 : 0;
-      return { ...publication, performance, engagementRate };
-    })
-    .filter((value): value is Publication & { performance: PublicationPerformance; engagementRate: number } =>
-      value !== null
-    );
-}
-
-export function getPublishedCount(publications: Publication[], filters: PerformanceFilters): number {
-  return getMatchingPerformedPublications(publications, filters).length;
-}
-
-export function getTopPublications(publications: Publication[], filters: PerformanceFilters, limit = 5) {
-  return getMatchingPerformedPublications(publications, filters)
+  filters: PerformanceFilters,
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean,
+  limit = 5
+): PerformedPublication[] {
+  return getMatchingPerformedPublications(publications, filters, importedMetrics, demoEnabled)
     .sort((a, b) => b.engagementRate - a.engagementRate)
     .slice(0, limit);
 }
 
-interface RankedGroup {
+export function getWorstPublications(
+  publications: Publication[],
+  filters: PerformanceFilters,
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean,
+  limit = 5
+): PerformedPublication[] {
+  return getMatchingPerformedPublications(publications, filters, importedMetrics, demoEnabled)
+    .sort((a, b) => a.engagementRate - b.engagementRate)
+    .slice(0, limit);
+}
+
+export interface RankedGroup {
   key: string;
   label: string;
   engagementRate: number;
   count: number;
+  sources: DataSourceSummary;
 }
 
-function rankByKey(
-  performed: ReturnType<typeof getMatchingPerformedPublications>,
-  getKey: (publication: Publication) => string
-): RankedGroup[] {
-  const groups = new Map<string, { reach: number; interactions: number; count: number }>();
+function rankByKey(performed: PerformedPublication[], getKey: (publication: Publication) => string | null): RankedGroup[] {
+  const groups = new Map<string, { reach: number; interactions: number; count: number; sources: DataSourceSummary }>();
 
   for (const publication of performed) {
     const key = getKey(publication);
-    const group = groups.get(key) ?? { reach: 0, interactions: 0, count: 0 };
+    if (key === null) continue;
+    const group = groups.get(key) ?? { reach: 0, interactions: 0, count: 0, sources: { hasImported: false, hasDemo: false } };
     group.reach += publication.performance.reach;
     group.interactions += publication.performance.interactions;
     group.count += 1;
+    if (publication.performance.source === "imported") group.sources.hasImported = true;
+    if (publication.performance.source === "demo") group.sources.hasDemo = true;
     groups.set(key, group);
   }
 
@@ -178,23 +293,48 @@ function rankByKey(
       label: key,
       engagementRate: group.reach > 0 ? (group.interactions / group.reach) * 100 : 0,
       count: group.count,
+      sources: group.sources,
     }))
     .sort((a, b) => b.engagementRate - a.engagementRate);
 }
 
-export function getPlatformPerformance(publications: Publication[], filters: PerformanceFilters): RankedGroup[] {
-  const performed = getMatchingPerformedPublications(publications, filters);
-  return rankByKey(performed, (publication) => publication.platform);
+function performedFor(
+  publications: Publication[],
+  filters: PerformanceFilters,
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean
+): PerformedPublication[] {
+  return getMatchingPerformedPublications(publications, filters, importedMetrics, demoEnabled);
 }
 
-export function getFormatPerformance(publications: Publication[], filters: PerformanceFilters): RankedGroup[] {
-  const performed = getMatchingPerformedPublications(publications, filters);
-  return rankByKey(performed, (publication) => publication.format);
+export function getPlatformPerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.platform);
 }
 
-export function getThemePerformance(publications: Publication[], filters: PerformanceFilters): RankedGroup[] {
-  const performed = getMatchingPerformedPublications(publications, filters);
-  return rankByKey(performed, (publication) => publication.theme || "Sans thématique");
+export function getFormatPerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.format);
+}
+
+export function getThemePerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.theme || "Sans thématique");
+}
+
+export function getContentTypePerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.contentType ?? null).map(
+    (group) => ({ ...group, label: CONTENT_TYPE_LABEL[group.key as ContentType] ?? group.key })
+  );
+}
+
+export function getObjectivePerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.objective || "Sans objectif");
+}
+
+export function getOwnerPerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => publication.owner || "Non assigné");
+}
+
+export function getCtaPerformance(publications: Publication[], filters: PerformanceFilters, importedMetrics: ImportedMetricRecord[], demoEnabled: boolean): RankedGroup[] {
+  return rankByKey(performedFor(publications, filters, importedMetrics, demoEnabled), (publication) => (publication.cta.trim() ? publication.cta.trim() : null));
 }
 
 export interface TimeSlotCell {
@@ -208,9 +348,11 @@ export interface TimeSlotCell {
 
 export function getBestTimeSlots(
   publications: Publication[],
-  filters: PerformanceFilters
+  filters: PerformanceFilters,
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean
 ): { grid: TimeSlotCell[]; best: TimeSlotCell | null } {
-  const performed = getMatchingPerformedPublications(publications, filters);
+  const performed = performedFor(publications, filters, importedMetrics, demoEnabled);
   const buckets = new Map<string, { reach: number; interactions: number; count: number; weekday: number; slotKey: string }>();
 
   for (const publication of performed) {
@@ -240,14 +382,12 @@ export function getBestTimeSlots(
     }
   }
 
-  const best = grid
-    .filter((cell) => cell.count > 0)
-    .sort((a, b) => b.engagementRate - a.engagementRate)[0] ?? null;
+  const best = grid.filter((cell) => cell.count > 0).sort((a, b) => b.engagementRate - a.engagementRate)[0] ?? null;
 
   return { grid, best };
 }
 
-const FORMAT_TO_LABEL_KEY: Record<ContentFormat, string> = {
+export const FORMAT_TO_LABEL_KEY: Record<ContentFormat, string> = {
   text: "Texte",
   carousel: "Carrousel",
   image: "Image",
@@ -256,58 +396,5 @@ const FORMAT_TO_LABEL_KEY: Record<ContentFormat, string> = {
   article: "Article ou contenu long",
 };
 
-export interface RecommendationInput {
-  topFormat: RankedGroup | null;
-  topPlatform: RankedGroup | null;
-  topTheme: RankedGroup | null;
-  bestTimeSlot: TimeSlotCell | null;
-  currentTotals: PerformanceTotals;
-  previousTotals: PerformanceTotals | null;
-}
-
-export function generateRecommendations(input: RecommendationInput): string[] {
-  const recommendations: string[] = [];
-
-  if (input.topFormat) {
-    const label = FORMAT_TO_LABEL_KEY[input.topFormat.key as ContentFormat] ?? input.topFormat.key;
-    recommendations.push(
-      `Le format "${label}" génère le meilleur taux d'engagement (${input.topFormat.engagementRate.toFixed(1)}%) sur la période — privilégiez-le dans vos prochaines publications.`
-    );
-  }
-
-  if (input.topTheme) {
-    recommendations.push(
-      `La thématique "${input.topTheme.label}" surperforme (${input.topTheme.engagementRate.toFixed(1)}% d'engagement) — envisagez d'en publier davantage.`
-    );
-  }
-
-  if (input.topPlatform) {
-    const platformLabel =
-      PLATFORM_LABEL[input.topPlatform.key as SocialPlatform] ?? input.topPlatform.label;
-    recommendations.push(
-      `${platformLabel} est le réseau le plus engageant sur la période (${input.topPlatform.engagementRate.toFixed(1)}%).`
-    );
-  }
-
-  if (input.bestTimeSlot) {
-    recommendations.push(
-      `Les publications du ${input.bestTimeSlot.weekdayLabel.toLowerCase()} en créneau "${input.bestTimeSlot.slotLabel.toLowerCase()}" obtiennent le meilleur engagement moyen — un bon créneau à privilégier.`
-    );
-  }
-
-  if (input.previousTotals) {
-    const delta = input.currentTotals.engagementRate - input.previousTotals.engagementRate;
-    if (Math.abs(delta) >= 0.1) {
-      const direction = delta > 0 ? "en hausse" : "en baisse";
-      recommendations.push(
-        `Le taux d'engagement global est ${direction} de ${Math.abs(delta).toFixed(1)} point${Math.abs(delta) >= 2 ? "s" : ""} par rapport à la période précédente.`
-      );
-    }
-  }
-
-  if (recommendations.length === 0) {
-    recommendations.push("Pas assez de données sur cette période pour générer des recommandations.");
-  }
-
-  return recommendations;
-}
+export { PLATFORM_LABEL };
+export type { MetricsSource };

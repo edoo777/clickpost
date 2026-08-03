@@ -1,13 +1,14 @@
 interface ThemePerformanceChartProps {
   data: Array<{ key: string; label: string; engagementRate: number }>;
+  title?: string;
 }
 
-export function ThemePerformanceChart({ data }: ThemePerformanceChartProps) {
+export function ThemePerformanceChart({ data, title = "Thématiques les plus performantes" }: ThemePerformanceChartProps) {
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Thématiques les plus performantes</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{title}</h2>
       {data.length === 0 ? (
         <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
       ) : (

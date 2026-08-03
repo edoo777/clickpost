@@ -1,3 +1,4 @@
+import type { ContentType } from "@/lib/content-types";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { PublishAttempt } from "@/types/publishing-provider";
@@ -67,6 +68,9 @@ export interface Publication {
   theme: string;
   themeId?: string;
   format: ContentFormat;
+  /** Angle éditorial (Conseil, Preuve, Offre…) — distinct du format. Additif, absent sur les
+   * publications créées avant ce champ. */
+  contentType?: ContentType;
   objective: string;
   angle?: string;
   excerpt: string;

@@ -6,12 +6,13 @@ import type { Publication } from "@/types/publication";
 
 interface TopPublicationsListProps {
   publications: Array<Publication & { performance: PublicationPerformance; engagementRate: number }>;
+  title?: string;
 }
 
-export function TopPublicationsList({ publications }: TopPublicationsListProps) {
+export function TopPublicationsList({ publications, title = "Meilleures publications" }: TopPublicationsListProps) {
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Meilleures publications</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{title}</h2>
       {publications.length === 0 ? (
         <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
       ) : (
@@ -33,6 +34,7 @@ export function TopPublicationsList({ publications }: TopPublicationsListProps) 
                   </Link>
                   <span className="truncate text-xs text-muted-foreground ">
                     {publication.brand} · {publication.performance.impressions.toLocaleString("fr-FR")} impressions
+                    {publication.performance.source === "demo" ? " · démonstration" : ""}
                   </span>
                 </div>
                 <span className="shrink-0 text-sm font-semibold text-zinc-700 dark:text-zinc-300">

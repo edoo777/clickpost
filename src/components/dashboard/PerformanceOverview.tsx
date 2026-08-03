@@ -7,6 +7,9 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { aggregateTotals, sumByDate } from "@/lib/analytics-report";
 import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
+import { isDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
+import { usePostsSession } from "@/lib/posts-store";
 import type { DailyMetricPoint } from "@/types/analytics";
 
 const numberFormatter = new Intl.NumberFormat("fr-FR");
@@ -36,10 +39,15 @@ interface PerformanceOverviewProps {
 export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: PerformanceOverviewProps) {
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
+  const { posts } = usePostsSession();
+  const { importedMetrics } = useImportedMetricsSession();
   const { current: currentPoints, previous: previousPoints, windowDays } = buildDashboardPerformancePoints(
     filters,
     accounts,
-    brands
+    brands,
+    posts,
+    importedMetrics,
+    isDemoAnalyticsEnabled()
   );
   const currentTotals = aggregateTotals(currentPoints);
   const previousTotals = aggregateTotals(previousPoints);

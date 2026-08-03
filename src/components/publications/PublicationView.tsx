@@ -16,11 +16,10 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
-import { useDevelopIdea } from "@/lib/develop-idea";
+import { buildIdeaFromSeed, useDevelopIdea } from "@/lib/develop-idea";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
-import { plainTextToDocument } from "@/lib/rich-document";
 import { useSettingsSession } from "@/lib/settings-store";
 import { deleteAllPublicationMedia } from "@/lib/supabase/publication-media-storage";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
@@ -308,23 +307,15 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   function handleRecycle() {
     if (!existing) return;
-    const now = new Date().toISOString();
     const brandId = brands.find((candidate) => candidate.name === existing.brand)?.id ?? "";
-    const idea: Idea = {
-      id: crypto.randomUUID(),
+    const idea = buildIdeaFromSeed({
       brandId,
       title: `${existing.excerpt || "Publication"} (recyclée)`,
       description: existing.objective || undefined,
-      source: "manual",
-      status: "idea",
       platform: existing.platform,
       format: existing.format,
-      documentContent: existing.text ? plainTextToDocument(existing.text) : undefined,
       body: existing.text,
-      workshopDisplayMode: "document",
-      createdAt: now,
-      updatedAt: now,
-    };
+    });
     addIdea(idea);
     developIdea(idea, "manual");
   }

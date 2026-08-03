@@ -1,13 +1,15 @@
 import type { DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
-import { getDailySeries, getPreviousPeriodFilters, type PerformanceFilters } from "@/lib/analytics-report";
+import { getDailySeries, getPreviousPeriodFilters, type DataSourceSummary, type PerformanceFilters } from "@/lib/analytics-report";
 import { toISODate } from "@/lib/date-utils";
-import type { DailyMetricPoint } from "@/types/analytics";
+import type { DailyMetricPoint, ImportedMetricRecord } from "@/types/analytics";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 export interface DashboardPerformancePoints {
   current: DailyMetricPoint[];
   previous: DailyMetricPoint[];
+  sources: DataSourceSummary;
   windowDays: number;
   perfFilters: PerformanceFilters;
 }
@@ -16,7 +18,10 @@ export interface DashboardPerformancePoints {
 export function buildDashboardPerformancePoints(
   filters: DashboardFiltersValue,
   accounts: SocialAccount[],
-  brands: Brand[]
+  brands: Brand[],
+  publications: Publication[],
+  importedMetrics: ImportedMetricRecord[],
+  demoEnabled: boolean
 ): DashboardPerformancePoints {
   const windowDays = Number(filters.period);
   const brandName =
@@ -34,9 +39,13 @@ export function buildDashboardPerformancePoints(
     endDate: toISODate(endDate),
   };
 
+  const current = getDailySeries(perfFilters, accounts, brands, publications, importedMetrics, demoEnabled);
+  const previous = getDailySeries(getPreviousPeriodFilters(perfFilters), accounts, brands, publications, importedMetrics, demoEnabled);
+
   return {
-    current: getDailySeries(perfFilters, accounts, brands),
-    previous: getDailySeries(getPreviousPeriodFilters(perfFilters), accounts, brands),
+    current: current.points,
+    previous: previous.points,
+    sources: current.sources,
     windowDays,
     perfFilters,
   };

@@ -1,3 +1,4 @@
+import type { ImportedMetricRecord } from "@/types/analytics";
 import type { Brand } from "@/types/brand";
 import type { Campaign } from "@/types/campaign";
 import type { ContentVersion } from "@/types/content-version";
@@ -37,6 +38,9 @@ export interface WorkspaceData {
   userProfiles: Record<string, UserProfileExtra>;
   importantDates: ImportantDate[];
   savedTrends: SavedTrend[];
+  /** Persistance locale uniquement (IndexedDB) — jamais poussée vers Supabase (voir
+   * imported-metrics-store.tsx). Reste propre à cet appareil/navigateur pour l'instant. */
+  importedMetrics: ImportedMetricRecord[];
 }
 
 export type WorkspaceKey = keyof WorkspaceData;

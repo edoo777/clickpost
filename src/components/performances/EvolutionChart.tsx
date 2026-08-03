@@ -7,9 +7,15 @@ import type { DailyMetricPoint } from "@/types/analytics";
 const METRIC_OPTIONS: { key: NumericMetricKey; label: string }[] = [
   { key: "impressions", label: "Impressions" },
   { key: "reach", label: "Portée" },
+  { key: "views", label: "Vues" },
   { key: "interactions", label: "Interactions" },
+  { key: "reactions", label: "Réactions" },
+  { key: "comments", label: "Commentaires" },
+  { key: "shares", label: "Partages" },
+  { key: "saves", label: "Sauvegardes" },
   { key: "clicks", label: "Clics" },
   { key: "newFollowers", label: "Nouveaux abonnés" },
+  { key: "conversions", label: "Conversions" },
 ];
 
 const WIDTH = 640;

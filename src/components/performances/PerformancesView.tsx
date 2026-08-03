@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { BestTimesHeatmap } from "@/components/performances/BestTimesHeatmap";
+import { CsvImportPanel } from "@/components/performances/CsvImportPanel";
+import { DemoDataToggle } from "@/components/performances/DemoDataToggle";
 import { EvolutionChart } from "@/components/performances/EvolutionChart";
 import { FormatPerformanceChart } from "@/components/performances/FormatPerformanceChart";
 import { KpiGrid } from "@/components/performances/KpiGrid";
@@ -11,27 +13,34 @@ import {
   type PerformancesFiltersValue,
 } from "@/components/performances/PerformancesFilters";
 import { PlatformPerformanceChart } from "@/components/performances/PlatformPerformanceChart";
-import { RecommendationsPanel } from "@/components/performances/RecommendationsPanel";
 import { ReportPreview } from "@/components/performances/ReportPreview";
 import { ThemePerformanceChart } from "@/components/performances/ThemePerformanceChart";
 import { TopPublicationsList } from "@/components/performances/TopPublicationsList";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { useBrandsSession } from "@/lib/brands-store";
 import {
   aggregateTotals,
-  generateRecommendations,
   getBestTimeSlots,
+  getContentTypePerformance,
+  getCtaPerformance,
   getDailySeries,
   getFormatPerformance,
+  getObjectivePerformance,
+  getOwnerPerformance,
   getPlatformPerformance,
   getPreviousPeriodFilters,
   getPublishedCount,
   getThemePerformance,
   getTopPublications,
+  getWorstPublications,
+  mergeSourceSummaries,
   type PerformanceFilters,
 } from "@/lib/analytics-report";
 import { toISODate } from "@/lib/date-utils";
+import { useBrandsSession } from "@/lib/brands-store";
+import { isDemoAnalyticsEnabled, setDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { usePostsSession } from "@/lib/posts-store";
+import { useTeamSession } from "@/lib/team-store";
 
 const periodDateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
 
@@ -63,7 +72,17 @@ export function PerformancesView() {
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
+  const { members, currentUserId } = useTeamSession();
+  const { importedMetrics, importMetrics } = useImportedMetricsSession();
+  const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
+
   const [filters, setFilters] = useState<PerformancesFiltersValue>(buildInitialFilters);
+  const [demoEnabled, setDemoEnabledState] = useState(() => isDemoAnalyticsEnabled());
+
+  function handleDemoToggle(enabled: boolean) {
+    setDemoEnabledState(enabled);
+    setDemoAnalyticsEnabled(enabled);
+  }
 
   function handleFiltersChange(next: PerformancesFiltersValue) {
     if (next.preset !== filters.preset && next.preset !== "custom") {
@@ -82,33 +101,42 @@ export function PerformancesView() {
     endDate: filters.endDate,
   };
 
-  const currentDailyPoints = getDailySeries(reportFilters, accounts, brands);
+  const { points: currentDailyPoints, sources: currentSources } = getDailySeries(reportFilters, accounts, brands, posts, importedMetrics, demoEnabled);
   const totals = aggregateTotals(currentDailyPoints);
   const publishedCount = getPublishedCount(posts, reportFilters);
 
   const previousFilters = filters.compare ? getPreviousPeriodFilters(reportFilters) : null;
-  const previousDailyPoints = previousFilters ? getDailySeries(previousFilters, accounts, brands) : null;
-  const previousTotals = previousDailyPoints ? aggregateTotals(previousDailyPoints) : null;
+  const previousResult = previousFilters ? getDailySeries(previousFilters, accounts, brands, posts, importedMetrics, demoEnabled) : null;
+  const previousTotals = previousResult ? aggregateTotals(previousResult.points) : null;
   const previousPublishedCount = previousFilters ? getPublishedCount(posts, previousFilters) : null;
 
-  const topPublications = getTopPublications(posts, reportFilters);
-  const platformPerformance = getPlatformPerformance(posts, reportFilters);
-  const formatPerformance = getFormatPerformance(posts, reportFilters).slice(0, 6);
-  const themePerformance = getThemePerformance(posts, reportFilters).slice(0, 6);
-  const bestTimeSlots = getBestTimeSlots(posts, reportFilters);
+  const topPublications = getTopPublications(posts, reportFilters, importedMetrics, demoEnabled);
+  const worstPublications = getWorstPublications(posts, reportFilters, importedMetrics, demoEnabled);
+  const platformPerformance = getPlatformPerformance(posts, reportFilters, importedMetrics, demoEnabled);
+  const formatPerformance = getFormatPerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const themePerformance = getThemePerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const contentTypePerformance = getContentTypePerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const objectivePerformance = getObjectivePerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const ownerPerformance = getOwnerPerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const ctaPerformance = getCtaPerformance(posts, reportFilters, importedMetrics, demoEnabled).slice(0, 6);
+  const bestTimeSlots = getBestTimeSlots(posts, reportFilters, importedMetrics, demoEnabled);
 
-  const recommendations = generateRecommendations({
-    topFormat: formatPerformance[0] ?? null,
-    topPlatform: platformPerformance[0] ?? null,
-    topTheme: themePerformance[0] ?? null,
-    bestTimeSlot: bestTimeSlots.best,
-    currentTotals: totals,
-    previousTotals,
-  });
+  const overallSources = mergeSourceSummaries(
+    currentSources,
+    ...platformPerformance.map((group) => group.sources),
+    ...formatPerformance.map((group) => group.sources)
+  );
 
   const periodLabel = `${periodDateFormatter.format(new Date(`${filters.startDate}T00:00:00`))} – ${periodDateFormatter.format(
     new Date(`${filters.endDate}T00:00:00`)
   )}`;
+
+  const filteredPublications = posts.filter((publication) => {
+    if (filters.brand !== "all" && publication.brand !== filters.brand) return false;
+    if (filters.platform !== "all" && publication.platform !== filters.platform) return false;
+    const date = publication.scheduledFor.slice(0, 10);
+    return date >= filters.startDate && date <= filters.endDate;
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,22 +150,22 @@ export function PerformancesView() {
       </header>
 
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-        Données de démonstration — aucune plateforme sociale n&apos;étant connectée par une
-        intégration API réelle, les chiffres ci-dessous (impressions, portée, interactions…) sont
-        générés à titre d&apos;exemple et ne reflètent aucune activité réelle. Seul le nombre de
-        publications marquées « Publié » provient de vos données réelles.
+        Aucune plateforme sociale n&apos;étant connectée par une intégration API réelle, seul le
+        nombre de publications marquées « Publié » est garanti réel. Toute autre statistique
+        provient d&apos;un import CSV manuel (voir ci-dessous) ou, si activées, de données de
+        démonstration clairement identifiées.
       </p>
 
-      <PerformancesFilters value={filters} accounts={accounts} onChange={handleFiltersChange} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PerformancesFilters value={filters} accounts={accounts} onChange={handleFiltersChange} />
+        <DemoDataToggle enabled={demoEnabled} onChange={handleDemoToggle} />
+      </div>
 
-      <KpiGrid
-        totals={totals}
-        previousTotals={previousTotals}
-        publishedCount={publishedCount}
-        previousPublishedCount={previousPublishedCount}
-      />
+      <CsvImportPanel publications={filteredPublications} currentUserName={currentUserName} onImport={importMetrics} />
 
-      <EvolutionChart currentPoints={currentDailyPoints} previousPoints={previousDailyPoints} />
+      <KpiGrid totals={totals} previousTotals={previousTotals} publishedCount={publishedCount} previousPublishedCount={previousPublishedCount} sources={overallSources} />
+
+      <EvolutionChart currentPoints={currentDailyPoints} previousPoints={previousResult?.points ?? null} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <PlatformPerformanceChart data={platformPerformance} />
@@ -149,15 +177,25 @@ export function PerformancesView() {
         <ThemePerformanceChart data={themePerformance} />
       </div>
 
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ThemePerformanceChart data={contentTypePerformance} title="Types de contenu les plus performants" />
+        <ThemePerformanceChart data={objectivePerformance} title="Objectifs les plus performants" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ThemePerformanceChart data={ownerPerformance} title="Performance par responsable" />
+        <ThemePerformanceChart data={ctaPerformance} title="Appels à l'action les plus performants" />
+      </div>
+
       <BestTimesHeatmap grid={bestTimeSlots.grid} best={bestTimeSlots.best} />
 
-      <RecommendationsPanel recommendations={recommendations} />
+      <TopPublicationsList publications={worstPublications} title="Publications les moins performantes" />
 
       <ReportPreview
         periodLabel={periodLabel}
         totals={totals}
         topPublicationExcerpt={topPublications[0]?.excerpt ?? null}
-        topRecommendation={recommendations[0] ?? null}
+        topRecommendation={null}
       />
     </div>
   );
