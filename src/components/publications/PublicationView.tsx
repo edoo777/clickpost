@@ -4,9 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import { ApprovalActions } from "@/components/publications/ApprovalActions";
+import { ClaudeGenerationPanel } from "@/components/publications/ClaudeGenerationPanel";
 import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
 import { PublicationForm } from "@/components/publications/PublicationForm";
+import { PublicationModeToggle, type PublicationCreationMode } from "@/components/publications/PublicationModeToggle";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, rejectPublication, requestChanges } from "@/lib/approval";
@@ -16,6 +18,8 @@ import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useSettingsSession } from "@/lib/settings-store";
+import { deleteAllPublicationMedia } from "@/lib/supabase/publication-media-storage";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
@@ -42,7 +46,9 @@ function buildBlankPublication(
   const dateOnly = defaultDate && /^\d{4}-\d{2}-\d{2}$/.test(defaultDate) ? defaultDate : new Date().toISOString().slice(0, 10);
 
   return {
-    id: "",
+    // Généré dès l'ouverture du formulaire (pas seulement à l'enregistrement) : un téléversement
+    // de média a besoin d'un chemin de stockage stable dès le premier fichier sélectionné.
+    id: crypto.randomUUID(),
     brand: brand?.name ?? "",
     accountId: account?.id ?? "",
     platform: account?.platform ?? brand?.socialPlatforms[0] ?? "instagram",
@@ -80,6 +86,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
+  const { workspace } = useWorkspaceSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const from = searchParams.get("from");
@@ -101,6 +108,19 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       buildBlankPublication(accounts, settings, members, defaultBrand, searchParams.get("date"), searchParams.get("title"))
   );
   const [isEditing, setIsEditing] = useState(mode === "create");
+  const [creationMode, setCreationMode] = useState<PublicationCreationMode>("manual");
+  const [lastAiSnapshot, setLastAiSnapshot] = useState<Publication | null>(null);
+
+  function applyAiPatch(patch: Partial<Publication>) {
+    setLastAiSnapshot(draft);
+    setDraft((prev) => ({ ...prev, ...patch }));
+  }
+
+  function handleUndoAi() {
+    if (!lastAiSnapshot) return;
+    setDraft(lastAiSnapshot);
+    setLastAiSnapshot(null);
+  }
 
   if (mode === "edit" && !existing) {
     return (
@@ -139,9 +159,10 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   function handleSave() {
     if (mode === "create") {
-      const newPublication: Publication = { ...draft, id: crypto.randomUUID() };
-      addPosts([newPublication]);
-      router.push(`/publications/${newPublication.id}${returnSuffix}`);
+      // L'id a déjà été généré à l'ouverture du formulaire (voir buildBlankPublication) — jamais
+      // régénéré ici, pour rester cohérent avec le chemin de stockage des médias déjà téléversés.
+      addPosts([draft]);
+      router.push(`/publications/${draft.id}${returnSuffix}`);
       return;
     }
     const historyEntry: PublicationHistoryEntry = {
@@ -200,6 +221,12 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   function handleCancel() {
     if (mode === "create") {
+      // Nettoyage best-effort des médias déjà téléversés sous cet id de brouillon — jamais de
+      // blocage de la navigation si la suppression échoue (fichier déjà supprimé, réseau, etc.).
+      if (workspace?.id && draft.media.length > 0) {
+        const brandId = brands.find((brand) => brand.name === draft.brand)?.id;
+        void deleteAllPublicationMedia(workspace.id, brandId, draft.id).catch(() => {});
+      }
       goBackToList();
       return;
     }
@@ -302,6 +329,17 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
+          {isEditing && (
+            <PublicationModeToggle mode={creationMode} onChange={setCreationMode} />
+          )}
+          {isEditing && creationMode === "claude" && (
+            <ClaudeGenerationPanel
+              publication={draft}
+              onApplyPatch={applyAiPatch}
+              canUndo={Boolean(lastAiSnapshot)}
+              onUndo={handleUndoAi}
+            />
+          )}
           <PublicationForm publication={displayed} editable={isEditing} onChange={setDraft} />
           {existing && (
             <>

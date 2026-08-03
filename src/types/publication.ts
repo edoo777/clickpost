@@ -25,6 +25,18 @@ export interface PublicationMedia {
   id: string;
   type: "image" | "video";
   label: string;
+  /** URL signée temporaire, résolue à l'affichage — jamais stockée telle quelle en base (le
+   * bucket est privé). Absente tant qu'aucun fichier réel n'a été téléversé. */
+  url?: string;
+  /** Chemin réel dans Supabase Storage (workspaceId/brandId/publicationId/mediaId-filename.ext)
+   * — source de vérité pour régénérer une URL signée ou supprimer le fichier. */
+  storagePath?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  width?: number;
+  height?: number;
+  /** Ordre d'affichage explicite (glisser-déposer) — absent = ordre du tableau. */
+  order?: number;
 }
 
 export interface PublicationComment {

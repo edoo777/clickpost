@@ -1,4 +1,4 @@
-import type { NoteQuickActionRequestInput, QuickActionRequestInput } from "@/lib/ai/quick-actions";
+import type { NoteQuickActionRequestInput, PublicationQuickActionRequestInput, QuickActionRequestInput } from "@/lib/ai/quick-actions";
 
 export interface QuickActionSuccess {
   status: "ok";
@@ -11,7 +11,9 @@ export interface QuickActionFailure {
 }
 export type QuickActionOutcome = QuickActionSuccess | QuickActionFailure;
 
-async function postQuickAction(input: QuickActionRequestInput | NoteQuickActionRequestInput): Promise<QuickActionOutcome> {
+async function postQuickAction(
+  input: QuickActionRequestInput | NoteQuickActionRequestInput | PublicationQuickActionRequestInput
+): Promise<QuickActionOutcome> {
   try {
     const response = await fetch("/api/ia/banque/quick-action", {
       method: "POST",
@@ -37,5 +39,11 @@ export async function runQuickAction(input: QuickActionRequestInput): Promise<Qu
 
 /** Même route, même architecture, catalogue d'actions distinct — voir NoteQuickActionsMenu.tsx. */
 export async function runNoteQuickAction(input: NoteQuickActionRequestInput): Promise<QuickActionOutcome> {
+  return postQuickAction(input);
+}
+
+/** Même route, même architecture, troisième catalogue d'actions — voir ClaudeGenerationPanel.tsx
+ * (« Nouvelle publication », mode Claude). */
+export async function runPublicationQuickAction(input: PublicationQuickActionRequestInput): Promise<QuickActionOutcome> {
   return postQuickAction(input);
 }

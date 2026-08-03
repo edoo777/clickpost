@@ -115,7 +115,10 @@ port = 54324
 [storage]
 enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
-file_size_limit = "50MiB"
+# Relevé de 50MiB à 200MiB pour permettre le téléversement de vidéos de publication (voir
+# supabase/migrations/20260803024525_publication_media_storage.sql — même limite haute que le
+# bucket publication-media ; la limite image de 10 Mo reste appliquée côté application).
+file_size_limit = "200MiB"
 
 # Uncomment to configure local storage buckets
 # [storage.buckets.images]

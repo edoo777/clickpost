@@ -114,7 +114,7 @@ export function getNoteQuickAction(key: NoteQuickActionKind): NoteQuickActionDef
   return found;
 }
 
-export type AnyQuickActionKind = QuickActionKind | NoteQuickActionKind;
+export type AnyQuickActionKind = QuickActionKind | NoteQuickActionKind | PublicationQuickActionKind;
 
 export interface NoteQuickActionRequestInput {
   action: NoteQuickActionKind;
@@ -124,4 +124,62 @@ export interface NoteQuickActionRequestInput {
    * dans l'éditeur. Toujours du texte brut (jamais le JSON Tiptap envoyé au serveur). */
   content: string;
   brandTone?: string;
+}
+
+/**
+ * Actions IA rapides de « Nouvelle publication » (mode Claude) — troisième catalogue, même route
+ * serveur, même architecture. Chaque action cible un champ précis de la publication (texte, titre/
+ * accroche, appel à l'action ou hashtags), jamais l'ensemble — la génération complète reste une
+ * action distincte (/api/ia/publications/generate), pas une quick action.
+ */
+export type PublicationQuickActionKind =
+  | "publication_improve"
+  | "publication_shorten"
+  | "publication_expand"
+  | "publication_change_tone"
+  | "publication_more_hooks"
+  | "publication_improve_cta"
+  | "publication_generate_hashtags"
+  | "publication_correct";
+
+export type PublicationQuickActionTargetField = "text" | "title" | "cta" | "hashtags";
+
+export interface PublicationQuickActionDefinition {
+  key: PublicationQuickActionKind;
+  label: string;
+  targetField: PublicationQuickActionTargetField;
+  /** true pour les actions qui proposent plusieurs choix (accroches, hashtags) plutôt qu'un
+   * remplacement direct — l'utilisateur choisit avant application, jamais une insertion en bloc. */
+  isList: boolean;
+  requiresTone?: boolean;
+}
+
+export const PUBLICATION_QUICK_ACTIONS: PublicationQuickActionDefinition[] = [
+  { key: "publication_improve", label: "Améliorer", targetField: "text", isList: false },
+  { key: "publication_shorten", label: "Raccourcir", targetField: "text", isList: false },
+  { key: "publication_expand", label: "Développer", targetField: "text", isList: false },
+  { key: "publication_change_tone", label: "Changer le ton", targetField: "text", isList: false, requiresTone: true },
+  { key: "publication_more_hooks", label: "Générer d'autres accroches", targetField: "title", isList: true },
+  { key: "publication_improve_cta", label: "Améliorer l'appel à l'action", targetField: "cta", isList: false },
+  { key: "publication_generate_hashtags", label: "Générer les hashtags", targetField: "hashtags", isList: true },
+  { key: "publication_correct", label: "Corriger l'orthographe", targetField: "text", isList: false },
+];
+
+export const ALL_PUBLICATION_QUICK_ACTION_KEYS: PublicationQuickActionKind[] = PUBLICATION_QUICK_ACTIONS.map((action) => action.key);
+
+export function getPublicationQuickAction(key: PublicationQuickActionKind): PublicationQuickActionDefinition {
+  const found = PUBLICATION_QUICK_ACTIONS.find((action) => action.key === key);
+  if (!found) throw new Error(`Action IA rapide inconnue : ${key}`);
+  return found;
+}
+
+export interface PublicationQuickActionRequestInput {
+  action: PublicationQuickActionKind;
+  /** Valeurs actuelles des champs de la publication — seuls ceux pertinents pour l'action sont
+   * utilisés côté prompt, les autres ne servent que de contexte facultatif. */
+  title?: string;
+  text?: string;
+  cta?: string;
+  hashtags?: string[];
+  tone?: string;
 }

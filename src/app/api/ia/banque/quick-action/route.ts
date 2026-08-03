@@ -1,27 +1,37 @@
 import { NextResponse } from "next/server";
 import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/lib/ai/anthropic-client";
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
-import { buildNoteQuickActionPrompt, buildQuickActionPrompt, type QuickActionPrompt } from "@/lib/ai/quick-action-prompt";
+import {
+  buildNoteQuickActionPrompt,
+  buildPublicationQuickActionPrompt,
+  buildQuickActionPrompt,
+  type QuickActionPrompt,
+} from "@/lib/ai/quick-action-prompt";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import {
   isNoteQuickActionKind,
+  isPublicationQuickActionKind,
   validateNoteQuickActionRequest,
+  validatePublicationQuickActionRequest,
   validateQuickActionRequest,
 } from "@/lib/ai/validate-quick-action-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-/** Action IA rapide et ciblée — soit sur un seul champ court d'une idée de la Banque, soit sur le
- * contenu d'une note (voir src/lib/ai/quick-actions.ts pour les deux catalogues). Réutilise le
- * client Anthropic serveur, le rate-limit et l'authentification déjà en place pour
- * /api/ia/generateur/topics et /api/ia/atelier/generation-complete — aucun second moteur IA, une
- * seule route pour les deux familles d'actions. Ne lit ni n'écrit aucune donnée Supabase : seul
- * le texte transmis explicitement par le client est envoyé à Claude, jamais le profil complet de
- * la marque ni l'historique de conversation. */
+/** Action IA rapide et ciblée — sur un seul champ court d'une idée de la Banque, sur le contenu
+ * d'une note, ou sur un champ d'une publication en cours de rédaction (voir
+ * src/lib/ai/quick-actions.ts pour les trois catalogues). Réutilise le client Anthropic serveur,
+ * le rate-limit et l'authentification déjà en place pour /api/ia/generateur/topics et
+ * /api/ia/atelier/generation-complete — aucun second moteur IA, une seule route pour les trois
+ * familles d'actions. Ne lit ni n'écrit aucune donnée Supabase : seul le texte transmis
+ * explicitement par le client est envoyé à Claude, jamais le profil complet de la marque ni
+ * l'historique de conversation. */
 
 const MAX_TOKENS_FIELD = 700;
 const MAX_TOKENS_NOTE = 2500;
+const MAX_TOKENS_PUBLICATION = 1200;
 const MAX_ITEM_LENGTH_FIELD = 800;
 const MAX_ITEM_LENGTH_NOTE = 8000;
+const MAX_ITEM_LENGTH_PUBLICATION = 3000;
 
 function errorResponse(code: string, message: string, status: number) {
   return NextResponse.json({ status: "error", code, message }, { status });
@@ -40,7 +50,9 @@ export async function POST(request: Request) {
   }
 
   const rawBody = await request.json().catch(() => null);
-  const isNoteAction = isNoteQuickActionKind((rawBody as Record<string, unknown> | null)?.action);
+  const rawAction = (rawBody as Record<string, unknown> | null)?.action;
+  const isNoteAction = isNoteQuickActionKind(rawAction);
+  const isPublicationAction = isPublicationQuickActionKind(rawAction);
 
   let prompt: QuickActionPrompt;
   let actionKey: string;
@@ -54,6 +66,13 @@ export async function POST(request: Request) {
     actionKey = validation.value.action;
     maxTokens = MAX_TOKENS_NOTE;
     maxItemLength = MAX_ITEM_LENGTH_NOTE;
+  } else if (isPublicationAction) {
+    const validation = validatePublicationQuickActionRequest(rawBody);
+    if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
+    prompt = buildPublicationQuickActionPrompt(validation.value);
+    actionKey = validation.value.action;
+    maxTokens = MAX_TOKENS_PUBLICATION;
+    maxItemLength = MAX_ITEM_LENGTH_PUBLICATION;
   } else {
     const validation = validateQuickActionRequest(rawBody);
     if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);

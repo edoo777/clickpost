@@ -1,4 +1,11 @@
-import { ALL_NOTE_QUICK_ACTION_KEYS, ALL_QUICK_ACTION_KEYS, type NoteQuickActionKind, type QuickActionKind } from "@/lib/ai/quick-actions";
+import {
+  ALL_NOTE_QUICK_ACTION_KEYS,
+  ALL_PUBLICATION_QUICK_ACTION_KEYS,
+  ALL_QUICK_ACTION_KEYS,
+  type NoteQuickActionKind,
+  type PublicationQuickActionKind,
+  type QuickActionKind,
+} from "@/lib/ai/quick-actions";
 import type { SocialPlatform } from "@/types/dashboard";
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest", "other"];
@@ -82,4 +89,54 @@ export function validateNoteQuickActionRequest(body: unknown): NoteQuickActionRe
   const brandTone = boundedText(record.brandTone, 200);
 
   return { valid: true, value: { action, title, content, brandTone } };
+}
+
+const MAX_PUBLICATION_FIELD_LENGTH = 3000;
+const MAX_HASHTAGS = 30;
+const MAX_HASHTAG_LENGTH = 60;
+
+export interface ValidatedPublicationQuickActionRequest {
+  action: PublicationQuickActionKind;
+  title?: string;
+  text?: string;
+  cta?: string;
+  hashtags?: string[];
+  tone?: string;
+}
+
+export type PublicationQuickActionRequestValidation =
+  | { valid: true; value: ValidatedPublicationQuickActionRequest }
+  | { valid: false; message: string };
+
+export function isPublicationQuickActionKind(action: unknown): action is PublicationQuickActionKind {
+  return typeof action === "string" && ALL_PUBLICATION_QUICK_ACTION_KEYS.includes(action as PublicationQuickActionKind);
+}
+
+export function validatePublicationQuickActionRequest(body: unknown): PublicationQuickActionRequestValidation {
+  if (typeof body !== "object" || body === null) return { valid: false, message: "Corps de requête invalide." };
+  const record = body as Record<string, unknown>;
+
+  const action = record.action;
+  if (!isPublicationQuickActionKind(action)) return { valid: false, message: "Action IA rapide invalide." };
+
+  const title = boundedText(record.title, MAX_TITLE_LENGTH);
+  const text = boundedText(record.text, MAX_PUBLICATION_FIELD_LENGTH);
+  const cta = boundedText(record.cta, MAX_TEXT_LENGTH);
+  const tone = boundedText(record.tone, 200);
+
+  let hashtags: string[] | undefined;
+  if (record.hashtags !== undefined) {
+    if (!Array.isArray(record.hashtags) || !record.hashtags.every((item) => typeof item === "string")) {
+      return { valid: false, message: "Hashtags invalides." };
+    }
+    hashtags = record.hashtags.slice(0, MAX_HASHTAGS).map((tag) => tag.slice(0, MAX_HASHTAG_LENGTH));
+  }
+
+  // Chaque action a besoin d'au moins un contenu de départ (sauf génération d'accroches/hashtags,
+  // qui peuvent partir d'un texte seul) — jamais un appel totalement vide.
+  if (!title && !text && !cta && (!hashtags || hashtags.length === 0)) {
+    return { valid: false, message: "Contenu requis." };
+  }
+
+  return { valid: true, value: { action, title, text, cta, hashtags, tone } };
 }

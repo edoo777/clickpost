@@ -1,13 +1,15 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { MediaUploader } from "@/components/publications/MediaUploader";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
-import type { Publication, PublicationMedia, PublicationStatus } from "@/types/publication";
+import type { Publication, PublicationStatus } from "@/types/publication";
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x"];
 
@@ -107,77 +109,6 @@ function ListField({
   );
 }
 
-function MediaField({
-  value,
-  editable,
-  onChange,
-}: {
-  value: PublicationMedia[];
-  editable: boolean;
-  onChange: (value: PublicationMedia[]) => void;
-}) {
-  function update(id: string, patch: Partial<PublicationMedia>) {
-    onChange(value.map((media) => (media.id === id ? { ...media, ...patch } : media)));
-  }
-
-  function remove(id: string) {
-    onChange(value.filter((media) => media.id !== id));
-  }
-
-  function add() {
-    onChange([...value, { id: crypto.randomUUID(), type: "image", label: "" }]);
-  }
-
-  return (
-    <div className="col-span-1 flex flex-col gap-2 md:col-span-2">
-      {value.map((media) => (
-        <div
-          key={media.id}
-          className="flex items-center gap-2 rounded-lg border border-border p-2 "
-        >
-          <select
-            disabled={!editable}
-            value={media.type}
-            onChange={(event) => update(media.id, { type: event.target.value as PublicationMedia["type"] })}
-            className={`${INPUT_CLASS} w-auto`}
-          >
-            <option value="image">Image</option>
-            <option value="video">Vidéo</option>
-          </select>
-          <input
-            disabled={!editable}
-            value={media.label}
-            placeholder="nom-du-fichier.jpg"
-            onChange={(event) => update(media.id, { label: event.target.value })}
-            className={INPUT_CLASS}
-          />
-          {editable && (
-            <button
-              type="button"
-              onClick={() => remove(media.id)}
-              className="shrink-0 text-xs font-medium text-red-500 hover:underline"
-            >
-              Supprimer
-            </button>
-          )}
-        </div>
-      ))}
-      {value.length === 0 && !editable && (
-        <p className="text-sm text-muted-foreground ">Aucun média associé.</p>
-      )}
-      {editable && (
-        <button
-          type="button"
-          onClick={add}
-          className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
-        >
-          + Ajouter un média (placeholder, pas de téléversement réel)
-        </button>
-      )}
-    </div>
-  );
-}
-
 interface PublicationFormProps {
   publication: Publication;
   editable: boolean;
@@ -188,6 +119,9 @@ export function PublicationForm({ publication, editable, onChange }: Publication
   const { accounts } = useAccountsSession();
   const { members } = useTeamSession();
   const { brands } = useBrandsSession();
+  const { workspace } = useWorkspaceSession();
+
+  const resolvedBrandId = brands.find((brand) => brand.name === publication.brand)?.id;
 
   function set<K extends keyof Publication>(key: K, value: Publication[K]) {
     onChange({ ...publication, [key]: value });
@@ -386,7 +320,14 @@ export function PublicationForm({ publication, editable, onChange }: Publication
       </Section>
 
       <Section title="Médias">
-        <MediaField value={publication.media} editable={editable} onChange={(v) => set("media", v)} />
+        <MediaUploader
+          workspaceId={workspace?.id}
+          brandId={resolvedBrandId}
+          publicationId={publication.id}
+          value={publication.media}
+          editable={editable}
+          onChange={(v) => set("media", v)}
+        />
       </Section>
 
       <Section title="Suivi">

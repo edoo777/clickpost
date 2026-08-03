@@ -1,4 +1,4 @@
-import type { NoteQuickActionKind, QuickActionKind } from "@/lib/ai/quick-actions";
+import type { NoteQuickActionKind, PublicationQuickActionKind, QuickActionKind } from "@/lib/ai/quick-actions";
 import type { SocialPlatform } from "@/types/dashboard";
 
 export interface QuickActionPromptInput {
@@ -99,4 +99,54 @@ export function buildNoteQuickActionPrompt(input: NoteQuickActionPromptInput): Q
   ].filter((line): line is string => Boolean(line));
 
   return { system, user: userLines.join("\n") };
+}
+
+export interface PublicationQuickActionPromptInput {
+  action: PublicationQuickActionKind;
+  title?: string;
+  text?: string;
+  cta?: string;
+  hashtags?: string[];
+  tone?: string;
+}
+
+const PUBLICATION_ACTION_INSTRUCTION: Record<PublicationQuickActionKind, string> = {
+  publication_improve: "Améliore le texte de cette publication (clarté, fluidité, impact), sans changer son sujet ni inventer de fait nouveau.",
+  publication_shorten: "Raccourcis le texte de cette publication en gardant uniquement l'essentiel.",
+  publication_expand: "Développe le texte de cette publication avec davantage de détails, en restant fidèle au sujet initial.",
+  publication_change_tone: "Reformule le texte de cette publication selon le ton indiqué, sans changer le sujet ni les faits.",
+  publication_more_hooks: "Propose exactement trois nouvelles accroches (titres courts et percutants) alternatives pour cette publication, distinctes les unes des autres et du titre actuel.",
+  publication_improve_cta: "Propose un appel à l'action amélioré, court et percutant, cohérent avec le texte de la publication.",
+  publication_generate_hashtags: "Propose entre cinq et huit hashtags pertinents pour cette publication, chacun commençant par #, sans espace.",
+  publication_correct: "Corrige les fautes d'orthographe, de grammaire et de ponctuation du texte de cette publication, sans changer son style ni son contenu.",
+};
+
+/**
+ * Prompt pour les actions IA rapides de « Nouvelle publication » (mode Claude) — troisième
+ * catalogue, même contrat de réponse JSON {"items":[...]} que les deux précédents, pour rester
+ * analysable par la même route serveur sans logique dupliquée.
+ */
+export function buildPublicationQuickActionPrompt(input: PublicationQuickActionPromptInput): QuickActionPrompt {
+  const isList = input.action === "publication_more_hooks" || input.action === "publication_generate_hashtags";
+  const system = [
+    "Tu es un assistant éditorial francophone pour les réseaux sociaux. Tu reçois les champs d'une",
+    "publication en cours de rédaction et tu dois exécuter UNE SEULE action ciblée dessus, sans rien",
+    "inventer d'autre et sans changer le sujet.",
+    PUBLICATION_ACTION_INSTRUCTION[input.action],
+    input.action === "publication_more_hooks"
+      ? 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["accroche 1","accroche 2","accroche 3"]} — exactement trois éléments.'
+      : input.action === "publication_generate_hashtags"
+        ? 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["#exemple1","#exemple2",...]} — entre cinq et huit éléments.'
+        : 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["résultat"]} — un seul élément.',
+  ].join("\n");
+
+  const userLines = [
+    input.title ? `Titre / accroche actuelle : ${input.title}` : null,
+    input.text ? `Texte actuel : ${input.text}` : null,
+    input.cta ? `Appel à l'action actuel : ${input.cta}` : null,
+    input.hashtags && input.hashtags.length > 0 ? `Hashtags actuels : ${input.hashtags.join(" ")}` : null,
+    input.action === "publication_change_tone" && input.tone ? `Ton souhaité : ${input.tone}` : null,
+  ].filter((line): line is string => Boolean(line));
+
+  return { system, user: userLines.join("\n") || (isList ? "Aucun contenu existant." : "Aucun contenu existant.") };
 }
