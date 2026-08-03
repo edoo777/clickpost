@@ -18,6 +18,7 @@ function buildUnconfiguredProvider(platform: SocialPlatform): PublishProvider {
     publish: async () => ({
       status: "failed",
       errorMessage: `Aucun fournisseur de publication automatique n'est configuré pour ${platform}. Utilisez la publication manuelle.`,
+      isPermanent: true,
     }),
   };
 }

@@ -16,11 +16,12 @@ interface ManualPublishPanelProps {
 }
 
 /**
- * Aucune plateforme sociale n'a d'intégration API réelle dans ce projet (voir
- * docs/social-platform-setup.md) — ce panneau ne propose donc jamais d'envoi automatique. Il
- * accompagne une publication manuelle réelle (copier le texte, télécharger les médias, publier
- * soi-même sur la plateforme), puis ne fait que consigner une confirmation humaine explicite.
- * Ne prétend jamais qu'une publication a été envoyée sans cette confirmation.
+ * Mode de repli manuel — toujours disponible, y compris pour LinkedIn (voir
+ * LinkedInPublishAction pour l'envoi réel par API) si le compte n'est pas connecté ou si une
+ * permission manque. Ce panneau ne propose jamais d'envoi automatique lui-même : il accompagne
+ * une publication manuelle réelle (copier le texte, télécharger les médias, publier soi-même sur
+ * la plateforme), puis ne fait que consigner une confirmation humaine explicite. Ne prétend
+ * jamais qu'une publication a été envoyée sans cette confirmation.
  */
 export function ManualPublishPanel({ publication, account, onMarkPublished, onMarkFailed }: ManualPublishPanelProps) {
   const [copied, setCopied] = useState(false);

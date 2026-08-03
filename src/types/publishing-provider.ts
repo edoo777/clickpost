@@ -1,4 +1,5 @@
-import type { SocialPlatform } from "@/types/dashboard";
+import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
+import type { Publication } from "@/types/publication";
 
 /**
  * État réel de préparation d'une publication pour un envoi automatique — dérivé de faits
@@ -33,6 +34,23 @@ export interface AutomaticPublishResult {
   status: "success" | "failed";
   externalPostId?: string;
   errorMessage?: string;
+  /** Vrai pour un refus de permission confirmé — permet à l'appelant de distinguer un état
+   * "Permission insuffisante" d'un échec générique, sans deviner à partir du seul message. */
+  isPermissionError?: boolean;
+  /** Vrai si l'échec ne peut pas réussir en rejouant la même publication telle quelle (ex.
+   * contrainte de plateforme violée, jamais un problème réseau) — utilisé pour éviter une
+   * nouvelle tentative automatique inutile. */
+  isPermanent?: boolean;
+}
+
+export interface PublishContext {
+  publication: Publication;
+  account: SocialAccount;
+  workspaceId: string;
+  /** Clé d'idempotence locale à la tentative — un fournisseur réel doit l'utiliser pour éviter
+   * une double publication si la même tentative est rejouée (ex. après une coupure réseau juste
+   * après un succès distant non confirmé localement). */
+  idempotencyKey: string;
 }
 
 /**
@@ -43,8 +61,7 @@ export interface AutomaticPublishResult {
 export interface PublishProvider {
   platform: SocialPlatform;
   /** Vrai uniquement si de vraies clés/identifiants API sont configurés côté serveur pour cette
-   * plateforme. Aujourd'hui : toujours `false`, aucune plateforme sociale n'a d'intégration API
-   * réelle dans ce projet (voir docs/social-platform-setup.md). */
+   * plateforme. */
   isConfigured(): boolean;
-  publish(): Promise<AutomaticPublishResult>;
+  publish(context: PublishContext): Promise<AutomaticPublishResult>;
 }

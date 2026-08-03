@@ -8,6 +8,7 @@ import { ApprovalActions } from "@/components/publications/ApprovalActions";
 import { ClaudeGenerationPanel } from "@/components/publications/ClaudeGenerationPanel";
 import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
+import { LinkedInPublishAction } from "@/components/publications/LinkedInPublishAction";
 import { ManualPublishPanel } from "@/components/publications/ManualPublishPanel";
 import { PromotionChecklist } from "@/components/publications/PromotionChecklist";
 import { PublicationForm } from "@/components/publications/PublicationForm";
@@ -31,6 +32,7 @@ import type { SocialAccount } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
 import type { PromotionTask } from "@/types/promotion";
 import type { Publication, PublicationHistoryEntry } from "@/types/publication";
+import type { PublishAttempt } from "@/types/publishing-provider";
 import type { AgencySettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
 
@@ -89,7 +91,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { posts, addPosts, updatePost } = usePostsSession();
   const { addIdea, updateIdea } = useContentWorkspace();
   const { developIdea } = useDevelopIdea();
-  const { accounts } = useAccountsSession();
+  const { accounts, updateAccount } = useAccountsSession();
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
@@ -288,6 +290,45 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (isEditing) setDraft(updated);
   }
 
+  function handleLinkedInPublished(attempt: PublishAttempt, externalPostId: string) {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const updated: Publication = {
+      ...existing,
+      status: "published",
+      publishAttempts: [...(existing.publishAttempts ?? []), attempt],
+      promotionTasks: existing.promotionTasks && existing.promotionTasks.length > 0
+        ? existing.promotionTasks
+        : buildDefaultPromotionTasks(existing.owner),
+      history: [
+        ...existing.history,
+        { id: crypto.randomUUID(), action: `Publiée par API LinkedIn (${externalPostId})`, actorName: currentUserName, createdAt: now },
+      ],
+    };
+    updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleLinkedInAttemptFailed(attempt: PublishAttempt, isPermissionError: boolean) {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const updated: Publication = {
+      ...existing,
+      publishAttempts: [...(existing.publishAttempts ?? []), attempt],
+      history: [
+        ...existing.history,
+        { id: crypto.randomUUID(), action: "Tentative de publication LinkedIn échouée", actorName: currentUserName, createdAt: now, note: attempt.errorMessage },
+      ],
+    };
+    updatePost(updated.id, updated);
+    if (isEditing) setDraft(updated);
+    if (isPermissionError) {
+      const account = accounts.find((candidate) => candidate.id === existing.accountId);
+      if (account) updateAccount(account.id, { status: "insufficient_permission" });
+    }
+  }
+
   function handleCancel() {
     if (mode === "create") {
       // Nettoyage best-effort des médias déjà téléversés sous cet id de brouillon — jamais de
@@ -454,6 +495,12 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                 onApprove={handleApprove}
                 onRequestChanges={handleRequestChanges}
                 onReject={handleReject}
+              />
+              <LinkedInPublishAction
+                publication={existing}
+                account={accounts.find((candidate) => candidate.id === existing.accountId)}
+                onPublished={handleLinkedInPublished}
+                onAttemptFailed={handleLinkedInAttemptFailed}
               />
               <ManualPublishPanel
                 publication={existing}
