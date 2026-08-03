@@ -158,7 +158,11 @@ export async function processSyncQueue() {
       try {
         await processOperation(supabase, op);
       } catch (error) {
-        const classified = classifySyncError(error);
+        const classified = classifySyncError(error, {
+          operation: op.operation,
+          entityType: op.entityType,
+          recordId: op.recordId,
+        });
         lastErrorMessage = classified.message;
         if (classified.permanent) hadPermanentError = true;
         else hadTransientError = true;

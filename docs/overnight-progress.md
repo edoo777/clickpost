@@ -512,3 +512,55 @@ navigateur ; voir limites en fin de section).
 - **Non exécuté** : tests dans un navigateur réel (pas d'infrastructure de test dans ce projet —
   limite déjà documentée). Comportement vérifié par lecture de code et traçage complet du chemin
   de données, pas par reproduction visuelle.
+
+## Correctif hors mandat — Journalisation des erreurs de synchronisation (Atelier)
+
+**Statut : terminé** (demande ponctuelle post-mandat).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Opération concernée** : `processSyncQueue()` dans `src/lib/sync/runtime.ts` — seul appelant de
+  `classifySyncError()` dans tout le dépôt (vérifié par recherche exhaustive). Le déclencheur exact
+  (quel appel Supabase précis retourne un objet sans propriété exploitable) n'a pas pu être
+  reproduit visuellement — aucune infrastructure de test/navigateur dans ce projet — mais toute la
+  chaîne a été tracée : `queue.ts` (IndexedDB) rejette toujours avec une vraie `Error`/
+  `DOMException`, jamais un objet vide ; seuls les appels Supabase/PostgREST dans
+  `processOperation()` peuvent produire un objet d'erreur simple (non instance d'`Error`) dont les
+  champs `message`/`details`/`hint` peuvent être absents ou vides dans certains cas réseau
+  (annulation, réponse non-JSON) — c'est ce cas précis que `extractErrorMessage()` gère
+  maintenant explicitement.
+- **Pourquoi l'objet apparaissait vide** : avant ce correctif, `logTechnicalDetail()`
+  journalisait `error` tel quel via `console.error` sans jamais vérifier s'il contenait une
+  information exploitable — un objet Supabase/PostgREST dont `message`/`details`/`hint` sont
+  absents ou vides s'affiche comme `{}` dans la console. Le vrai problème structurel : **tout**
+  appel à `classifySyncError()` déclenchait un `console.error`, y compris pour les échecs
+  transitoires (réseau, annulation, verrou momentané) déjà voués à une nouvelle tentative
+  automatique — Next.js affiche son overlay de développement pour tout `console.error`, quelle
+  que soit la gravité réelle de l'erreur.
+- **Fichiers modifiés** :
+  - `lib/sync/classify-sync-error.ts` — `extractErrorMessage()` gère désormais explicitement les
+    huit formes attendues (`Error`, objet Supabase/PostgREST, `Response` HTTP, chaîne, objet
+    simple, objet vide, `null`/`undefined`, cas imprévu) ; un objet sans clé exploitable renvoie
+    « Une opération de synchronisation a échoué sans détail exploitable. » au lieu de `{}` ou
+    `[object Object]`. Ajout de la détection `AbortError` (annulation, toujours transitoire).
+    `logTechnicalDetail()` classifie **avant** de journaliser et choisit la sévérité en
+    conséquence : `console.warn` pour une erreur transitoire/attendue (jamais d'overlay Next.js),
+    `console.error` réservé aux erreurs définitives/inattendues (permission RLS, schéma, contrainte
+    — méritent réellement l'attention). Contexte de l'opération (`operation`/`entityType`/
+    `recordId`, jamais le contenu de l'enregistrement) ajouté à chaque log de développement pour
+    un diagnostic futur immédiat. Silencieux en production dans les deux cas.
+  - `lib/sync/runtime.ts` — transmet le contexte de l'opération en échec (`op.operation`,
+    `op.entityType`, `op.recordId`) à `classifySyncError()`.
+- **État visuel** : vérifié sans modification nécessaire — `SyncStatusState.status` ne devient
+  `"error"` que si une opération reste réellement non résolue en file après la tentative
+  (`remaining > 0`), jamais pour une erreur déjà récupérée ; l'erreur est déjà effacée
+  (`errorMessage: null`) dès qu'un cycle se termine sans opération en attente ; l'ouverture de
+  l'Atelier ne redéclenche jamais `configureSyncContext()` (appelé une seule fois par
+  `WorkspaceSessionProvider`, jamais par une page).
+- **Tests exécutés** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes),
+  `git diff --check` ✅. Traçage complet de la chaîne d'appel (`use-synced-state.ts` →
+  `enqueueSyncOperation` → `processSyncQueue` → `processOperation` → `classifySyncError`) et de
+  tous les sites de rejet dans `queue.ts` (tous de vraies `Error`/`DOMException`).
+- **Non exécuté** : reproduction visuelle en navigateur du cas exact `{}` (pas d'infrastructure de
+  test dans ce projet) — le correctif couvre la classe complète du symptôme (objet sans
+  information exploitable + sévérité de journalisation inadaptée) plutôt qu'un seul cas
+  reproduit, ce qui reste honnêtement documenté ici comme une limite de cette vérification.
