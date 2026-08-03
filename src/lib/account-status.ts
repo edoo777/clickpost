@@ -7,6 +7,7 @@ export const ACCOUNT_STATUS_LABEL: Record<AccountStatus, string> = {
   error: "Erreur",
   syncing: "Synchronisation en cours",
   profile_only: "Profil renseigné — connexion API non configurée",
+  insufficient_permission: "Permission insuffisante",
 };
 
 export const ACCOUNT_STATUS_STYLE: Record<AccountStatus, string> = {
@@ -16,6 +17,7 @@ export const ACCOUNT_STATUS_STYLE: Record<AccountStatus, string> = {
   error: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
   syncing: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
   profile_only: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400",
+  insufficient_permission: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400",
 };
 
 export const ACCOUNT_STATUS_DOT: Record<AccountStatus, string> = {
@@ -25,4 +27,5 @@ export const ACCOUNT_STATUS_DOT: Record<AccountStatus, string> = {
   error: "bg-red-500",
   syncing: "bg-blue-500",
   profile_only: "bg-violet-500",
+  insufficient_permission: "bg-orange-500",
 };

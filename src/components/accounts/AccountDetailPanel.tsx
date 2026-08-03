@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LinkedInConnectionPanel } from "@/components/accounts/LinkedInConnectionPanel";
 import { platformIcons } from "@/components/icons";
 import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
 import { platformColors } from "@/lib/platform-colors";
@@ -22,6 +23,7 @@ interface AccountDetailPanelProps {
   onDeactivate: () => void;
   onReactivate: () => void;
   onDelete: () => void;
+  onLinkedInDisconnected: () => void;
 }
 
 export function AccountDetailPanel({
@@ -31,6 +33,7 @@ export function AccountDetailPanel({
   onDeactivate,
   onReactivate,
   onDelete,
+  onLinkedInDisconnected,
 }: AccountDetailPanelProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const color = platformColors[account.platform];
@@ -105,7 +108,7 @@ export function AccountDetailPanel({
           <div>
             <dt className="font-medium text-muted-foreground ">Dernière synchronisation</dt>
             <dd className="text-zinc-700 dark:text-zinc-300">
-              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : "Jamais (aucune API réelle configurée)"}
+              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : "Jamais"}
             </dd>
           </div>
           <div>
@@ -114,10 +117,14 @@ export function AccountDetailPanel({
           </div>
         </dl>
 
-        <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Ce profil ne dispose d&apos;aucune connexion API/OAuth réelle — aucune publication ne peut
-          être envoyée automatiquement à ce réseau depuis ClickPost pour l&apos;instant.
-        </p>
+        {account.platform === "linkedin" ? (
+          <LinkedInConnectionPanel account={account} onDisconnected={onLinkedInDisconnected} />
+        ) : (
+          <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+            Ce profil ne dispose d&apos;aucune connexion API/OAuth réelle — aucune publication ne peut
+            être envoyée automatiquement à ce réseau depuis ClickPost pour l&apos;instant.
+          </p>
+        )}
 
         <div className="mt-auto flex flex-col gap-3 border-t border-border pt-4 ">
           {isConfirmingDelete ? (

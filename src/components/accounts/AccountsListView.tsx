@@ -47,6 +47,15 @@ export function AccountsListView() {
     setSelectedAccountId(null);
   }
 
+  function handleLinkedInDisconnected(id: string) {
+    updateAccount(id, {
+      status: "profile_only",
+      externalAccountId: undefined,
+      oauthScopes: [],
+      tokenExpiresAt: undefined,
+    });
+  }
+
   function handleSaveNew(input: NewAccountInput) {
     addAccount({
       id: crypto.randomUUID(),
@@ -72,8 +81,8 @@ export function AccountsListView() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Comptes affiliés</h1>
           <p className="text-sm text-muted-foreground ">
             {filteredAccounts.length} compte{filteredAccounts.length > 1 ? "s" : ""} affiché
-            {filteredAccounts.length > 1 ? "s" : ""} — profils enregistrés localement, aucune
-            connexion API réelle configurée.
+            {filteredAccounts.length > 1 ? "s" : ""} — profils enregistrés localement ; connexion
+            API réelle disponible pour LinkedIn (pilote).
           </p>
         </header>
         <button
@@ -112,6 +121,7 @@ export function AccountsListView() {
           onDeactivate={() => handleDeactivate(selectedAccount.id)}
           onReactivate={() => handleReactivate(selectedAccount.id)}
           onDelete={() => handleDelete(selectedAccount.id)}
+          onLinkedInDisconnected={() => handleLinkedInDisconnected(selectedAccount.id)}
         />
       )}
 

@@ -57,8 +57,8 @@ export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionP
         <div className="flex flex-col gap-1">
           <h2 className="text-sm font-semibold text-foreground ">Comptes affiliés</h2>
           <p className="text-xs text-muted-foreground ">
-            Profils de réseaux sociaux associés à {brand.name} — enregistrement du profil
-            uniquement, aucune connexion API/OAuth réelle.
+            Profils de réseaux sociaux associés à {brand.name} — connexion API réelle disponible
+            pour LinkedIn (pilote), enregistrement du profil uniquement pour les autres réseaux.
           </p>
         </div>
         {canManage && (
@@ -100,6 +100,14 @@ export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionP
             removeAccount(selectedAccount.id);
             setSelectedAccountId(null);
           }}
+          onLinkedInDisconnected={() =>
+            updateAccount(selectedAccount.id, {
+              status: "profile_only",
+              externalAccountId: undefined,
+              oauthScopes: [],
+              tokenExpiresAt: undefined,
+            })
+          }
         />
       )}
 

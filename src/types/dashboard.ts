@@ -10,12 +10,19 @@ export type SocialPlatform =
   | "other";
 
 /**
- * `connected`/`syncing`/`expired` restent valides pour une future intégration OAuth/API réelle,
- * mais ne sont plus jamais posés par l'application aujourd'hui — seul `profile_only` (« Profil
- * renseigné — connexion API non configurée ») est écrit par l'interface actuelle. Ne jamais
- * afficher `connected` sans une véritable confirmation OAuth/API.
+ * `connected`/`syncing`/`expired`/`insufficient_permission` sont désormais réellement posés par
+ * l'intégration LinkedIn (voir src/lib/linkedin/) une fois configurée — `profile_only` reste la
+ * seule valeur possible pour toute plateforme sans intégration API réelle. Ne jamais afficher
+ * `connected` sans une véritable confirmation OAuth/API.
  */
-export type AccountStatus = "connected" | "disconnected" | "expired" | "error" | "syncing" | "profile_only";
+export type AccountStatus =
+  | "connected"
+  | "disconnected"
+  | "expired"
+  | "error"
+  | "syncing"
+  | "profile_only"
+  | "insufficient_permission";
 
 export interface SocialAccount {
   id: string;
@@ -34,7 +41,21 @@ export interface SocialAccount {
   audienceOrMarket?: string;
   status: AccountStatus;
   lastSyncedAt: string | null;
+  /** Libellés lisibles à afficher (ex. "Publication de contenu") — jamais des identifiants de
+   * portée OAuth bruts, voir `oauthScopes` pour ceux-ci. */
   permissions: string[];
+  /** Identifiant du compte chez la plateforme distante (ex. `urn:li:person:...` pour LinkedIn) —
+   * jamais un secret, sûr à afficher, absent tant qu'aucune connexion OAuth réelle n'a abouti. */
+  externalAccountId?: string;
+  /** Portées OAuth brutes réellement accordées (ex. "w_member_social") — jamais devinées, copie
+   * exacte de ce que la plateforme a confirmé lors de l'échange ou du rafraîchissement du jeton. */
+  oauthScopes?: string[];
+  /** Expiration du jeton d'accès — métadonnée non sensible (ne permet pas de reconstruire le
+   * jeton), utile pour un affichage honnête sans jamais exposer le jeton lui-même. */
+  tokenExpiresAt?: string;
+  /** Dernière vérification réelle de l'état de connexion (appel à la plateforme, pas une simple
+   * lecture locale). */
+  lastCheckedAt?: string;
 }
 
 export interface PerformanceMetric {
