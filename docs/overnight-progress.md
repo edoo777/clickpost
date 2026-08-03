@@ -199,3 +199,72 @@ documentée, pas une exécution silencieuse de l'ordre annoncé).
 - **Prochaine étape** : compléter Phase H (vérification du parcours de bout en bout, boutons de
   progression manquants) maintenant que la publication (manuelle) existe réellement, puis Phases
   F/G/E dans l'ordre de priorité annoncé, puis Phase I (qualité) et documentation finale.
+
+## Phase H — Parcours éditorial complet du créateur
+
+**Statut : terminée pour les étapes ayant une destination réelle** (voir limites — Promouvoir
+reste explicitement hors périmètre, faute de Phase E).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Constat principal de l'audit** : le parcours était déjà beaucoup plus connecté qu'estimé.
+  Vérifié par lecture directe du code (pas seulement supposé) :
+  - `src/lib/develop-idea.ts` — point d'entrée unique, déjà bien documenté, qui relie Sujet/Note →
+    Idée → Atelier avec dé-duplication garantie (`ensureIdeaForTopic`/`ensureIdeaForNote`) : aucune
+    idée en double possible même en cas de double clic.
+  - `src/components/trends/TrendActionsMenu.tsx` — 9 actions réelles déjà câblées par tendance :
+    Enregistrer/Masquer/Non pertinente/Signaler/Voir la source/Générer des idées/Créer une
+    note/**Créer une publication**/Ajouter au calendrier — la tendance alimente déjà directement
+    l'idéation, la Banque et le calendrier.
+  - `src/components/idea-workshop/IdeaWorkshopView.tsx` — bouton de progression contextuel déjà
+    présent (`primaryAction`) : Transformer en publication → Envoyer en révision → Approuver →
+    Planifier, qui s'adapte automatiquement au statut de l'idée.
+  - `src/components/brands/BrandProfileView.tsx` — un seul système de marque avec onglets
+    Identité/Positionnement/Comptes affiliés/**Thématiques**/Préférences éditoriales : stratégie et
+    thématiques déjà unifiées, jamais un second système.
+  - `/banque-idees` et `/generateur-idees` redirigent proprement vers `/boite-idees` (point d'entrée
+    unique) — anciens liens préservés, aucune route morte.
+- **Gap réel trouvé et corrigé** : dans `NoteEditor.tsx`, une fois une note convertie en idée
+  (`note.convertedIdeaId` défini), le bouton « Convertir en idée » affichait « Idée déjà créée »
+  sans aucune action au clic — aucun moyen direct de retrouver cette idée depuis la note (il fallait
+  deviner qu'il fallait cliquer sur « Développer dans la production » à la place, qui ouvre la même
+  idée via la dé-duplication existante, mais ce n'était pas évident). Corrigé : le bouton devient
+  « Ouvrir l'idée dans l'Atelier » et navigue directement vers `/atelier/{convertedIdeaId}`.
+- **Honnêteté des données renforcée** : en auditant l'étape « Analyser » du parcours, il est apparu
+  que `/performances` (page pré-existante, antérieure à cette session autonome) affiche des
+  statistiques (impressions, portée, interactions…) entièrement synthétiques
+  (`src/lib/analytics-data.ts` → `generateDailySeries`), et que seul le panneau de recommandations
+  précisait « en mode démonstration » — les autres graphiques et le KPI ne portaient aucune mention.
+  Un bandeau clair a été ajouté en haut de `PerformancesView.tsx` : « Données de démonstration…
+  seul le nombre de publications marquées Publié provient de vos données réelles. » — corrige un
+  risque réel de statistiques prises pour authentiques, conformément à l'exigence explicite du
+  mandat (« n'invente jamais de statistiques… ne mélange jamais silencieusement réel/démo »).
+- **Nouveaux boutons de progression** sur `PublicationView.tsx`, visibles uniquement pour une
+  publication au statut « Publié » :
+  - **Analyser** — lien direct vers `/performances` (désormais honnêtement étiqueté démo).
+  - **Recycler en nouvelle idée** — crée une nouvelle `Idea` (titre, texte et plateforme repris de
+    la publication publiée) et ouvre directement l'Atelier pour la retravailler dans un nouveau
+    format — referme la boucle éditoriale (idée → … → publication → **recyclage** → nouvelle idée)
+    sans copier-coller manuel.
+- **Boutons déjà couverts par les phases précédentes**, non refaits ici : Développer (Atelier),
+  Envoyer en révision (Atelier + menu de statut), Approuver/Demander des modifications/Refuser
+  (`ApprovalActions`, Phase C), Planifier (menu de statut, transition non verrouillée), Publier
+  (`ManualPublishPanel`, Phase D).
+- **Tests** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes), `git diff
+  --check` ✅.
+- **Limites connues / hors périmètre de cette phase** (documentées plutôt que simulées) :
+  - **« Promouvoir » n'a délibérément aucun bouton** — la Phase E (checklist de promotion :
+    republier en story, mentionner un partenaire, etc.) n'existe pas encore ; ajouter un bouton sans
+    destination réelle aurait été une fausse fonctionnalité. À ajouter avec la Phase E.
+  - **`src/components/ideas-bank/IdeasBankKanban.tsx` est du code mort** — plus importé nulle part
+    depuis la simplification de la Banque d'idées en vue Notes (commit `e8a68a8`, antérieure à
+    cette session). Non supprimé dans cette phase (hors périmètre — relevé pour la Phase I,
+    Qualité, qui prévoit explicitement la détection de code inutilisé).
+  - Le bouton « Recycler » n'apparaît que pour le statut « Publié » ; une extension au statut
+    « Archivée » est possible mais non ajoutée faute de besoin confirmé.
+- **Prochaine étape** : Phase F (Analyse et mesure) et Phase G (Amélioration et optimisation) sont
+  en réalité déjà largement construites (`/performances` : KPI, évolution, comparaison de période,
+  meilleurs horaires, top publications, recommandations, export CSV via `ReportPreview` — à
+  vérifier en détail) — la prochaine étape est d'auditer précisément ce qui existe déjà avant de
+  décider ce qu'il reste réellement à construire pour ces deux phases, plutôt que de repartir de
+  zéro. Puis Phase E (Promotion), Phase I (Qualité, incluant la suppression du code mort relevé
+  ci-dessus) et documentation finale.

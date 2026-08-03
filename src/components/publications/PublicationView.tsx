@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
@@ -15,9 +16,11 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { useDevelopIdea } from "@/lib/develop-idea";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import { plainTextToDocument } from "@/lib/rich-document";
 import { useSettingsSession } from "@/lib/settings-store";
 import { deleteAllPublicationMedia } from "@/lib/supabase/publication-media-storage";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
@@ -82,7 +85,8 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { posts, addPosts, updatePost } = usePostsSession();
-  const { updateIdea } = useContentWorkspace();
+  const { addIdea, updateIdea } = useContentWorkspace();
+  const { developIdea } = useDevelopIdea();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
@@ -302,6 +306,29 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     setIsEditing(true);
   }
 
+  function handleRecycle() {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const brandId = brands.find((candidate) => candidate.name === existing.brand)?.id ?? "";
+    const idea: Idea = {
+      id: crypto.randomUUID(),
+      brandId,
+      title: `${existing.excerpt || "Publication"} (recyclée)`,
+      description: existing.objective || undefined,
+      source: "manual",
+      status: "idea",
+      platform: existing.platform,
+      format: existing.format,
+      documentContent: existing.text ? plainTextToDocument(existing.text) : undefined,
+      body: existing.text,
+      workshopDisplayMode: "document",
+      createdAt: now,
+      updatedAt: now,
+    };
+    addIdea(idea);
+    developIdea(idea, "manual");
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <button
@@ -352,6 +379,23 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
             </>
           ) : (
             <>
+              {existing && existing.status === "published" && (
+                <>
+                  <Link
+                    href="/performances"
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                  >
+                    Analyser
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleRecycle}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                  >
+                    Recycler en nouvelle idée
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 onClick={handleDuplicate}

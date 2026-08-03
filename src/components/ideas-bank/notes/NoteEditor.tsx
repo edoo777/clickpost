@@ -7,6 +7,7 @@ import TaskList from "@tiptap/extension-task-list";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { SlashCommand } from "@/components/idea-workshop/editor/slash-command-extension";
 import { NoteEditorToolbar } from "@/components/ideas-bank/notes/NoteEditorToolbar";
@@ -59,6 +60,7 @@ interface NoteEditorProps {
  * Remonte un éditeur neuf à chaque changement de note (le parent doit passer `key={note.id}`).
  */
 export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
+  const router = useRouter();
   const { brands } = useBrandsSession();
   const { updateNote, archiveNote, restoreNote, removeNote, addNote } = useIdeaNotesSession();
   const { convertNoteToIdea, developNote } = useDevelopIdea();
@@ -129,8 +131,15 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
   }
 
   function handleConvertToIdea() {
+    // Une fois l'idée créée, ce même bouton devient un raccourci direct vers l'Atelier — jamais
+    // un deuxième clic qui recréerait une idée en double (ensureIdeaForNote() est déjà idempotent
+    // via note.convertedIdeaId, mais autant naviguer directement plutôt que ré-afficher un toast).
+    if (note.convertedIdeaId) {
+      router.push(`/atelier/${note.convertedIdeaId}`);
+      return;
+    }
     convertNoteToIdea(note);
-    setConfirmation("Idée créée dans la Banque d'idées.");
+    setConfirmation("Idée créée dans la Banque d'idées — cliquez à nouveau sur ce bouton pour l'ouvrir dans l'Atelier.");
   }
 
   function handleDevelop() {
@@ -206,7 +215,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
           </>
         )}
         <button type="button" onClick={handleConvertToIdea} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
-          {note.convertedIdeaId ? "Idée déjà créée" : "Convertir en idée"}
+          {note.convertedIdeaId ? "Ouvrir l'idée dans l'Atelier" : "Convertir en idée"}
         </button>
         <button type="button" onClick={handleDevelop} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
           Développer dans la production

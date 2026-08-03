@@ -121,6 +121,13 @@ export function PerformancesView() {
         </p>
       </header>
 
+      <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+        Données de démonstration — aucune plateforme sociale n&apos;étant connectée par une
+        intégration API réelle, les chiffres ci-dessous (impressions, portée, interactions…) sont
+        générés à titre d&apos;exemple et ne reflètent aucune activité réelle. Seul le nombre de
+        publications marquées « Publié » provient de vos données réelles.
+      </p>
+
       <PerformancesFilters value={filters} accounts={accounts} onChange={handleFiltersChange} />
 
       <KpiGrid
