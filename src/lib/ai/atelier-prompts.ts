@@ -24,8 +24,13 @@ export function buildAtelierGenerationPrompt(context: AIGenerationContext): Atel
   const system = [
     "Tu es un rédacteur publicitaire francophone qui écrit des publications pour les réseaux sociaux",
     `d'une agence marketing, au nom de la marque « ${brand.name} » (secteur : ${brand.industry || "non précisé"}).`,
+    brand.positioning ? `Positionnement : ${brand.positioning}.` : null,
+    brand.valueProposition ? `Proposition de valeur : ${brand.valueProposition}.` : null,
     `Voix de la marque : ${brand.toneOfVoice || "non précisée"}.`,
     `Audience cible : ${brand.targetAudience || "non précisée"}.`,
+    brand.audiencePainPoints && brand.audiencePainPoints.length > 0
+      ? `Problèmes de cette audience à adresser : ${joinList(brand.audiencePainPoints)}.`
+      : null,
     `Expressions à privilégier : ${joinList(brand.preferredPhrases)}.`,
     `Mots interdits : ${joinList(brand.forbiddenWords)}.`,
     `Sujets à éviter : ${joinList(brand.topicsToAvoid)}.`,

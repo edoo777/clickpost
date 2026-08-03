@@ -1,4 +1,6 @@
+import type { ContentType } from "@/lib/content-types";
 import type { SocialPlatform } from "@/types/dashboard";
+import type { ContentFormat } from "@/types/editorial-calendar";
 
 export interface ContentExample {
   id: string;
@@ -14,13 +16,16 @@ export interface BrandProfile {
   industry: string;
   /** Sous-niche facultative, plus précise que la niche (ex. Musculation pour Fitness). */
   subNiche?: string;
-  /** Proposition de valeur / positionnement — distinct de `description` (présentation générale). */
+  /** Positionnement — la place que la marque occupe face à la concurrence, distinct de
+   * `valueProposition` (la promesse concrète faite au client) et de `description`. */
   positioning?: string;
   /** Marché ou pays cible facultatif. */
   market?: string;
   description: string;
   productsAndServices: string[];
   targetAudience: string;
+  /** Problèmes/frustrations concrets de l'audience — ce que le contenu doit adresser. */
+  audiencePainPoints: string[];
   communicationGoals: string[];
   toneOfVoice: string;
   languages: string[];
@@ -31,6 +36,18 @@ export interface BrandProfile {
   preferredCtas: string[];
   socialPlatforms: SocialPlatform[];
   contentExamples: ContentExample[];
+  /** Promesse concrète faite au client — distincte du positionnement (la place face à la
+   * concurrence) et de la description générale. */
+  valueProposition?: string;
+  /** Rythme de publication visé, texte libre (ex. « 3 fois par semaine »). */
+  publishingFrequency?: string;
+  /** Objectif chiffré de publications par mois — 0 si non défini, jamais une valeur devinée. */
+  monthlyPublishingGoal?: number;
+  preferredContentTypes: ContentType[];
+  preferredFormats: ContentFormat[];
+  /** Indicateurs choisis par l'utilisateur pour juger du succès éditorial (ex. « Taux
+   * d'engagement », « Abonnés gagnés ») — jamais une donnée mesurée automatiquement ici. */
+  successMetrics: string[];
 }
 
 export type BrandStatus = "active" | "archived";
@@ -49,13 +66,14 @@ export interface Brand {
   industry: string;
   /** Sous-niche facultative, plus précise que la niche. */
   subNiche?: string;
-  /** Proposition de valeur / positionnement — distinct de `description`. */
+  /** Positionnement — distinct de `valueProposition` et de `description`. */
   positioning?: string;
   /** Marché ou pays cible facultatif. */
   market?: string;
   description: string;
   productsAndServices: string[];
   targetAudience: string;
+  audiencePainPoints: string[];
   communicationGoals: string[];
   toneOfVoice: string;
   languages: string[];
@@ -66,6 +84,12 @@ export interface Brand {
   preferredCtas: string[];
   socialPlatforms: SocialPlatform[];
   contentExamples: ContentExample[];
+  valueProposition?: string;
+  publishingFrequency?: string;
+  monthlyPublishingGoal?: number;
+  preferredContentTypes: ContentType[];
+  preferredFormats: ContentFormat[];
+  successMetrics: string[];
   logoUrl?: string;
   website?: string;
   timeZone?: string;

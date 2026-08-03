@@ -21,6 +21,10 @@ export interface GenerateurPromptInput {
   targetAudience?: string;
   tone: string;
   instructions?: string;
+  /** Contexte stratégique additif de la marque (Phase B) — jamais requis, ignoré si absent. */
+  valueProposition?: string;
+  audiencePainPoints?: string[];
+  preferredContentTypes?: string[];
 }
 
 export interface GenerateurPrompt {
@@ -82,6 +86,13 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     `Ton de marque : ${input.tone}`,
     input.objective ? `Objectif marketing général : ${input.objective}` : null,
     input.targetAudience ? `Audience cible : ${input.targetAudience}` : null,
+    input.valueProposition ? `Proposition de valeur de la marque : ${input.valueProposition}` : null,
+    input.audiencePainPoints && input.audiencePainPoints.length > 0
+      ? `Problèmes de l'audience à adresser : ${input.audiencePainPoints.join(", ")}`
+      : null,
+    input.preferredContentTypes && input.preferredContentTypes.length > 0
+      ? `Types de contenu privilégiés par la marque : ${input.preferredContentTypes.join(", ")}`
+      : null,
     input.instructions ? `Instructions supplémentaires : ${input.instructions}` : null,
   ].filter((line): line is string => Boolean(line));
 

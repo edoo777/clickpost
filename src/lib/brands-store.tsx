@@ -2,10 +2,12 @@
 
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { setStoredActiveBrandId, useStoredActiveBrandId } from "@/lib/active-brand-store";
+import type { ContentType } from "@/lib/content-types";
 import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
+import type { ContentFormat } from "@/types/editorial-calendar";
 
 export interface BrandDraft {
   name: string;
@@ -16,6 +18,7 @@ export interface BrandDraft {
   description?: string;
   productsAndServices?: string[];
   targetAudience?: string;
+  audiencePainPoints?: string[];
   communicationGoals?: string[];
   toneOfVoice?: string;
   languages?: string[];
@@ -25,6 +28,12 @@ export interface BrandDraft {
   forbiddenWords?: string[];
   preferredCtas?: string[];
   socialPlatforms?: SocialPlatform[];
+  valueProposition?: string;
+  publishingFrequency?: string;
+  monthlyPublishingGoal?: number;
+  preferredContentTypes?: ContentType[];
+  preferredFormats?: ContentFormat[];
+  successMetrics?: string[];
   logoUrl?: string;
   website?: string;
   timeZone?: string;
@@ -99,6 +108,7 @@ export function BrandsSessionProvider({ children }: { children: ReactNode }) {
           description: draft.description ?? "",
           productsAndServices: draft.productsAndServices ?? [],
           targetAudience: draft.targetAudience ?? "",
+          audiencePainPoints: draft.audiencePainPoints ?? [],
           communicationGoals: draft.communicationGoals ?? [],
           toneOfVoice: draft.toneOfVoice ?? "",
           languages: draft.languages ?? [],
@@ -108,6 +118,12 @@ export function BrandsSessionProvider({ children }: { children: ReactNode }) {
           forbiddenWords: draft.forbiddenWords ?? [],
           preferredCtas: draft.preferredCtas ?? [],
           socialPlatforms: draft.socialPlatforms ?? [],
+          valueProposition: draft.valueProposition,
+          publishingFrequency: draft.publishingFrequency,
+          monthlyPublishingGoal: draft.monthlyPublishingGoal,
+          preferredContentTypes: draft.preferredContentTypes ?? [],
+          preferredFormats: draft.preferredFormats ?? [],
+          successMetrics: draft.successMetrics ?? [],
           contentExamples: [],
           logoUrl: draft.logoUrl,
           website: draft.website,

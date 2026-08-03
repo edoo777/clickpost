@@ -48,12 +48,24 @@ export async function POST(request: Request) {
   // manuellement par l'utilisateur fait foi telle quelle — jamais de marque devinée ou inventée.
   let promptNiche = niche ?? "";
   let brandName = "Non précisée (génération ponctuelle)";
+  let brandValueProposition: string | undefined;
+  let brandAudiencePainPoints: string[] | undefined;
+  let brandPreferredContentTypes: string[] | undefined;
   if (!standalone) {
     const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
     if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
-    const brand = mapRowToRecord(brandRow) as unknown as { name: string; industry: string };
+    const brand = mapRowToRecord(brandRow) as unknown as {
+      name: string;
+      industry: string;
+      valueProposition?: string;
+      audiencePainPoints?: string[];
+      preferredContentTypes?: string[];
+    };
     promptNiche = brand.industry;
     brandName = brand.name;
+    brandValueProposition = brand.valueProposition;
+    brandAudiencePainPoints = brand.audiencePainPoints;
+    brandPreferredContentTypes = brand.preferredContentTypes;
   }
 
   // Les thématiques ponctuelles (isAdhoc) ne sont jamais enregistrées dans la table themes tant
@@ -86,6 +98,9 @@ export async function POST(request: Request) {
     targetAudience,
     tone,
     instructions,
+    valueProposition: brandValueProposition,
+    audiencePainPoints: brandAudiencePainPoints,
+    preferredContentTypes: brandPreferredContentTypes,
   });
 
   const totalRequested = themes.reduce((sum, theme) => sum + theme.requestedCount, 0);

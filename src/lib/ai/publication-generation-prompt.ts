@@ -10,8 +10,10 @@ export interface PublicationGenerationPromptInput {
   brandName?: string;
   niche?: string;
   positioning?: string;
+  valueProposition?: string;
   brandTone?: string;
   brandAudience?: string;
+  audiencePainPoints?: string[];
   priorityTopics?: string[];
   preferredCtas?: string[];
   forbiddenWords?: string[];
@@ -74,8 +76,12 @@ export function buildPublicationGenerationPrompt(input: PublicationGenerationPro
     input.brandName ? `Marque : ${input.brandName}` : null,
     input.niche ? `Niche : ${input.niche}` : null,
     input.positioning ? `Positionnement : ${input.positioning}` : null,
+    input.valueProposition ? `Proposition de valeur : ${input.valueProposition}` : null,
     input.brandTone ? `Ton de marque : ${input.brandTone}` : null,
     input.brandAudience ? `Audience de la marque : ${input.brandAudience}` : null,
+    input.audiencePainPoints && input.audiencePainPoints.length > 0
+      ? `Problèmes de cette audience à adresser : ${input.audiencePainPoints.join(", ")}`
+      : null,
     input.priorityTopics && input.priorityTopics.length > 0 ? `Sujets prioritaires de la marque : ${input.priorityTopics.join(", ")}` : null,
     input.preferredCtas && input.preferredCtas.length > 0 ? `Appels à l'action préférés de la marque : ${input.preferredCtas.join(", ")}` : null,
     input.forbiddenWords && input.forbiddenWords.length > 0 ? `Mots interdits : ${input.forbiddenWords.join(", ")}` : null,

@@ -6,6 +6,7 @@ type TrackedField =
   | "description"
   | "productsAndServices"
   | "targetAudience"
+  | "audiencePainPoints"
   | "communicationGoals"
   | "toneOfVoice"
   | "languages"
@@ -15,7 +16,14 @@ type TrackedField =
   | "forbiddenWords"
   | "preferredCtas"
   | "socialPlatforms"
-  | "contentExamples";
+  | "contentExamples"
+  | "valueProposition"
+  | "positioning"
+  | "publishingFrequency"
+  | "monthlyPublishingGoal"
+  | "preferredContentTypes"
+  | "preferredFormats"
+  | "successMetrics";
 
 export type CompletenessSource = Pick<Brand, TrackedField>;
 
@@ -25,6 +33,7 @@ const TRACKED_FIELDS: TrackedField[] = [
   "description",
   "productsAndServices",
   "targetAudience",
+  "audiencePainPoints",
   "communicationGoals",
   "toneOfVoice",
   "languages",
@@ -35,11 +44,20 @@ const TRACKED_FIELDS: TrackedField[] = [
   "preferredCtas",
   "socialPlatforms",
   "contentExamples",
+  "valueProposition",
+  "positioning",
+  "publishingFrequency",
+  "monthlyPublishingGoal",
+  "preferredContentTypes",
+  "preferredFormats",
+  "successMetrics",
 ];
 
 function isFieldFilled(value: CompletenessSource[TrackedField]): boolean {
   if (Array.isArray(value)) return value.length > 0;
-  return value.trim().length > 0;
+  if (typeof value === "number") return value > 0;
+  if (typeof value === "string") return value.trim().length > 0;
+  return false;
 }
 
 export interface BrandCompleteness {
