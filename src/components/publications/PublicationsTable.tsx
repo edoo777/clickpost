@@ -257,7 +257,14 @@ export function PublicationsTable({
             onChange={(event) => changeStatus(post.id, event.target.value as PublicationStatus, currentUserName)}
           >
             {ALL_STATUSES.map((status) => (
-              <option key={status} value={status} disabled={status === "approved" && post.status !== "approved"}>
+              <option
+                key={status}
+                value={status}
+                disabled={
+                  (status === "approved" && post.status !== "approved") ||
+                  (status === "published" && post.status !== "published")
+                }
+              >
                 {STATUS_LABEL[status]}
               </option>
             ))}

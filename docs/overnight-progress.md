@@ -112,3 +112,90 @@ ci-dessous).
     mineur du flux de refus motivé ; amélioration future possible si jugée nécessaire.
 - **Prochaine étape** : Phase H — Parcours utilisateur complet (priorité explicite de
   l'utilisateur, avant la Phase D).
+
+## Phase D — Architecture de programmation et publication multiréseaux
+
+**Statut : partielle, documentée** (voir « Réordonnancement » ci-dessous — décision autonome
+documentée, pas une exécution silencieuse de l'ordre annoncé).
+
+- **Réordonnancement** : l'ordre de priorité donné (section 12) place la Phase H (parcours
+  utilisateur complet) avant la Phase D (programmation/publication). En auditant la Phase H, il
+  est apparu que ses dernières étapes du parcours (Planifier → Publier → Promouvoir → Analyser →
+  Optimiser) dépendent d'infrastructures qui n'existaient pas encore (Phases D/E/F/G) — un audit
+  de « parcours complet » aurait donc été partiel par construction. Décision autonome documentée
+  ici (réversible, pas de perte de travail) : construire d'abord les fondations de la Phase D, puis
+  revenir compléter la Phase H une fois qu'il y a réellement quelque chose à relier bout en bout.
+  Le travail déjà réalisé en Phase C (statuts, `ApprovalActions`, historique) reste la base des
+  premières étapes du parcours (idée → note → publication → révision → approbation), déjà bien
+  reliées (confirmé par lecture de `IdeaWorkshopView.tsx`, qui propose déjà un bouton de
+  progression contextuel : Transformer en publication → Envoyer en révision → Approuver →
+  Planifier).
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Nouveaux fichiers** :
+  - `src/types/publishing-provider.ts` — abstraction `PublishProvider` (un principe non
+    négociable en commentaire : `publish()` ne doit jamais renvoyer `"success"` sans appel réseau
+    réel réussi), `PublishAttempt`, `PublishReadiness` (huit états : Non connecté, Connexion
+    requise, Action manuelle requise, Contraintes non respectées, Prêt, Publication en cours,
+    Publié, Échec).
+  - `src/lib/publishing/providers.ts` — registre d'un `PublishProvider` par plateforme
+    (Instagram/Facebook/LinkedIn/TikTok/YouTube/X/Threads/Pinterest/Autre) ; **tous** renvoient
+    aujourd'hui `isConfigured() === false` (aucun identifiant API social réel dans ce projet —
+    confirmé par lecture de `.env.example`, qui ne contient que Supabase/Anthropic/YouTube data
+    API en lecture seule) ; `computePublishReadiness()` et `PUBLISH_READINESS_LABEL` dérivent
+    l'état affiché de faits vérifiables (statut du compte, contraintes, configuration), jamais
+    optimistes par défaut.
+  - `src/lib/publishing/platform-constraints.ts` — validation réelle et utile dès maintenant
+    (longueur de texte, nombre de hashtags, nombre/type de médias) par plateforme, avec limites
+    explicitement documentées comme indicatives (non garanties exactes, à revérifier auprès de
+    chaque plateforme).
+  - `src/components/publications/ManualPublishPanel.tsx` — remplace tout envoi automatique
+    fictif : pour une publication au statut « Programmé » (ou « Échec »), propose de copier le
+    texte, télécharger chaque média (URL signée régénérée à la demande), une checklist de
+    confirmation, puis un bouton « Marquer comme publiée manuellement » (actif seulement une fois
+    la checklist cochée) ou « Signaler un échec » (motif obligatoire). Chaque confirmation crée
+    une entrée dans le nouveau champ `Publication.publishAttempts` et dans l'historique existant —
+    jamais une écriture silencieuse.
+  - `docs/social-platform-setup.md` — procédure complète, plateforme par plateforme (portail
+    développeur, permissions à demander, étapes pour brancher un vrai `PublishProvider` plus
+    tard) — préparation à la demande explicite de la section 11 du mandat.
+- **Fichiers enrichis** :
+  - `src/types/publication.ts` — `Publication.publishAttempts?: PublishAttempt[]` (additif,
+    optionnel — aucune des nombreuses constructions existantes de `Publication` n'a dû être
+    modifiée, lues avec `?? []`).
+  - `src/components/publications/PublicationView.tsx` — `handleMarkPublished`/`handleMarkFailed`,
+    rendu de `ManualPublishPanel` juste après `ApprovalActions`.
+  - `src/components/publications/PublicationForm.tsx`, `PublicationsTable.tsx`,
+    `PublicationsKanban.tsx` — l'option de statut « Publié » est désormais désactivée dans les
+    menus déroulants bruts (comme « Approuvé » en Phase C) tant que ce n'est pas déjà le statut
+    courant, et un dépôt Kanban direct vers la colonne « Publié » est ignoré silencieusement (la
+    carte reste à sa place) — seul le panneau de publication manuelle, avec sa checklist, peut
+    faire passer une publication à ce statut.
+- **Migration** : aucune. Tous les changements sont au niveau TypeScript/React ; `publishAttempts`
+  est un champ optionnel du type `Publication` existant (stocké aujourd'hui via le même mécanisme
+  IndexedDB/sync que le reste de `Publication`, sans changement de schéma Postgres nécessaire —
+  cette persistance reste locale/synchronisée comme le reste du magasin `posts`, aucune table
+  Supabase dédiée n'était nécessaire pour cette étape).
+- **Tests** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes), `git diff
+  --check` ✅ (avertissements LF/CRLF inoffensifs uniquement).
+- **Limites connues / ce qui reste** (périmètre volontairement resserré, documenté plutôt que
+  bâclé) :
+  - **Aucune connexion OAuth réelle** à aucune plateforme — c'est un point bloqué par des
+    identifiants externes (comptes développeur Meta/LinkedIn/TikTok/X/Pinterest, revues
+    d'application, souvent payantes ou soumises à approbation manuelle du réseau) qu'il n'est ni
+    possible ni souhaitable de contourner. Documenté en détail dans
+    `docs/social-platform-setup.md`.
+  - **Modèle de compte connecté enrichi non fait** : le cahier des charges demande d'ajouter à
+    `SocialAccount` une date de dernière vérification de connexion et une expiration de
+    permission distincte du statut. `lastSyncedAt` existe déjà et `AccountStatus` couvre déjà
+    `expired`, ce qui satisfait l'essentiel ; un champ d'expiration distinct n'a pas été ajouté
+    faute d'un flux OAuth réel qui le remplirait honnêtement (ajouter un champ qu'aucune vraie
+    connexion ne peut jamais renseigner aurait été un ajout cosmétique, pas fonctionnel).
+  - **File de publication automatique (job queue)** non implémentée — délibérément, car sans
+    fournisseur réel configuré, une file de traitement n'aurait rien à traiter ; le mode manuel
+    couvre le besoin réel actuel. À construire quand un premier `PublishProvider` réel existera.
+  - Phase H (parcours utilisateur complet) reste à finaliser une fois cette Phase D (et
+    idéalement E/F/G) en place, pour un audit de bout en bout réellement complet plutôt que
+    partiel — voir « Réordonnancement » ci-dessus.
+- **Prochaine étape** : compléter Phase H (vérification du parcours de bout en bout, boutons de
+  progression manquants) maintenant que la publication (manuelle) existe réellement, puis Phases
+  F/G/E dans l'ordre de priorité annoncé, puis Phase I (qualité) et documentation finale.

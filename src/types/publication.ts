@@ -1,5 +1,6 @@
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
+import type { PublishAttempt } from "@/types/publishing-provider";
 
 export type PublicationStatus =
   | "idea"
@@ -83,6 +84,10 @@ export interface Publication {
   internalNotes: string;
   comments: PublicationComment[];
   history: PublicationHistoryEntry[];
+  /** Historique des tentatives de publication réelles (manuelles ou automatiques) — absent tant
+   * qu'aucune tentative n'a eu lieu. Jamais une tentative "success" sans action humaine confirmée
+   * (mode manuel) ou sans appel réseau réel abouti (mode automatique, non disponible aujourd'hui). */
+  publishAttempts?: PublishAttempt[];
   source?: ContentSource;
   createdAt?: string;
   updatedAt?: string;

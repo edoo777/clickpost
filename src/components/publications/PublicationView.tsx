@@ -7,6 +7,7 @@ import { ApprovalActions } from "@/components/publications/ApprovalActions";
 import { ClaudeGenerationPanel } from "@/components/publications/ClaudeGenerationPanel";
 import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
+import { ManualPublishPanel } from "@/components/publications/ManualPublishPanel";
 import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationModeToggle, type PublicationCreationMode } from "@/components/publications/PublicationModeToggle";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
@@ -229,6 +230,46 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     if (isEditing) setDraft(updated);
   }
 
+  function handleMarkPublished() {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const updated: Publication = {
+      ...existing,
+      status: "published",
+      publishAttempts: [
+        ...(existing.publishAttempts ?? []),
+        { id: crypto.randomUUID(), mode: "manual", status: "success", actorName: currentUserName, createdAt: now },
+      ],
+      history: [
+        ...existing.history,
+        { id: crypto.randomUUID(), action: "Publiée manuellement", actorName: currentUserName, createdAt: now },
+      ],
+    };
+    updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleMarkFailed(errorMessage: string) {
+    if (!existing) return;
+    const now = new Date().toISOString();
+    const updated: Publication = {
+      ...existing,
+      status: "failed",
+      publishAttempts: [
+        ...(existing.publishAttempts ?? []),
+        { id: crypto.randomUUID(), mode: "manual", status: "failed", actorName: currentUserName, createdAt: now, errorMessage },
+      ],
+      history: [
+        ...existing.history,
+        { id: crypto.randomUUID(), action: "Publication signalée en échec", actorName: currentUserName, createdAt: now, note: errorMessage },
+      ],
+    };
+    updatePost(updated.id, updated);
+    syncToIdea(existing, updated);
+    if (isEditing) setDraft(updated);
+  }
+
   function handleCancel() {
     if (mode === "create") {
       // Nettoyage best-effort des médias déjà téléversés sous cet id de brouillon — jamais de
@@ -359,6 +400,12 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                 onApprove={handleApprove}
                 onRequestChanges={handleRequestChanges}
                 onReject={handleReject}
+              />
+              <ManualPublishPanel
+                publication={existing}
+                account={accounts.find((candidate) => candidate.id === existing.accountId)}
+                onMarkPublished={handleMarkPublished}
+                onMarkFailed={handleMarkFailed}
               />
               <CollaborationPanel
                 publication={displayed}

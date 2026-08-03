@@ -339,16 +339,17 @@ export function PublicationForm({ publication, editable, onChange }: Publication
             onChange={(event) => set("status", event.target.value as PublicationStatus)}
             className={INPUT_CLASS}
           >
-            {ALL_STATUSES.map((status) => (
-              <option
-                key={status}
-                value={status}
-                disabled={status === "approved" && publication.status !== "approved"}
-              >
-                {STATUS_LABEL[status]}
-                {status === "approved" && publication.status !== "approved" ? " (via Actions d'approbation)" : ""}
-              </option>
-            ))}
+            {ALL_STATUSES.map((status) => {
+              const lockedApproved = status === "approved" && publication.status !== "approved";
+              const lockedPublished = status === "published" && publication.status !== "published";
+              return (
+                <option key={status} value={status} disabled={lockedApproved || lockedPublished}>
+                  {STATUS_LABEL[status]}
+                  {lockedApproved ? " (via Actions d'approbation)" : ""}
+                  {lockedPublished ? " (via Publication manuelle)" : ""}
+                </option>
+              );
+            })}
           </select>
         </label>
 

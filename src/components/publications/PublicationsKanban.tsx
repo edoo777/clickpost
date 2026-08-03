@@ -94,6 +94,9 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
     // « Approuvé ». Un dépôt vers cette colonne est ignoré silencieusement (la carte revient à
     // sa place) plutôt que d'accepter une approbation sans validation.
     if (status === "approved" && dragged.status !== "approved") return;
+    // La publication réelle (marquer comme publiée) exige aussi une confirmation explicite via le
+    // panneau « Publication manuelle » de la fiche — jamais un simple glisser-déposer.
+    if (status === "published" && dragged.status !== "published") return;
     const scheduledFor = computeReorderedScheduledFor(columnPosts(status), target, id);
     if (dragged.status !== status) {
       changeStatus(id, status, currentUserName);
@@ -184,7 +187,10 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                           <option
                             key={option}
                             value={option}
-                            disabled={option === "approved" && post.status !== "approved"}
+                            disabled={
+                              (option === "approved" && post.status !== "approved") ||
+                              (option === "published" && post.status !== "published")
+                            }
                           >
                             {STATUS_LABEL[option]}
                           </option>
