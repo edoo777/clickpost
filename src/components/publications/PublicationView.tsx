@@ -9,6 +9,7 @@ import { ClaudeGenerationPanel } from "@/components/publications/ClaudeGeneratio
 import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
 import { ManualPublishPanel } from "@/components/publications/ManualPublishPanel";
+import { PromotionChecklist } from "@/components/publications/PromotionChecklist";
 import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationModeToggle, type PublicationCreationMode } from "@/components/publications/PublicationModeToggle";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
@@ -20,6 +21,7 @@ import { buildIdeaFromSeed, useDevelopIdea } from "@/lib/develop-idea";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import { buildDefaultPromotionTasks, updateTaskInList } from "@/lib/promotion";
 import { useSettingsSession } from "@/lib/settings-store";
 import { deleteAllPublicationMedia } from "@/lib/supabase/publication-media-storage";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
@@ -27,6 +29,7 @@ import { useTeamSession } from "@/lib/team-store";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
+import type { PromotionTask } from "@/types/promotion";
 import type { Publication, PublicationHistoryEntry } from "@/types/publication";
 import type { AgencySettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
@@ -243,6 +246,11 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
         ...(existing.publishAttempts ?? []),
         { id: crypto.randomUUID(), mode: "manual", status: "success", actorName: currentUserName, createdAt: now },
       ],
+      // Générée une seule fois — une republication après un échec ne doit jamais réinitialiser
+      // une checklist de promotion déjà commencée.
+      promotionTasks: existing.promotionTasks && existing.promotionTasks.length > 0
+        ? existing.promotionTasks
+        : buildDefaultPromotionTasks(existing.owner),
       history: [
         ...existing.history,
         { id: crypto.randomUUID(), action: "Publiée manuellement", actorName: currentUserName, createdAt: now },
@@ -250,6 +258,13 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     };
     updatePost(updated.id, updated);
     syncToIdea(existing, updated);
+    if (isEditing) setDraft(updated);
+  }
+
+  function handleUpdatePromotionTask(taskId: string, patch: Partial<PromotionTask>) {
+    if (!existing) return;
+    const updated: Publication = { ...existing, promotionTasks: updateTaskInList(existing.promotionTasks ?? [], taskId, patch) };
+    updatePost(updated.id, updated);
     if (isEditing) setDraft(updated);
   }
 
@@ -295,6 +310,10 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       id: crypto.randomUUID(),
       excerpt: `${existing.excerpt} (copie)`,
       status: "draft",
+      // Une copie n'a jamais été publiée : elle ne doit hériter ni des tentatives de publication
+      // ni de la checklist de promotion de l'originale.
+      publishAttempts: [],
+      promotionTasks: [],
     };
     addPosts([copy]);
     router.push(`/publications/${copy.id}${returnSuffix}`);
@@ -442,6 +461,9 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                 onMarkPublished={handleMarkPublished}
                 onMarkFailed={handleMarkFailed}
               />
+              {existing.status === "published" && existing.promotionTasks && existing.promotionTasks.length > 0 && (
+                <PromotionChecklist tasks={existing.promotionTasks} members={members} onUpdateTask={handleUpdatePromotionTask} />
+              )}
               <CollaborationPanel
                 publication={displayed}
                 members={members}

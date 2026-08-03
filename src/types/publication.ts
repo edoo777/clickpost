@@ -1,6 +1,7 @@
 import type { ContentType } from "@/lib/content-types";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
+import type { PromotionTask } from "@/types/promotion";
 import type { PublishAttempt } from "@/types/publishing-provider";
 
 export type PublicationStatus =
@@ -92,6 +93,10 @@ export interface Publication {
    * qu'aucune tentative n'a eu lieu. Jamais une tentative "success" sans action humaine confirmée
    * (mode manuel) ou sans appel réseau réel abouti (mode automatique, non disponible aujourd'hui). */
   publishAttempts?: PublishAttempt[];
+  /** Checklist de promotion post-publication (Phase E) — huit tâches fixes, générées
+   * automatiquement à la première publication réelle (voir handleMarkPublished). Absente tant
+   * qu'une publication n'a jamais été marquée publiée. */
+  promotionTasks?: PromotionTask[];
   source?: ContentSource;
   createdAt?: string;
   updatedAt?: string;

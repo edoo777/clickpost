@@ -80,6 +80,10 @@ export function duplicatePublication(publication: Publication): Publication {
     status: "draft",
     comments: [],
     history: [],
+    // Une copie n'a jamais été publiée : elle ne doit hériter ni des tentatives de publication
+    // ni de la checklist de promotion de l'originale.
+    publishAttempts: [],
+    promotionTasks: [],
     source: "manual",
     createdAt: now,
     updatedAt: now,

@@ -4,7 +4,7 @@ import { createSessionStore } from "@/lib/session-storage-store";
 import type { SavedViewSort } from "@/types/saved-view";
 
 export type { CalendarMode };
-export type PublicationsViewType = "table" | "kanban" | "calendar" | "cards" | "list";
+export type PublicationsViewType = "table" | "kanban" | "calendar" | "cards" | "list" | "promotion";
 
 export interface PublicationsViewState {
   viewType: PublicationsViewType;

@@ -27,10 +27,21 @@ const VIEW_TYPE_TO_SAVED: Record<PublicationsViewType, SavedViewType> = {
   calendar: "calendar",
   cards: "cards",
   list: "list",
+  // La vue Promotion est une liste de tâches, pas une liste de publications filtrable/triable —
+  // aucun SavedViewType dédié n'a de sens ; "table" reste un repli inoffensif si jamais atteint
+  // (le bouton "Enregistrer comme vue" est masqué sur cet onglet, voir PublicationsListView.tsx).
+  promotion: "table",
 };
 
 function isPublicationsViewType(value: string | null): value is PublicationsViewType {
-  return value === "table" || value === "kanban" || value === "calendar" || value === "cards" || value === "list";
+  return (
+    value === "table" ||
+    value === "kanban" ||
+    value === "calendar" ||
+    value === "cards" ||
+    value === "list" ||
+    value === "promotion"
+  );
 }
 
 export function usePublicationsViewState() {

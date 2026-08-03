@@ -8,6 +8,7 @@ const VIEWS: { id: PublicationsViewType; label: string }[] = [
   { id: "calendar", label: "Calendrier" },
   { id: "cards", label: "Cartes" },
   { id: "list", label: "Liste" },
+  { id: "promotion", label: "Promotion" },
 ];
 
 interface PublicationsViewSwitcherProps {

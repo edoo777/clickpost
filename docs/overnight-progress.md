@@ -349,3 +349,57 @@ reste explicitement hors périmètre, faute de Phase E).
   "boucle d'optimisation" demandé).
 - **Prochaine étape** : Phase E (Promotion et diffusion), puis Phase I (Qualité, incluant la
   suppression du code mort `IdeasBankKanban.tsx` relevé en Phase H) et documentation finale.
+
+## Phase E — Promotion et diffusion des contenus
+
+**Statut : terminée.**
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Aucun CRM séparé créé** — la checklist de promotion est un champ additif directement sur
+  `Publication` (`promotionTasks?: PromotionTask[]`), au même titre que `media`/`comments`/
+  `history`/`publishAttempts` déjà en jsonb sur la table `publications`. Migration
+  `20260803154117_publications_promotion_tasks.sql` — additive uniquement, dry-run vérifié puis
+  appliquée réellement (`upToDate: true` confirmé après coup).
+- **Nouveaux fichiers** :
+  - `types/promotion.ts` — `PromotionTask`/`PromotionTaskType` (huit actions fixes exactement
+    celles du cahier des charges : repartager en story, diffuser dans une communauté, répondre aux
+    premiers commentaires, mentionner/collaborer avec un partenaire, demander à l'équipe de
+    partager, recycler dans un autre format, relancer à une date ultérieure, promotion payante
+    explicitement marquée facultative) / `PromotionTaskStatus` (À faire/En cours/Terminée/Ignorée).
+  - `lib/promotion.ts` — libellés, `buildDefaultPromotionTasks()` (génère les huit tâches une
+    seule fois, jamais régénérées ni dupliquées), `getPromotionProgress()` (progression = tâches
+    Terminées + Ignorées / total — une décision explicite de ne pas faire une action reste une
+    décision prise), `isTaskOverdue()`/`isTaskDueToday()`, `getAllPromotionTasks()` (vue
+    transversale filtrable, dérivée à la volée — jamais stockée séparément).
+  - `components/publications/PromotionChecklist.tsx` — checklist par publication (responsable,
+    échéance, statut, notes par tâche, barre de progression), rendue uniquement pour une
+    publication déjà réellement publiée (juste après `ManualPublishPanel` sur la fiche
+    publication).
+  - `components/publications/PromotionTasksBoard.tsx` — **nouvel onglet « Promotion » du
+    sélecteur de vues des publications déjà existant** (Tableau/Kanban/Calendrier/Cartes/Liste/
+    **Promotion**) plutôt qu'une page ou un système séparé — vue transversale de toutes les tâches
+    de promotion, filtrable par statut/action/responsable/marque, avec indicateurs « En retard »/
+    « Aujourd'hui » (rappels internes simples, aucune infrastructure de notification nouvelle).
+- **Fichiers enrichis** :
+  - `types/publication.ts` (`promotionTasks?`), `lib/posts.ts` et `PublicationView.handleDuplicate`
+    (une publication dupliquée ne doit hériter ni des tentatives de publication ni de la checklist
+    de promotion de l'originale — corrigé dans les deux chemins de duplication existants),
+    `PublicationView.tsx` (génère la checklist à la première publication manuelle réelle, jamais
+    régénérée si déjà présente ; gestionnaire de mise à jour par tâche), `publications-view-storage.ts`
+    / `PublicationsViewSwitcher.tsx` / `usePublicationsViewState.ts` (nouveau type de vue
+    "promotion", mappage `SavedViewType` inoffensif puisque cette vue n'est pas une liste
+    filtrable/triable — le bouton "Enregistrer comme vue" est masqué sur cet onglet).
+  - `components/dashboard/MyTasksWidget.tsx` — étendu (pas un nouveau widget, pour ne pas
+    surcharger un tableau de bord qui en compte déjà dix) pour inclure, dans la même liste « Mes
+    tâches », les tâches de promotion en retard ou dues aujourd'hui assignées à l'utilisateur
+    courant, aux côtés des publications qui attendent déjà une action de sa part.
+- **Tests** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes), `git diff
+  --check` ✅.
+- **Limites connues** : les huit tâches sont fixes (pas de tâche de promotion personnalisée
+  ajoutable au-delà des huit prévues) — décision de périmètre alignée sur "ne construis pas un CRM
+  complet" ; l'import CSV de métriques (Phase F) et cette checklist ne sont pas encore reliés (ex.
+  suggérer automatiquement de cocher "Promotion payante" si un budget a réellement été dépensé) —
+  amélioration future possible, non nécessaire au périmètre demandé.
+- **Prochaine étape** : Phase I — Qualité globale (suppression du code mort confirmé, audit
+  responsive/thèmes/permissions/RLS/synchronisation/erreurs, tests des parcours multi-workspace),
+  puis documentation finale et `docs/overnight-final-report.md`.

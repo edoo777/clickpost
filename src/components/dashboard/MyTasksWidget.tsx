@@ -5,19 +5,56 @@ import { platformIcons } from "@/components/icons";
 import { getNextActor } from "@/lib/approval";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
+import { PROMOTION_TASK_LABEL, isTaskDueToday, isTaskOverdue } from "@/lib/promotion";
 import { useTeamSession } from "@/lib/team-store";
+import type { Publication } from "@/types/publication";
+import type { PromotionTask } from "@/types/promotion";
 
 const MAX_ITEMS = 4;
 const ACTIONABLE_STATUSES = new Set(["in_production", "needs_changes", "in_review", "pending_client"]);
 
+interface PublicationTaskItem {
+  kind: "publication";
+  publication: Publication;
+  sortDate: string;
+}
+
+interface PromotionTaskItem {
+  kind: "promotion";
+  publication: Publication;
+  task: PromotionTask;
+  sortDate: string;
+  overdue: boolean;
+}
+
+type TaskItem = PublicationTaskItem | PromotionTaskItem;
+
+/** Rappel interne simple : rassemble dans une seule liste les publications qui attendent une
+ * action de l'utilisateur courant ET ses tâches de promotion en retard ou dues aujourd'hui —
+ * jamais un système de notification séparé, uniquement dérivé des données déjà existantes. */
 export function MyTasksWidget() {
   const { posts } = usePostsSession();
   const { members, currentUserId } = useTeamSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
-  const myTasks = posts
+  const publicationItems: TaskItem[] = posts
     .filter((post) => ACTIONABLE_STATUSES.has(post.status) && getNextActor(post) === currentUserName)
-    .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime())
+    .map((publication) => ({ kind: "publication", publication, sortDate: publication.scheduledFor }));
+
+  const promotionItems: TaskItem[] = posts.flatMap((publication) =>
+    (publication.promotionTasks ?? [])
+      .filter((task) => task.owner === currentUserName && (isTaskOverdue(task) || isTaskDueToday(task)))
+      .map((task) => ({
+        kind: "promotion" as const,
+        publication,
+        task,
+        sortDate: task.dueDate ?? "",
+        overdue: isTaskOverdue(task),
+      }))
+  );
+
+  const myTasks = [...publicationItems, ...promotionItems]
+    .sort((a, b) => (a.sortDate < b.sortDate ? -1 : a.sortDate > b.sortDate ? 1 : 0))
     .slice(0, MAX_ITEMS);
 
   return (
@@ -30,27 +67,58 @@ export function MyTasksWidget() {
         <p className="text-sm text-muted-foreground ">Aucune tâche assignée pour l&apos;instant.</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border ">
-          {myTasks.map((publication) => {
-            const Icon = platformIcons[publication.platform];
+          {myTasks.map((item) => {
+            const Icon = platformIcons[item.publication.platform];
+            if (item.kind === "publication") {
+              return (
+                <li key={item.publication.id}>
+                  <Link
+                    href={`/publications/${item.publication.id}`}
+                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 dark:bg-violet-500/10">
+                      <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                    </span>
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-sm font-medium text-foreground ">
+                        {item.publication.excerpt || "Sans titre"}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground ">{item.publication.brand}</span>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[item.publication.status]}`}
+                    >
+                      {STATUS_LABEL[item.publication.status]}
+                    </span>
+                  </Link>
+                </li>
+              );
+            }
             return (
-              <li key={publication.id}>
+              <li key={item.task.id}>
                 <Link
-                  href={`/publications/${publication.id}`}
+                  href={`/publications/${item.publication.id}`}
                   className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-50 dark:bg-violet-500/10">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-500/10">
                     <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-medium text-foreground ">
-                      {publication.excerpt || "Sans titre"}
+                      {PROMOTION_TASK_LABEL[item.task.type]}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground ">{publication.brand}</span>
+                    <span className="truncate text-xs text-muted-foreground ">
+                      {item.publication.excerpt || "Sans titre"}
+                    </span>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[publication.status]}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                      item.overdue
+                        ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                        : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                    }`}
                   >
-                    {STATUS_LABEL[publication.status]}
+                    {item.overdue ? "En retard" : "Aujourd'hui"}
                   </span>
                 </Link>
               </li>

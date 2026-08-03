@@ -7,6 +7,7 @@ import { CalendarWorkspace } from "@/components/calendar/CalendarWorkspace";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { PublicationsFilters } from "@/components/publications/PublicationsFilters";
 import { PublicationsKanban } from "@/components/publications/PublicationsKanban";
+import { PromotionTasksBoard } from "@/components/publications/PromotionTasksBoard";
 import { PublicationsList } from "@/components/publications/PublicationsList";
 import { PublicationsTable } from "@/components/publications/PublicationsTable";
 import { PublicationsViewSwitcher } from "@/components/publications/view/PublicationsViewSwitcher";
@@ -64,25 +65,29 @@ export function PublicationsListView() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PublicationsViewSwitcher value={view.viewType} onChange={view.setViewType} />
-        <SavedViewsBar
-          savedViews={view.savedViews}
-          activeSavedViewId={view.savedViewId}
-          isModified={view.isModified}
-          onSelect={view.selectSavedView}
-          onSaveAsNew={view.saveAsNewView}
-          onUpdate={view.updateActiveView}
-          onRename={view.renameActiveView}
-          onDelete={view.deleteActiveView}
-          onSetDefault={view.setActiveViewAsDefault}
-        />
+        {view.viewType !== "promotion" && (
+          <SavedViewsBar
+            savedViews={view.savedViews}
+            activeSavedViewId={view.savedViewId}
+            isModified={view.isModified}
+            onSelect={view.selectSavedView}
+            onSaveAsNew={view.saveAsNewView}
+            onUpdate={view.updateActiveView}
+            onRename={view.renameActiveView}
+            onDelete={view.deleteActiveView}
+            onSetDefault={view.setActiveViewAsDefault}
+          />
+        )}
       </div>
 
       <PublicationsFilters value={view.filters} onChange={view.setFilters} />
 
-      {sorted.length === 0 && view.viewType !== "calendar" && view.viewType !== "kanban" ? (
+      {sorted.length === 0 && view.viewType !== "calendar" && view.viewType !== "kanban" && view.viewType !== "promotion" ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
           Aucune publication ne correspond à ces critères.
         </p>
+      ) : view.viewType === "promotion" ? (
+        <PromotionTasksBoard publications={sorted} onOpen={handleOpen} />
       ) : view.viewType === "table" ? (
         <PublicationsTable
           publications={sorted}
