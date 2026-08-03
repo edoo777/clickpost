@@ -17,7 +17,7 @@ const TONES: GenerationTone[] = [
   "storytelling",
   "provocative",
 ];
-const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube"];
+const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest"];
 /** Plafond par thématique dans UN appel serveur — le client ne doit jamais envoyer plus qu'un lot
  * (voir DEFAULT_LOT_SIZE dans topic-generator.ts, 20 par défaut) ; une marge est laissée ici pour
  * ne pas coupler strictement les deux constantes. Les plafonds "100 par thématique" et "200 par
@@ -146,8 +146,10 @@ export function validateTopicsRequest(body: unknown): TopicsRequestValidation {
     return { valid: false, message: "Formats invalides." };
   }
 
+  // Un tableau vide est volontairement valide — "aucune plateforme sélectionnée" signifie des
+  // idées générales, indépendantes d'un réseau, jamais un blocage (voir generateur-prompt.ts).
   const platformsRaw = record.platforms;
-  if (!Array.isArray(platformsRaw) || platformsRaw.length === 0 || !platformsRaw.every((p) => ALL_PLATFORMS.includes(p as SocialPlatform))) {
+  if (!Array.isArray(platformsRaw) || !platformsRaw.every((p) => ALL_PLATFORMS.includes(p as SocialPlatform))) {
     return { valid: false, message: "Plateformes invalides." };
   }
 

@@ -41,7 +41,8 @@ const CONTENT_TYPE_LIST = ALL_CONTENT_TYPES.map((type) => `"${type}" (${CONTENT_
  */
 export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurPrompt {
   const formatList = input.formats.map((format) => FORMAT_LABEL[format]).join(", ") || "au choix";
-  const platformList = input.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") || "au choix";
+  const hasPlatforms = input.platforms.length > 0;
+  const platformList = hasPlatforms ? input.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") : null;
 
   const system = [
     "Tu es un stratège de contenu francophone pour une agence marketing. Tu dois générer des",
@@ -49,14 +50,19 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     `- Marque : ${input.brandName}`,
     `- Niche (secteur) : ${input.niche || "non précisée"}`,
     "",
-    "DISTINCTION STRICTE À RESPECTER — quatre concepts différents, jamais interchangeables :",
+    "DISTINCTION STRICTE À RESPECTER — cinq concepts différents, jamais interchangeables :",
     "1. niche : le secteur général de la marque (ex. Fitness, Immobilier) — déjà fourni ci-dessus, à reporter tel quel.",
-    "2. thématique (theme) : un sujet qui découle de la niche (ex. Musculation, Nutrition, Course à pied) — JAMAIS un angle éditorial.",
+    "2. thématique (theme) : un sujet qui découle de la niche (ex. Musculation, Nutrition, Course à pied) — JAMAIS un angle éditorial, JAMAIS le nom d'un réseau social.",
     `3. type de contenu (contentType) : l'angle éditorial utilisé pour traiter la thématique. Valeurs autorisées UNIQUEMENT : ${CONTENT_TYPE_LIST}.`,
     "4. format : la forme de la publication (ex. Carrousel, Vidéo courte).",
+    "5. plateforme (platform) : le réseau social visé (ex. Instagram, LinkedIn) — un simple contexte éditorial pour adapter le ton/format, jamais un sujet ni une thématique.",
     "",
     'INTERDICTION ABSOLUE : ne jamais placer un type de contenu ("Conseil", "Preuve", "Offre", "Témoignage"…) dans le champ theme.',
+    'INTERDICTION ABSOLUE : ne jamais déduire ou inventer une thématique à partir d\'une plateforme — ne transforme jamais "Instagram", "LinkedIn" ou "TikTok" en thématique.',
     "Le champ theme doit toujours être exactement l'un des libellés de thématique fournis dans la demande, reproduit à l'identique.",
+    hasPlatforms
+      ? "Adapte le comportement et le format suggéré des idées aux plateformes visées ci-dessous, sans jamais changer la thématique elle-même."
+      : 'Aucune plateforme spécifique n\'est visée : génère des idées générales, adaptables à plusieurs contextes, sans supposer une plateforme précise ni la mentionner comme "au choix" dans le contenu.',
     "",
     "Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, exactement de cette forme :",
     '{"groups":[{"themeId":"...","ideas":[{"title":"...","description":"...","niche":"...","theme":"...","contentType":"advice","format":"...","objective":"...","platform":"..."}]}]}',
@@ -82,7 +88,7 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     ...themeLines,
     "",
     `Formats autorisés : ${formatList}`,
-    `Plateformes visées : ${platformList}`,
+    platformList ? `Plateformes visées : ${platformList}` : "Plateformes visées : aucune en particulier — idées générales.",
     `Ton de marque : ${input.tone}`,
     input.objective ? `Objectif marketing général : ${input.objective}` : null,
     input.targetAudience ? `Audience cible : ${input.targetAudience}` : null,

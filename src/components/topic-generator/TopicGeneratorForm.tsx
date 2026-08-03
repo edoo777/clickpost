@@ -9,6 +9,7 @@ import {
   type ThemeSelectionValue,
 } from "@/components/topic-generator/ThemeSelectionPanel";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
 import type { GenerationTone } from "@/lib/assisted-generation";
 import { TONE_LABEL } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
@@ -41,11 +42,11 @@ const FIELD_CLASS =
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest"];
 
-/** Plateformes disponibles pour une marque = celles de ses comptes affiliés — jamais un compte
- * d'une autre marque, jamais la liste complète des réseaux existants. */
-function platformsFromAccounts(accounts: SocialAccount[], brand: Brand): SocialPlatform[] {
-  const brandAccounts = accounts.filter((account) => (account.brandId ? account.brandId === brand.id : account.brand === brand.name));
-  return Array.from(new Set(brandAccounts.map((account) => account.platform)));
+/** Comptes affiliés d'une marque — jamais un compte d'une autre marque. Distinct des plateformes
+ * ciblées : un compte est nécessaire seulement plus tard pour publier/programmer/récupérer des
+ * statistiques réelles, jamais pour choisir le contexte éditorial d'une génération d'idées. */
+function accountsForBrand(accounts: SocialAccount[], brand: Brand): SocialAccount[] {
+  return accounts.filter((account) => (account.brandId ? account.brandId === brand.id : account.brand === brand.name));
 }
 
 const TOGGLE_CLASS = (isSelected: boolean) =>
@@ -103,8 +104,10 @@ export function TopicGeneratorForm({
 
   const isStandalone = !value.brandId;
   const selectedBrand = brands.find((candidate) => candidate.id === value.brandId);
-  const platformsForBrand = selectedBrand ? platformsFromAccounts(accounts, selectedBrand) : [];
-  const platformChoices = isStandalone ? ALL_PLATFORMS : platformsForBrand;
+  // Les plateformes ciblées sont toujours un contexte éditorial libre — jamais limitées aux
+  // comptes réellement connectés, qui ne servent qu'à la publication/programmation ultérieure.
+  const brandAccounts = selectedBrand ? accountsForBrand(accounts, selectedBrand) : [];
+  const allPlatformsSelected = value.platforms.length === ALL_PLATFORMS.length;
 
   function togglePlatform(platform: SocialPlatform) {
     onChange({
@@ -113,6 +116,17 @@ export function TopicGeneratorForm({
         ? value.platforms.filter((p) => p !== platform)
         : [...value.platforms, platform],
     });
+  }
+
+  function toggleAllPlatforms() {
+    onChange({ ...value, platforms: allPlatformsSelected ? [] : [...ALL_PLATFORMS] });
+  }
+
+  /** Sélectionner un compte affilié sélectionne sa plateforme correspondante — jamais l'inverse,
+   * jamais de connexion OAuth demandée ici, jamais de donnée du compte lue au-delà de sa
+   * plateforme et de son identifiant d'affichage déjà stockés localement. */
+  function toggleAccountPlatform(account: SocialAccount) {
+    togglePlatform(account.platform);
   }
 
   function toggleFormat(format: ContentFormat) {
@@ -282,7 +296,7 @@ export function TopicGeneratorForm({
                 onChange={(next) => updateThemeSelection(selection.themeId, next)}
                 onRemove={() => removeThemeSelection(selection.themeId)}
                 onDuplicate={() => duplicateThemeSelection(selection.themeId)}
-                availablePlatforms={platformsForBrand}
+                availablePlatforms={ALL_PLATFORMS}
                 onAddToBrandSettings={
                   selection.isAdhoc && canManageBrands ? () => handleAddToBrandSettings(selection) : undefined
                 }
@@ -351,11 +365,16 @@ export function TopicGeneratorForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {isStandalone ? "Réseaux" : "Réseaux (comptes affiliés de la marque)"}
-        </span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Plateformes ciblées</span>
+        <p className="text-xs text-muted-foreground ">
+          Contexte éditorial des idées — aucun compte connecté requis. Laissez vide pour des idées
+          générales, indépendantes d&apos;une plateforme.
+        </p>
         <div className="flex flex-wrap gap-2">
-          {platformChoices.map((platform) => {
+          <button type="button" onClick={toggleAllPlatforms} className={TOGGLE_CLASS(allPlatformsSelected)}>
+            Toutes les plateformes
+          </button>
+          {ALL_PLATFORMS.map((platform) => {
             const Icon = platformIcons[platform];
             const isSelected = value.platforms.includes(platform);
             return (
@@ -366,13 +385,45 @@ export function TopicGeneratorForm({
             );
           })}
         </div>
-        {!isStandalone && platformsForBrand.length === 0 && (
-          <span className="text-xs text-muted-foreground ">
-            Aucun compte affilié pour cette marque — ajoutez-en un depuis sa fiche (onglet Comptes affiliés).
-          </span>
-        )}
         {errors.platforms && <span className="text-xs font-medium text-red-500">{errors.platforms}</span>}
       </div>
+
+      {!isStandalone && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Comptes de la marque</span>
+          {brandAccounts.length === 0 ? (
+            <p className="text-xs text-muted-foreground ">
+              Aucun compte de marque configuré — vous pouvez quand même choisir les plateformes
+              ciblées et générer vos idées.{" "}
+              <Link href="/marques" className="text-violet-600 hover:underline dark:text-violet-400">
+                Configurer les comptes de la marque
+              </Link>
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {brandAccounts.map((account) => {
+                const Icon = platformIcons[account.platform];
+                const isSelected = value.platforms.includes(account.platform);
+                return (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() => toggleAccountPlatform(account)}
+                    className={TOGGLE_CLASS(isSelected)}
+                    title={ACCOUNT_STATUS_LABEL[account.status]}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {PLATFORM_LABEL[account.platform]} — {account.handle || account.accountName}
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${ACCOUNT_STATUS_STYLE[account.status]}`}>
+                      {ACCOUNT_STATUS_LABEL[account.status]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Formats</span>

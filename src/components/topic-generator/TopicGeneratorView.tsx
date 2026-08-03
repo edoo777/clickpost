@@ -78,7 +78,8 @@ function validateForm(value: TopicGeneratorFormValue): TopicGeneratorFormErrors 
   if (total > MAX_TOTAL_REQUESTED_PER_GENERATION) {
     errors.themes = `Le total demandé (${total}) dépasse ${MAX_TOTAL_REQUESTED_PER_GENERATION} idées — réduisez la quantité ou séparez votre génération en plusieurs demandes.`;
   }
-  if (value.platforms.length === 0) errors.platforms = "Sélectionnez au moins un réseau.";
+  // Aucune plateforme sélectionnée est un état volontairement valide : génère des idées
+  // générales, indépendantes d'un réseau — jamais bloquant (voir generateur-prompt.ts).
   if (value.formats.length === 0) errors.formats = "Sélectionnez au moins un format.";
   return errors;
 }

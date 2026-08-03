@@ -466,3 +466,49 @@ navigateur ; voir limites en fin de section).
 - **Prochaine étape** : documentation finale (`docs/deployment-checklist.md`,
   `docs/content-creator-journey.md`, `docs/overnight-final-report.md`), commits séparés
   correspondants.
+
+## Correctif hors mandat — Notes et sélection des plateformes d'idées
+
+**Statut : terminé** (demande ponctuelle post-mandat, hors feuille de route A–I).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Cause réelle de l'« erreur de synchronisation » / `[object Object]`** :
+  `src/lib/sync/classify-sync-error.ts` extrayait le message d'erreur avec
+  `error instanceof Error ? error.message : String(error)`. Une erreur Supabase/PostgREST est un
+  **objet simple** (`{ message, details, hint, code }`), jamais une instance de la classe `Error`
+  — `String()` sur un tel objet produit littéralement `"[object Object]"`. Ce message erroné
+  alimentait ensuite `SyncStatusState.errorMessage`, rendu tel quel dans
+  `SaveStatusIndicator.tsx` (barre latérale). Bug générique du moteur de synchronisation (touchait
+  potentiellement toutes les entités, pas seulement les notes) — corrigé une seule fois à la
+  source. Le chemin de sauvegarde locale (`coordinator.ts`) avait déjà un repli sûr et n'était pas
+  affecté. RLS et permissions de `idea_notes` revérifiées (grants `authenticated`, 4 politiques
+  `is_workspace_member`) — aucune anomalie trouvée, la cause était uniquement l'affichage.
+- **Fichiers modifiés (sync)** : `lib/sync/classify-sync-error.ts` — message extrait proprement
+  dans tous les cas (Error/objet Supabase/chaîne/inconnu), jamais `[object Object]` ; message dédié
+  pour un refus de permission (code Postgres `42501`) ; détail technique complet journalisé en
+  développement uniquement (`console.error`, jamais en production). Tout le reste (distinction
+  hors ligne/transitoire/persistante/conflit, effacement de l'erreur après succès, bouton
+  Réessayer désactivé pendant la tentative et protégé contre le double clic, aucune perte de
+  donnée locale) était déjà correctement implémenté par la phase antérieure de la session
+  (« Correction des états de synchronisation ») — vérifié, non modifié.
+- **Comportement retenu (Générateur d'idées)** : distinction stricte entre « Plateformes
+  ciblées » (contexte éditorial, les 8 réseaux pris en charge, sélection libre y compris vide ou
+  « Toutes les plateformes », jamais bloquante) et « Comptes de la marque » (section facultative,
+  affiche les comptes réels avec leur statut honnête — `profile_only` etc. — sélectionner un
+  compte sélectionne sa plateforme, jamais l'inverse, jamais de demande OAuth). Message non
+  bloquant quand la marque n'a aucun compte, avec lien secondaire vers la configuration.
+  Validation côté client et serveur (`validate-topics-request.ts`) mise à jour pour accepter un
+  tableau de plateformes vide. Prompt Claude (`generateur-prompt.ts`) enrichi d'une cinquième
+  distinction explicite (plateforme ≠ thématique) et d'une consigne dédiée pour le cas sans
+  plateforme sélectionnée.
+- **Fichiers modifiés (générateur)** : `components/topic-generator/TopicGeneratorForm.tsx`,
+  `components/topic-generator/TopicGeneratorView.tsx` (retrait de la validation obligatoire),
+  `lib/ai/generateur-prompt.ts`, `lib/ai/validate-topics-request.ts` (liste des 8 plateformes
+  alignée, tableau vide accepté).
+- **Tests exécutés** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes),
+  `git diff --check` ✅. Vérification RLS/grants via requête en lecture seule sur la base liée.
+  Recherche exhaustive de tout autre `String(error)`/`instanceof Error` dans le dépôt — un seul
+  autre endroit trouvé (`coordinator.ts`), déjà sûr.
+- **Non exécuté** : tests dans un navigateur réel (pas d'infrastructure de test dans ce projet —
+  limite déjà documentée). Comportement vérifié par lecture de code et traçage complet du chemin
+  de données, pas par reproduction visuelle.
