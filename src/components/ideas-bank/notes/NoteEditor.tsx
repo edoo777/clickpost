@@ -106,8 +106,14 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
     if (!isOnline) return { text: "Hors ligne", tone: "warning" };
     if (saveStatus.status === "pending") return { text: "Modification en cours…", tone: "muted" };
     if (saveStatus.status === "saving") return { text: "Enregistrement…", tone: "muted" };
-    if (saveStatus.status === "error") return { text: "Erreur de synchronisation", tone: "error" };
-    if (syncStatus.status === "conflict" || syncStatus.status === "error") return { text: "Erreur de synchronisation", tone: "error" };
+    if (saveStatus.status === "error") return { text: "Sauvegarde impossible", tone: "error" };
+    if (syncStatus.status === "conflict") return { text: "Conflit de synchronisation", tone: "error" };
+    if (syncStatus.status === "error") {
+      if (syncStatus.hasPermissionError) return { text: "Permission refusée", tone: "error" };
+      if (syncStatus.hasBlockedOperations) return { text: "Données locales à réparer", tone: "error" };
+      if (syncStatus.isPersistentError) return { text: "Erreur persistante", tone: "error" };
+      return { text: "Synchronisation temporairement interrompue", tone: "error" };
+    }
     return { text: `Enregistré à ${updatedAtFormatter.format(new Date(note.updatedAt))}`, tone: "muted" };
   }
   const status = statusLabel();

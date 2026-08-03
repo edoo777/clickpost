@@ -31,14 +31,26 @@ function localNoticeLabel(status: string): string {
  * information réelle produisent un texte. "syncing"/"merging" ne s'affichent que pendant une
  * tentative explicitement déclenchée par l'utilisateur (voir isRetrying) — le reste du temps,
  * les synchronisations automatiques restent silencieuses comme avant, pour ne pas réintroduire
- * du bruit permanent dans la sidebar.
+ * du bruit permanent dans la sidebar. Six catégories distinctes, jamais confondues : Hors ligne,
+ * Synchronisation temporairement interrompue (transitoire, sera rejouée automatiquement),
+ * Conflit, Permission refusée, Données locales à réparer (au moins une opération bloquée après
+ * un échec définitif confirmé), Erreur persistante (repli générique).
  */
-function syncNoticeLabel(status: string, isRetrying: boolean): string {
+function syncNoticeLabel(
+  status: string,
+  isRetrying: boolean,
+  hasPermissionError: boolean,
+  hasBlockedOperations: boolean,
+  isPersistentError: boolean
+): string {
   if (status === "conflict") return "Conflit de synchronisation";
   if (status === "offline") return "Hors ligne";
   if (isRetrying && (status === "syncing" || status === "merging")) return "Synchronisation…";
-  if (status === "error") return "Erreur de synchronisation";
-  return "";
+  if (status !== "error") return "";
+  if (hasPermissionError) return "Permission refusée";
+  if (hasBlockedOperations) return "Données locales à réparer";
+  if (isPersistentError) return "Erreur persistante";
+  return "Synchronisation temporairement interrompue";
 }
 
 interface SaveStatusIndicatorProps {
@@ -68,7 +80,13 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
   }
 
   const localLabel = localNoticeLabel(status);
-  const syncText = syncNoticeLabel(syncStatus.status, isRetrying);
+  const syncText = syncNoticeLabel(
+    syncStatus.status,
+    isRetrying,
+    syncStatus.hasPermissionError,
+    syncStatus.hasBlockedOperations,
+    syncStatus.isPersistentError
+  );
   const hasNotice = Boolean(localLabel || syncText || conflictNotice);
 
   if (!hasNotice) return null;
@@ -120,10 +138,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
       {syncText && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-white/60">
           <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${syncDotClass}`} />
-          <span className="truncate">
-            {syncText}
-            {syncStatus.status === "error" && syncStatus.isPersistentError && !isRetrying ? " (persistante)" : ""}
-          </span>
+          <span className="truncate">{syncText}</span>
           {syncStatus.status === "error" && (
             <button
               type="button"

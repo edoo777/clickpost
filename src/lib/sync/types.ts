@@ -47,6 +47,16 @@ export interface SyncOperation {
    * Informatif uniquement : l'opération reste en file et reste rejouable manuellement, ce
    * indicateur ne fait que refléter honnêtement la nature du dernier échec observé. */
   permanent?: boolean;
+  /** Vrai dès qu'un échec définitif est confirmé — l'opération n'est alors plus rejouée
+   * automatiquement (déclencheurs réseau/visibilité/onglet) tant qu'un utilisateur ne clique pas
+   * explicitement sur « Réessayer » (qui débloque toutes les opérations bloquées avant de
+   * retenter). Évite la boucle infinie et le bruit de journalisation d'une opération dont la
+   * cause ne peut pas changer entre deux tentatives identiques. Jamais supprimée pour autant :
+   * les données locales restent intactes et rejouables. */
+  blocked?: boolean;
+  /** Raison exploitable de la mise en blocage — copie de `lastError` au moment du blocage,
+   * conservée séparément pour ne pas être écrasée par un état plus tard. */
+  blockReason?: string;
 }
 
 export interface SyncStateEntry {
@@ -71,4 +81,11 @@ export interface SyncStatusState {
    * "error" dans les deux cas pour ne rien casser des vérifications existantes ; ce champ affine
    * uniquement l'affichage. Toujours remis à `false` dès qu'une tentative réussit intégralement. */
   isPersistentError: boolean;
+  /** Au moins une opération en file a échoué avec un refus de permission confirmé (RLS,
+   * code Postgres 42501) — catégorie d'affichage distincte de "erreur persistante" générique. */
+  hasPermissionError: boolean;
+  /** Au moins une opération est bloquée (échec définitif confirmé, retrait de la reprise
+   * automatique) — catégorie d'affichage "Données locales à réparer", distincte d'une simple
+   * erreur persistante encore activement rejouée. */
+  hasBlockedOperations: boolean;
 }

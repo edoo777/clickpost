@@ -564,3 +564,61 @@ navigateur ; voir limites en fin de section).
   test dans ce projet) — le correctif couvre la classe complète du symptôme (objet sans
   information exploitable + sévérité de journalisation inadaptée) plutôt qu'un seul cas
   reproduit, ce qui reste honnêtement documenté ici comme une limite de cette vérification.
+
+## Correctif hors mandat — Correction définitive de la synchronisation persistante
+
+**Statut : terminé** (demande ponctuelle post-mandat, suite du correctif précédent).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Cause réelle, au-delà du seul `console.error`** : `classifySyncError()` classait déjà
+  correctement une erreur sans code comme transitoire (jamais "permanente" sans signal explicite
+  — vérifié, aucun changement nécessaire sur ce point précis). La vraie lacune : **une opération
+  classée `permanent` restait indéfiniment dans la file et était retentée à chaque déclencheur**
+  (reconnexion, changement d'onglet visible, message d'un autre onglet, ouverture d'une page qui
+  déclenche `processSyncQueue()`) — donc rejournalisée à chaque fois avec le même échec,
+  indéfiniment. `/parametres` ne cause pas l'erreur : elle ne fait que déclencher un nouveau passage
+  de la file (comme n'importe quelle page) qui retombe sur une opération déjà cassée depuis une
+  tentative antérieure. Impossible de reproduire visuellement l'enregistrement précis à l'origine
+  du tout premier échec (aucune infrastructure de test/navigateur dans ce projet, file IndexedDB
+  propre au navigateur de l'utilisateur) — mais toute la chaîne (`runtime.ts`, `queue.ts`,
+  `classify-sync-error.ts`) a été tracée : `queue.ts` ne peut produire que de vraies `Error`/
+  `DOMException` ; seule une réponse Supabase/PostgREST avec un code reconnu (RLS, colonne
+  absente, contrainte...) peut aboutir à `permanent: true`.
+- **Correction appliquée (§3 du correctif demandé)** : une opération classée `permanent` est
+  désormais marquée `blocked: true` avec `blockReason` explicite dans la file locale — **retirée
+  de la reprise automatique** (le prochain passage de `processSyncQueue()` l'ignore complètement,
+  sans nouvel appel Supabase ni nouvelle journalisation) au lieu d'être retentée indéfiniment.
+  Jamais supprimée : reste visible, son contenu local reste intact. Un clic explicite sur
+  « Réessayer » débloque toutes les opérations bloquées avant de retenter (signal de contrôle
+  délibéré de l'utilisateur — « la situation a peut-être changé »). Une opération plus récente
+  pour le même enregistrement qui réussit purge automatiquement les opérations bloquées devenues
+  obsolètes pour ce même enregistrement (déjà supplantées par un état confirmé plus récent).
+- **État visuel enrichi (§5)** : `SyncStatusState` gagne `hasPermissionError`/
+  `hasBlockedOperations`, propagés à `SaveStatusIndicator.tsx` et `NoteEditor.tsx` pour distinguer
+  les six catégories demandées : Hors ligne, Synchronisation temporairement interrompue, Conflit,
+  Permission refusée, Données locales à réparer, Erreur persistante — au lieu d'un seul texte
+  générique « Erreur de synchronisation » pour tous les cas. Ces indicateurs sont réinitialisés au
+  changement de workspace, comme le reste du statut.
+- **Fichiers modifiés** : `lib/sync/types.ts` (`SyncOperation.blocked`/`blockReason`,
+  `SyncStatusState.hasPermissionError`/`hasBlockedOperations`), `lib/sync/runtime.ts`
+  (filtrage des opérations bloquées avant traitement, marquage au premier échec permanent
+  confirmé, purge des opérations bloquées obsolètes après un succès plus récent, déblocage
+  explicite dans `retrySync()`, réinitialisation au changement de workspace),
+  `components/layout/SaveStatusIndicator.tsx` et `components/ideas-bank/notes/NoteEditor.tsx`
+  (six catégories distinctes au lieu d'un texte générique).
+- **Limite connue, transparente** : la file de synchronisation locale (IndexedDB) n'est pas
+  cloisonnée par workspace au niveau du stockage — une opération bloquée reste techniquement
+  présente même après un changement de workspace (l'affichage, lui, est bien réinitialisé). Un
+  cloisonnement complet par workspace de la file elle-même serait un changement architectural plus
+  large, hors périmètre de ce correctif ciblé ; noté ici pour une session future plutôt que tenté
+  à la hâte.
+- **Tests exécutés** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes),
+  `git diff --check` ✅. Traçage complet de la chaîne (déclencheurs `online`/`visibilitychange`/
+  diffusion inter-onglets → `processSyncQueue` → boucle de traitement → classification →
+  blocage/purge) et vérification que `classifySyncError` ne classe jamais un objet sans code
+  comme permanent (déjà correct avant ce correctif).
+- **Non exécuté** : reproduction visuelle de l'enregistrement exact à l'origine du tout premier
+  échec (aucune infrastructure de test/navigateur, file propre au poste de l'utilisateur) — le
+  correctif élimine structurellement la classe complète du symptôme (boucle infinie + bruit de
+  journalisation pour une opération définitivement cassée), documenté honnêtement comme limite de
+  cette vérification plutôt que présenté comme une reproduction confirmée.

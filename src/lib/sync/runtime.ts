@@ -14,6 +14,8 @@ let statusState: SyncStatusState = {
   lastSyncedAt: null,
   errorMessage: null,
   isPersistentError: false,
+  hasPermissionError: false,
+  hasBlockedOperations: false,
 };
 
 const listeners = new Set<() => void>();
@@ -33,7 +35,16 @@ export function getSyncStatusSnapshot(): SyncStatusState {
 }
 
 export function getSyncStatusServerSnapshot(): SyncStatusState {
-  return { status: "idle", pendingCount: 0, conflictCount: 0, lastSyncedAt: null, errorMessage: null, isPersistentError: false };
+  return {
+    status: "idle",
+    pendingCount: 0,
+    conflictCount: 0,
+    lastSyncedAt: null,
+    errorMessage: null,
+    isPersistentError: false,
+    hasPermissionError: false,
+    hasBlockedOperations: false,
+  };
 }
 
 // Contexte courant (workspace actif + utilisateur) — jamais de synchronisation sans les deux.
@@ -58,9 +69,18 @@ export function configureSyncContext(workspaceId: string | null, userId: string 
 
   if (workspaceChanged) {
     // Un changement d'espace de travail (y compris un retour à null) ne doit jamais laisser
-    // affiché un statut ou un indicateur "déjà tiré" hérités du contexte précédent.
+    // affiché un statut ou un indicateur "déjà tiré" hérités du contexte précédent — y compris
+    // les catégories affinées (permission, opérations bloquées) ajoutées pour la file locale.
     hasPulledThisSession = false;
-    if (workspaceId) setStatus({ status: "idle", errorMessage: null, isPersistentError: false });
+    if (workspaceId) {
+      setStatus({
+        status: "idle",
+        errorMessage: null,
+        isPersistentError: false,
+        hasPermissionError: false,
+        hasBlockedOperations: false,
+      });
+    }
   }
 
   if (workspaceId && userId) {
@@ -120,10 +140,26 @@ export function enqueueSyncOperation(
 
 let isProcessing = false;
 
+/** Purge toute opération bloquée devenue obsolète pour le même enregistrement — une fois qu'une
+ * opération plus récente pour ce couple entité/identifiant a réellement abouti, l'état distant
+ * reflète déjà ce couple : une ancienne opération bloquée en attente pour la même cible n'a plus
+ * aucun effet utile à rejouer (voir la règle "ne supprimer que si déjà appliqué à distance ou
+ * sans modification utile"). Ne touche jamais aux opérations d'autres enregistrements. */
+async function removeBlockedSiblings(entityType: SyncEntityType, recordId: string, keepQueueId: number | undefined) {
+  const operations = await queueDb.getAllOperations();
+  for (const sibling of operations) {
+    if (sibling.queueId === keepQueueId) continue;
+    if (!sibling.blocked) continue;
+    if (sibling.entityType !== entityType || sibling.recordId !== recordId) continue;
+    if (sibling.queueId !== undefined) await queueDb.removeOperation(sibling.queueId);
+  }
+}
+
 /** Vide la file locale vers Supabase. Aucune donnée locale n'est jamais supprimée ici :
  * un échec transitoire laisse l'opération en file pour une nouvelle tentative ultérieure ; un
- * échec définitif (voir classify-sync-error.ts) y reste aussi — jamais supprimée silencieusement
- * — mais est marquée `permanent` pour un affichage honnête plutôt qu'un "Réessayer" trompeur. */
+ * échec définitif (voir classify-sync-error.ts) est marqué `blocked` — retiré de la reprise
+ * automatique pour éviter la boucle infinie et le bruit de journalisation, mais jamais
+ * supprimé ni perdu, et toujours rejouable explicitement via « Réessayer » (voir retrySync). */
 export async function processSyncQueue() {
   if (isProcessing) return;
   if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -144,19 +180,26 @@ export async function processSyncQueue() {
         conflictCount,
         errorMessage: null,
         isPersistentError: false,
+        hasPermissionError: false,
+        hasBlockedOperations: false,
       });
       return;
     }
+
+    const actionable = operations.filter((op) => !op.blocked);
+    const alreadyBlocked = operations.filter((op) => op.blocked);
 
     setStatus({ status: "syncing", pendingCount: operations.length });
     const supabase = createSupabaseBrowserClient();
     let hadTransientError = false;
     let hadPermanentError = false;
+    let hadPermissionError = false;
     let lastErrorMessage: string | null = null;
 
-    for (const op of operations) {
+    for (const op of actionable) {
       try {
         await processOperation(supabase, op);
+        await removeBlockedSiblings(op.entityType, op.recordId, op.queueId);
       } catch (error) {
         const classified = classifySyncError(error, {
           operation: op.operation,
@@ -164,6 +207,7 @@ export async function processSyncQueue() {
           recordId: op.recordId,
         });
         lastErrorMessage = classified.message;
+        if (classified.isPermissionError) hadPermissionError = true;
         if (classified.permanent) hadPermanentError = true;
         else hadTransientError = true;
         if (op.queueId !== undefined) {
@@ -171,20 +215,29 @@ export async function processSyncQueue() {
             attempts: op.attempts + 1,
             lastError: classified.message,
             permanent: classified.permanent,
+            // Un échec définitif ne peut pas réussir en rejouant le même payload : on arrête la
+            // reprise automatique de CETTE opération précise plutôt que de la retenter — et donc
+            // de la rejournaliser — à chaque déclencheur (réseau, visibilité, onglet) pour
+            // toujours le même résultat.
+            blocked: classified.permanent,
+            blockReason: classified.permanent ? classified.message : undefined,
           });
         }
       }
     }
 
+    const hasBlockedOperations = alreadyBlocked.length > 0 || hadPermanentError;
     const hasError = hadTransientError || hadPermanentError;
     const remaining = await queueDb.countPendingOperations();
     const conflictCount = await queueDb.countConflicts();
     setStatus({
-      status: conflictCount > 0 ? "conflict" : remaining > 0 ? (hasError ? "error" : "syncing") : "synced",
+      status: conflictCount > 0 ? "conflict" : remaining > 0 ? (hasError || hasBlockedOperations ? "error" : "syncing") : "synced",
       pendingCount: remaining,
       conflictCount,
-      errorMessage: hasError ? lastErrorMessage : null,
-      isPersistentError: hasError && hadPermanentError,
+      errorMessage: hasError ? lastErrorMessage : hasBlockedOperations ? (alreadyBlocked[0]?.blockReason ?? null) : null,
+      isPersistentError: (hasError && hadPermanentError) || hasBlockedOperations,
+      hasPermissionError: hadPermissionError,
+      hasBlockedOperations,
       lastSyncedAt: remaining === 0 ? new Date().toISOString() : statusState.lastSyncedAt,
     });
   } finally {
@@ -223,9 +276,24 @@ export async function retrySync(): Promise<void> {
     return;
   }
 
+  // Un clic explicite sur « Réessayer » est un signal de contrôle délibéré (l'utilisateur pense
+  // que la situation a changé — permission accordée, schéma corrigé) : débloque toutes les
+  // opérations mises de côté pour leur donner une vraie nouvelle chance, plutôt que de les
+  // laisser bloquées indéfiniment en n'attendant qu'un déclencheur automatique qui ne les
+  // reprendra jamais.
+  await unblockAllOperations();
   hasPulledThisSession = false; // force un vrai pull, pas seulement un push, pour ce clic explicite.
   await pullAndMerge();
   await processSyncQueue();
+}
+
+async function unblockAllOperations() {
+  const operations = await queueDb.getAllOperations();
+  for (const op of operations) {
+    if (!op.blocked) continue;
+    if (op.queueId === undefined) continue;
+    await queueDb.updateOperation(op.queueId, { blocked: false, blockReason: undefined });
+  }
 }
 
 async function processOperation(
