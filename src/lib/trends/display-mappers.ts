@@ -1,6 +1,6 @@
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
 import type { TrendFilters } from "@/components/trends/TrendsFilterBar";
-import type { PlatformNewsItem, TrendItem } from "@/types/trend";
+import type { MusicTrendItem, PlatformNewsItem, TrendItem } from "@/types/trend";
 
 function externalIdFromCompositeId(id: string): string {
   const separatorIndex = id.indexOf(":");
@@ -29,6 +29,63 @@ export function trendItemToDisplayable(item: TrendItem): DisplayableTrend {
     collectedAt: item.collectedAt,
     publishedAt: item.publishedAt,
   };
+}
+
+/** TrendItem issu de AnthropicWebTrendProvider (category "web_signal") — distinct de
+ * trendItemToDisplayable (réservée à YouTube) car la source/le badge/la justification diffèrent
+ * entièrement. Jamais utilisée pour un item YouTube, jamais l'inverse. */
+export function webTrendItemToDisplayable(item: TrendItem): DisplayableTrend {
+  return {
+    id: item.id,
+    provider: item.providerId,
+    externalId: externalIdFromCompositeId(item.id),
+    platform: item.platform,
+    title: item.title,
+    description: item.description,
+    url: item.url,
+    metaLines: [],
+    sourceName: item.webSearch ? sourceNameFromUrl(item.url) : "Veille Web",
+    sourceUrl: item.url,
+    collectedAt: item.collectedAt,
+    publishedAt: item.publishedAt,
+    sourceCategory: item.webSearch?.sourceCategory,
+    confidenceLevel: item.webSearch?.confidenceLevel,
+    claimType: item.webSearch?.claimType,
+    searchedAt: item.webSearch?.searchedAt,
+    corroboratingSources: item.webSearch?.corroboratingSources,
+    relevanceJustification: item.webSearch?.relevanceJustification,
+  };
+}
+
+export function musicItemToDisplayable(item: MusicTrendItem): DisplayableTrend {
+  const metaLines: string[] = [];
+  if (item.artist) metaLines.push(item.artist);
+  if (item.region) metaLines.push(item.region);
+
+  return {
+    id: item.id,
+    provider: item.providerId,
+    externalId: externalIdFromCompositeId(item.id),
+    platform: item.platform,
+    title: item.title,
+    description: item.note ?? item.commercialUseNote,
+    url: item.url,
+    metaLines,
+    sourceName: item.sourceName,
+    sourceUrl: item.url,
+    collectedAt: item.collectedAt,
+    publishedAt: item.observedAt,
+    sourceCategory: item.sourceCategory,
+    confidenceLevel: item.confidenceLevel,
+  };
+}
+
+function sourceNameFromUrl(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "Veille Web";
+  }
 }
 
 const NO_CLEAN_DESCRIPTION_FALLBACK = "Consultez la source officielle pour lire l'annonce complète.";

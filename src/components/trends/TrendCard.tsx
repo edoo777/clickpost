@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
+import { SourceBadge } from "@/components/trends/SourceBadge";
 import { TrendActionsMenu, type TrendActionContext } from "@/components/trends/TrendActionsMenu";
 import { TrendAnalysisTrigger } from "@/components/trends/TrendAnalysisTrigger";
 import { formatFreshness } from "@/lib/trends/freshness";
@@ -18,6 +22,9 @@ export function TrendCard({
   themeLabels: string[];
   cacheAgeMs?: number;
 }) {
+  const [showWhy, setShowWhy] = useState(false);
+  const corroboratingCount = trend.corroboratingSources?.length ?? 0;
+
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
       <div className="flex gap-3">
@@ -26,7 +33,10 @@ export function TrendCard({
           <img src={trend.thumbnailUrl} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h3 className="truncate text-sm font-semibold text-foreground">{trend.title}</h3>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="truncate text-sm font-semibold text-foreground">{trend.title}</h3>
+            <SourceBadge trend={trend} />
+          </div>
           {trend.description && <p className="line-clamp-2 text-xs text-muted-foreground">{trend.description}</p>}
           {trend.metaLines.length > 0 && (
             <p className="text-[11px] text-muted-foreground">{trend.metaLines.join(" · ")}</p>
@@ -38,7 +48,38 @@ export function TrendCard({
         <span className="rounded-full border border-border px-2 py-0.5 font-medium">{trend.sourceName}</span>
         <span>Collecté {formatFreshness(trend.collectedAt, cacheAgeMs)}</span>
         {trend.publishedAt && <span>· Publié le {new Date(trend.publishedAt).toLocaleDateString("fr-CA")}</span>}
+        {trend.searchedAt && <span>· Recherché {formatFreshness(trend.searchedAt)}</span>}
+        {corroboratingCount > 0 && <span>· +{corroboratingCount} source{corroboratingCount > 1 ? "s" : ""} corroborante{corroboratingCount > 1 ? "s" : ""}</span>}
       </div>
+
+      {trend.relevanceJustification && (
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => setShowWhy((prev) => !prev)}
+            className="w-fit text-[11px] font-medium text-violet-700 hover:underline dark:text-violet-300"
+          >
+            {showWhy ? "Masquer la justification" : "Pourquoi cette information est pertinente"}
+          </button>
+          {showWhy && (
+            <p className="rounded-lg bg-violet-50/60 px-3 py-2 text-xs text-foreground dark:bg-violet-500/[.06]">
+              {trend.relevanceJustification}
+            </p>
+          )}
+        </div>
+      )}
+
+      {corroboratingCount > 0 && (
+        <ul className="flex flex-col gap-0.5 text-[11px] text-muted-foreground">
+          {trend.corroboratingSources!.map((source) => (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                {source.title || source.url}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="flex items-start justify-between gap-2">
         <TrendAnalysisTrigger trend={trend} brandName={brandName} niche={niche} themeLabels={themeLabels} />

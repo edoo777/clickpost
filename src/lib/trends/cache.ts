@@ -36,3 +36,8 @@ export function invalidateCached(key: string): void {
 
 export const CACHE_TTL_YOUTUBE_MS = 45 * 60_000; // 30–60 min
 export const CACHE_TTL_NEWS_MS = 3 * 60 * 60_000; // 1–6 h
+
+// Veille Web (Claude + web_search) — durées MVP fournies par le produit.
+export const CACHE_TTL_WEB_TREND_MS = 3 * 60 * 60_000; // tendances générales et par niche/thématique
+export const CACHE_TTL_WEB_MUSIC_MS = 6 * 60 * 60_000; // musiques et sons
+export const CACHE_TTL_WEB_NO_SIGNAL_MS = 60 * 60_000; // aucun signal fiable trouvé — nouvelle tentative plus tôt

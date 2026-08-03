@@ -9,6 +9,7 @@ import { useIdeaNotesSession } from "@/lib/idea-notes-store";
 import { plainTextToDocument } from "@/lib/rich-document";
 import { useSavedTrendsSession } from "@/lib/saved-trends-store";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
+import { reportIncorrectInformation } from "@/lib/trends/client";
 import type { Idea } from "@/types/idea";
 
 export interface TrendActionContext {
@@ -111,6 +112,14 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
     router.push("/calendrier");
   }
 
+  async function handleReport() {
+    const reason = window.prompt(`Signaler « ${trend.title} » comme incorrecte — pourquoi (facultatif) ?`);
+    if (reason === null) return close(); // annulé
+    const outcome = await reportIncorrectInformation({ itemId: trend.id, sourceUrl: trend.url, reason: reason || undefined });
+    notify(outcome.status === "ok" ? "Signalement enregistré, merci." : "Le signalement n'a pas pu être envoyé.");
+    close();
+  }
+
   return (
     <div className="relative">
       <button
@@ -132,6 +141,7 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
             <MenuButton onClick={() => handleSave("saved", `Enregistrer « ${trend.title} » ?`)}>Enregistrer</MenuButton>
             <MenuButton onClick={() => handleSave("hidden", `Masquer « ${trend.title} » de vos listes ?`)}>Masquer</MenuButton>
             <MenuButton onClick={() => handleSave("not_relevant", `Marquer « ${trend.title} » comme non pertinente ?`)}>Non pertinente</MenuButton>
+            <MenuButton onClick={handleReport}>Signaler une information incorrecte</MenuButton>
             <a
               href={trend.url}
               target="_blank"

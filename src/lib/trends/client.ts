@@ -1,5 +1,5 @@
 import type { SocialPlatform } from "@/types/dashboard";
-import type { PlatformNewsItem, ProviderResult, TrendItem } from "@/types/trend";
+import type { MusicTrendItem, PlatformNewsItem, ProviderResult, TrendItem, WebSearchQuotaStatus, WebSearchUsageSnapshot } from "@/types/trend";
 
 /**
  * Appels client vers /api/ia/tendances/* — jamais d'appel direct à un fournisseur externe ni à
@@ -83,5 +83,84 @@ export async function runTrendAnalysis(input: TrendAnalysisInput): Promise<Trend
     return data;
   } catch {
     return { status: "error", code: "network_error", message: "Connexion impossible — vérifiez votre réseau." };
+  }
+}
+
+export interface WebTrendSearchInput {
+  mode: "global" | "targeted";
+  focus: "platform_trends" | "music";
+  platform?: SocialPlatform;
+  platforms?: SocialPlatform[];
+  niche?: string;
+  themeLabels?: string[];
+  country?: string;
+  language?: string;
+  period: "24h" | "7d" | "30d" | "all";
+  refresh?: boolean;
+}
+
+export interface WebSearchStatusResponse {
+  status: "ok" | "error";
+  quota?: WebSearchQuotaStatus;
+  usage?: WebSearchUsageSnapshot;
+  cachedAvailable?: boolean;
+  cachedAgeMs?: number | null;
+  message?: string;
+}
+
+type WebTrendSearchResult<T> = (CachedResult<T> & { quota?: WebSearchQuotaStatus }) | { status: "quota_exceeded"; message: string; resetAt: string; quota?: WebSearchQuotaStatus };
+
+/** « Rechercher les tendances » / « Rechercher de nouveau » — jamais appelée automatiquement,
+ * uniquement au clic explicite (voir WebSearchTrigger.tsx). */
+export async function runWebTrendSearch(input: WebTrendSearchInput): Promise<WebTrendSearchResult<TrendItem | MusicTrendItem>> {
+  try {
+    const response = await fetch("/api/ia/tendances/web-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = await response.json().catch(() => null);
+    if (!data) {
+      return { status: "error", items: [], collectedAt: new Date().toISOString(), sourceName: "Veille Web", message: "Réponse invalide.", cacheAgeMs: 0 };
+    }
+    return data as WebTrendSearchResult<TrendItem | MusicTrendItem>;
+  } catch {
+    return { status: "error", items: [], collectedAt: new Date().toISOString(), sourceName: "Veille Web", message: "Connexion impossible.", cacheAgeMs: 0 };
+  }
+}
+
+/** Statut de quota/cache sans jamais déclencher de recherche — pour l'affichage avant clic. */
+export async function fetchWebSearchStatus(input: Omit<WebTrendSearchInput, "refresh">): Promise<WebSearchStatusResponse> {
+  const params = new URLSearchParams();
+  params.set("mode", input.mode);
+  params.set("focus", input.focus);
+  if (input.platform) params.set("platform", input.platform);
+  if (input.platforms) params.set("platforms", input.platforms.join(","));
+  if (input.niche) params.set("niche", input.niche);
+  if (input.themeLabels && input.themeLabels.length > 0) params.set("themeLabels", input.themeLabels.join("|"));
+  if (input.country) params.set("country", input.country);
+  if (input.language) params.set("language", input.language);
+  params.set("period", input.period);
+  try {
+    const response = await fetch(`/api/ia/tendances/web-search?${params.toString()}`);
+    const data = (await response.json().catch(() => null)) as WebSearchStatusResponse | null;
+    return data ?? { status: "error", message: "Réponse invalide." };
+  } catch {
+    return { status: "error", message: "Connexion impossible." };
+  }
+}
+
+/** « Signaler une information incorrecte » — journalisée côté serveur (voir limites connues). */
+export async function reportIncorrectInformation(input: { itemId: string; sourceUrl: string; reason?: string }): Promise<{ status: "ok" | "error"; message?: string }> {
+  try {
+    const response = await fetch("/api/ia/tendances/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const data = (await response.json().catch(() => null)) as { status: "ok" | "error"; message?: string } | null;
+    return data ?? { status: "error", message: "Réponse invalide." };
+  } catch {
+    return { status: "error", message: "Connexion impossible." };
   }
 }

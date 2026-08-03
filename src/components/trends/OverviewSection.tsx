@@ -1,12 +1,19 @@
+"use client";
+
+import { useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
 import type { TrendActionContext } from "@/components/trends/TrendActionsMenu";
 import { TrendCard } from "@/components/trends/TrendCard";
 import type { NewsSectionState } from "@/components/trends/PlatformNewsSection";
+import { WebSearchQuotaPanel } from "@/components/trends/WebSearchQuotaPanel";
+import { WebSearchTrigger } from "@/components/trends/WebSearchTrigger";
 import type { YoutubeSectionState } from "@/components/trends/YoutubeTrendsSection";
 import { dedupeDisplayable, newsItemToDisplayable, trendItemToDisplayable } from "@/lib/trends/display-mappers";
+import type { SocialPlatform } from "@/types/dashboard";
 
 const OVERVIEW_YOUTUBE_LIMIT = 4;
 const OVERVIEW_NEWS_LIMIT = 4;
+const ALL_WEB_SEARCH_PLATFORMS: SocialPlatform[] = ["youtube", "instagram", "facebook", "tiktok", "linkedin", "x", "pinterest", "threads"];
 
 export function OverviewSection({
   youtube,
@@ -25,6 +32,8 @@ export function OverviewSection({
   themeLabels: string[];
   onOpenAdvice: () => void;
 }) {
+  const [globalWebResults, setGlobalWebResults] = useState<DisplayableTrend[] | null>(null);
+  const [searchCount, setSearchCount] = useState(0);
   const youtubeItems: DisplayableTrend[] =
     youtube.result?.status === "ok" ? youtube.result.items.map(trendItemToDisplayable).slice(0, OVERVIEW_YOUTUBE_LIMIT) : [];
 
@@ -114,6 +123,35 @@ export function OverviewSection({
             ))}
           </div>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Veille Web — recherche globale</h2>
+          <p className="text-xs text-muted-foreground">
+            Complète les sources officielles quand elles ne suffisent pas — une seule recherche couvrant plusieurs
+            plateformes à la fois, jamais automatique.
+          </p>
+        </div>
+        <WebSearchTrigger
+          params={{ mode: "global", focus: "platform_trends", platforms: ALL_WEB_SEARCH_PLATFORMS, niche, themeLabels, period: "7d" }}
+          label="Rechercher les tendances (toutes plateformes)"
+          onResults={(items) => {
+            setGlobalWebResults(items);
+            setSearchCount((prev) => prev + 1);
+          }}
+        />
+        {globalWebResults && globalWebResults.length === 0 && (
+          <p className="text-xs text-muted-foreground">Aucun signal récent suffisamment fiable n&apos;a été détecté.</p>
+        )}
+        {globalWebResults && globalWebResults.length > 0 && (
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {globalWebResults.map((trend) => (
+              <TrendCard key={trend.id} trend={trend} context={context} brandName={brandName} niche={niche} themeLabels={themeLabels} />
+            ))}
+          </div>
+        )}
+        <WebSearchQuotaPanel refreshKey={searchCount} />
       </section>
 
       <section className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4">

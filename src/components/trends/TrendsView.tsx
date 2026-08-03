@@ -160,6 +160,7 @@ export function TrendsView() {
           state={news}
           filters={filters}
           onRefresh={() => void loadNews(true)}
+          onAdjustFilters={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
           context={context}
           brandName={activeBrand?.name}
           niche={filters.niche}
@@ -169,7 +170,17 @@ export function TrendsView() {
       {tab === "advice" && (
         <AdviceSection items={combinedItems} brandName={activeBrand?.name} niche={filters.niche} themeLabels={themeLabels} />
       )}
-      {tab === "music" && <MusicTrendsSection />}
+      {tab === "music" && (
+        <MusicTrendsSection
+          context={context}
+          brandName={activeBrand?.name}
+          niche={filters.niche}
+          themeLabels={themeLabels}
+          country={filters.country}
+          language={filters.language || undefined}
+          onAdjustFilters={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+        />
+      )}
     </div>
   );
 }
