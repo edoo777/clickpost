@@ -403,3 +403,66 @@ reste explicitement hors périmètre, faute de Phase E).
 - **Prochaine étape** : Phase I — Qualité globale (suppression du code mort confirmé, audit
   responsive/thèmes/permissions/RLS/synchronisation/erreurs, tests des parcours multi-workspace),
   puis documentation finale et `docs/overnight-final-report.md`.
+
+## Phase I — Stabilisation du parcours éditorial ClickPost
+
+**Statut : terminée** (audit ciblé et basé sur des preuves — analyse statique, requêtes en
+lecture seule sur la base liée — plutôt qu'une revue manuelle exhaustive impossible sans
+navigateur ; voir limites en fin de section).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Code mort supprimé** (vérifié fichier par fichier — recherché dans tout `src/`, jamais
+  supprimé sur une simple intuition) :
+  - `components/ideas-bank/{IdeasBankKanban,IdeasBankTable,IdeaBankCard,IdeasBankFilters,
+    IdeaQuickEditPanel,BulkScheduleModal,BulkQuickActionModal,KanbanCard,KanbanColumnsManager,
+    QuickActionsMenu}.tsx` — dix fichiers, restes de l'ancienne Banque d'idées (Cartes/Tableau/
+    Kanban) retirée par le commit `e8a68a8` **avant** le début de la session autonome ; confirmé
+    mort par recherche croisée (aucun import réel en dehors du cluster lui-même — `NoteEditor.tsx`
+    utilise un fichier distinct, `notes/NoteQuickActionsMenu.tsx`, jamais celui supprimé).
+  - `lib/workflow-stages.ts` — ses trois exports (`STAGE_COLOR_OPTIONS`, `buildDefaultWorkflowStages`,
+    `nextWorkflowStageOrder`) n'étaient utilisés que par `IdeasBankKanban.tsx`, devenus
+    entièrement morts une fois ce fichier supprimé.
+  - `components/performances/RecommendationsPanel.tsx` — oubli de nettoyage de la Phase G,
+    remplacé par `OptimizationPanel.tsx` mais jamais supprimé.
+  - Détection par recherche scriptée (basename de chaque fichier de `src/components`/`src/lib`
+    recherché dans tout `src`/`app`) plutôt qu'une simple lecture visuelle — a permis de retrouver
+    `RecommendationsPanel.tsx` que la vérification manuelle avait manqué.
+  - `npx tsc --noEmit` et `npm run build` (40 routes) confirmés propres après suppression —
+    aucune référence résiduelle.
+- **Synchronisation / RLS** : vérification systématique que chaque champ ajouté cette session à un
+  type synchronisé (`Publication.publishAttempts`, `.contentType`, `.promotionTasks`) a bien une
+  colonne Postgres réelle — confirmé par une requête en lecture seule sur la base liée
+  (`information_schema.columns`). Les 4 politiques RLS de `publications`
+  (`select/insert/update/delete_by_membership`) confirmées intactes par requête sur `pg_policy` —
+  la RLS étant au niveau de la ligne (`workspace_id`), l'ajout de colonnes ne nécessite aucune
+  politique supplémentaire ; l'isolation multi-workspace reste donc garantie pour les nouvelles
+  données (tentatives de publication, checklist de promotion). `ImportedMetricRecord` confirmé
+  volontairement absent de `SyncEntityType`/`SYNC_TABLE_BY_ENTITY` (persistance locale
+  uniquement, décision déjà documentée en Phase F) — pas un oubli.
+- **Absence de fausses statistiques ("[object Object]", objets rendus bruts)** : recherche ciblée
+  des motifs à risque (`{error}`, `{xxxError}` sans `.message`) dans les composants — tous les
+  états d'erreur trouvés sont typés `string | null` (confirmé pour `use-holidays.ts` et les
+  variables `*Error` des formulaires), aucun risque identifié.
+- **Réactif (mobile) et clair/sombre** : les composants ajoutés cette session (Promotion,
+  Optimisation, import CSV, publication manuelle) vérifiés par recherche automatisée : aucune
+  classe de couleur claire sans variante `dark:` correspondante, aucune largeur fixe en pixels
+  sans repli responsive, usage cohérent de `flex-wrap`/`grid-cols-1 sm:...`.
+- **Permissions** : le contrôle d'accès aux actions d'approbation (Phase C) et la génération de la
+  checklist de promotion (Phase E, générée uniquement via le flux de publication manuelle déjà
+  protégé) n'introduisent aucun nouveau chemin non protégé.
+- **Limites de cet audit** (honnêtement documentées, pas de fausse déclaration d'exhaustivité) :
+  - Aucun test dans un vrai navigateur n'a pu être exécuté (pas d'infrastructure Playwright/
+    Vitest dans ce projet — décision déjà documentée plus tôt dans la session, reportée à une
+    session future). L'audit responsive/clair-sombre/erreurs React repose donc sur une analyse
+    statique du code (recherche de motifs, lecture ciblée), pas sur une vérification visuelle.
+  - Le test explicite "Owner/Admin/Member/approbateur/non authentifié/deux workspaces distincts"
+    demandé par le mandat n'a pas pu être exécuté en conditions réelles (nécessiterait plusieurs
+    comptes Supabase réels et une session de test manuelle) — la logique de permission a été
+    revérifiée par lecture de code (`useWorkspaceSession().isAdmin`, comparaison de nom
+    d'approbateur) plutôt que testée en conditions réelles.
+  - La recherche de code mort couvre `src/components` et `src/lib` (basename recherché dans tout
+    le dépôt) mais pas une analyse d'accessibilité (aria/contraste) approfondie ni un audit de
+    performance (taille de bundle, requêtes N+1) — hors périmètre du temps disponible.
+- **Prochaine étape** : documentation finale (`docs/deployment-checklist.md`,
+  `docs/content-creator-journey.md`, `docs/overnight-final-report.md`), commits séparés
+  correspondants.
