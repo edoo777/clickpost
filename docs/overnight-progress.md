@@ -622,3 +622,64 @@ navigateur ; voir limites en fin de section).
   correctif élimine structurellement la classe complète du symptôme (boucle infinie + bruit de
   journalisation pour une opération définitivement cassée), documenté honnêtement comme limite de
   cette vérification plutôt que présenté comme une reproduction confirmée.
+
+## Correctif hors mandat — Alignement du schéma Supabase avec les données éditoriales
+
+**Statut : terminé** (cause racine réelle trouvée et corrigée — le terminal a permis d'obtenir le
+signal exact que les tentatives précédentes, limitées au code de journalisation, ne pouvaient pas
+révéler).
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Cause exacte, par colonne** — catégorie A dans les deux cas (colonne prévue et utilisée par le
+  code TypeScript, migration jamais écrite) confirmée par lecture de toutes les migrations
+  existantes puis vérification directe sur la base distante (`information_schema.columns`) :
+  - `brands.content_examples` — `Brand.contentExamples: ContentExample[]` existe dans
+    `types/brand.ts` et est utilisé dans `BrandProfileForm.tsx`/`brand-completeness.ts`/
+    `brands-store.tsx` depuis l'origine du modèle `Brand`, mais la migration fondatrice
+    (`20260729214139_f1_5_brands.sql`) ne l'a jamais incluse, et aucune migration ultérieure ne l'a
+    ajoutée non plus.
+  - `topic_batches.standalone_niche` et `topic_batches.adhoc_theme_label` — `TopicBatch.
+    standaloneNiche`/`adhocThemeLabel` existent dans `types/topic-batch.ts`, utilisés par
+    `TopicGeneratorView.tsx`/`TopicGeneratorForm.tsx`, mais la migration fondatrice
+    (`20260729182437_f1_4_lot2_content_production.sql`) ne les a jamais incluses ; une migration
+    ultérieure (`20260801020000_generateur_idees_types_de_contenu.sql`) a bien ajouté
+    `content_type_distribution`/`group_id`/`tone`/`source` à cette même table mais a omis ces deux
+    colonnes. `adhoc_theme_label` n'était pas signalé par l'erreur observée (aucune tentative de
+    synchronisation ne l'avait encore déclenché) mais souffre exactement de la même omission —
+    corrigé par prévention dans la même migration plutôt que laissé comme un futur incident
+    identique.
+  - **Écarté explicitement** : ni un problème de mapping (camelCase → snake_case déjà correct et
+    vérifié pour les trois champs), ni un cache PostgREST simplement obsolète (aucune des trois
+    colonnes n'existe dans aucune migration ni sur la base distante — un rechargement de cache
+    n'aurait rien changé sans la migration).
+- **Migration** : `20260803184342_brand_topic_batch_schema_alignment.sql` — additive et idempotente
+  (`ADD COLUMN IF NOT EXISTS`), types alignés sur la forme réelle des champs (`content_examples
+  jsonb not null default '[]'::jsonb`, même convention que `media`/`comments`/`history`/
+  `promotion_tasks` déjà en jsonb ailleurs dans le schéma ; `standalone_niche text` et
+  `adhoc_theme_label text`, nullable comme leurs équivalents TypeScript optionnels).
+- **Commandes Supabase exécutées** : `npx supabase db push --dry-run` (une seule migration en
+  attente, confirmée additive) → `npx supabase db push` (appliquée réellement) → `npx supabase db
+  push --dry-run` de nouveau (`upToDate: true` confirmé) → `NOTIFY pgrst, 'reload schema';` (méthode
+  officielle de rechargement du cache de schéma PostgREST, exécutée via `db query --linked`) →
+  vérification directe des trois colonnes (`information_schema.columns` : types et valeurs par
+  défaut confirmés exacts) → vérification que les 8 politiques RLS des deux tables restent
+  intactes (`pg_policy`, additif au niveau ligne, aucune politique supplémentaire nécessaire pour
+  une nouvelle colonne).
+- **Régénération de types Supabase** : sans objet — ce projet n'utilise pas de types générés
+  (`supabase gen types`) ; les types `Brand`/`TopicBatch` sont écrits et maintenus manuellement
+  dans `src/types/`, déjà corrects et inchangés par ce correctif (`npx tsc --noEmit` confirmé
+  propre sans aucune modification de fichier `.ts`/`.tsx`).
+- **Traitement des opérations locales bloquées** : aucun changement de code nécessaire — le
+  mécanisme de blocage/déblocage ajouté au correctif précédent (`eb87080`) suffit déjà : les
+  opérations `brands`/`topic_batches` bloquées par ces erreurs PGRST204 seront automatiquement
+  débloquées et rejouées au prochain clic sur « Réessayer » (ou à la prochaine ouverture de
+  session), avec leur payload d'origine intact (jamais un problème de forme du payload — les noms
+  de champs étaient déjà corrects) ; elles devraient désormais réussir puisque les colonnes
+  existent. Aucune migration de payload local n'était nécessaire (scénario B du correctif demandé,
+  non applicable ici).
+- **Tests exécutés** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes),
+  `git diff --check` ✅, `npx supabase db push --dry-run` (avant et après) ✅, vérification finale
+  du schéma distant (colonnes + politiques RLS) ✅.
+- **Non exécuté** : rejeu en direct des opérations bloquées d'un utilisateur réel (nécessiterait
+  son navigateur/IndexedDB, hors de portée depuis cet environnement) — le mécanisme existant
+  (`retrySync()`) est conçu précisément pour ce cas et n'a pas eu besoin d'être modifié.
