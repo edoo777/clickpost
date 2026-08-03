@@ -261,10 +261,91 @@ reste explicitement hors périmètre, faute de Phase E).
     Qualité, qui prévoit explicitement la détection de code inutilisé).
   - Le bouton « Recycler » n'apparaît que pour le statut « Publié » ; une extension au statut
     « Archivée » est possible mais non ajoutée faute de besoin confirmé.
-- **Prochaine étape** : Phase F (Analyse et mesure) et Phase G (Amélioration et optimisation) sont
-  en réalité déjà largement construites (`/performances` : KPI, évolution, comparaison de période,
-  meilleurs horaires, top publications, recommandations, export CSV via `ReportPreview` — à
-  vérifier en détail) — la prochaine étape est d'auditer précisément ce qui existe déjà avant de
-  décider ce qu'il reste réellement à construire pour ces deux phases, plutôt que de repartir de
-  zéro. Puis Phase E (Promotion), Phase I (Qualité, incluant la suppression du code mort relevé
-  ci-dessus) et documentation finale.
+## Phase F — Analyse des performances éditoriales
+
+**Statut : terminée** (périmètre complet choisi par l'utilisateur après audit détaillé).
+
+- **Commit** : `5936ee7` — « Analyse des performances éditoriales ».
+- **Régression corrigée en cours de route** : `Publication.publishAttempts` (ajouté en Phase D)
+  n'avait aucune colonne Postgres correspondante — `mapRecordToRow` (src/lib/sync/mappers.ts)
+  convertit mécaniquement chaque champ d'un enregistrement en colonne du même nom ; toute
+  synchronisation d'une publication marquée publiée/échouée manuellement aurait donc échoué avec
+  une erreur "column does not exist". Migration
+  `20260803144505_publications_attempts_content_type.sql` — additive (`ADD COLUMN IF NOT EXISTS`
+  pour `publish_attempts jsonb` et `content_type text`), dry-run vérifié puis appliquée réellement
+  (`upToDate: true` confirmé après coup). Lecon retenue et documentée dans
+  `imported-metrics-store.tsx` : tout nouveau champ synchronisé doit avoir une colonne réelle.
+- **Nouveaux fichiers** : `types/analytics.ts` (métriques étendues + `MetricsSource`
+  "imported"/"demo" — jamais "real" tant qu'aucun fournisseur n'existe), `types/stats-provider.ts`
+  + `lib/analytics/stats-providers.ts` (abstraction `StatsProvider` par plateforme, même patron que
+  `PublishProvider` de la Phase D, toutes non configurées), `lib/demo-data-preference.ts`
+  (préférence d'appareil, jamais activée par défaut — ferme la collision de nom de marque
+  identifiée à l'audit), `lib/analytics-csv.ts` (modèle CSV pré-rempli par identifiant réel de
+  publication, analyse stricte — toute ligne sans identifiant connu est rejetée avec message
+  explicite, jamais de correspondance approximative par titre), `lib/imported-metrics-store.tsx`
+  (nouveau magasin, persistance IndexedDB locale uniquement — décision de périmètre documentée :
+  la synchronisation Supabase multi-appareils de ces données est un travail distinct, non inclus),
+  `components/performances/{CsvImportPanel,DemoDataToggle,MetricsSourceBadge}.tsx`.
+- **Fichiers réécrits/enrichis** : `lib/analytics-data.ts` (génère désormais aussi
+  vues/réactions/commentaires/partages/sauvegardes/conversions, toujours `source: "demo"`),
+  `lib/analytics-report.ts` (réécriture substantielle : fusion importé/démo avec traçabilité de
+  source jamais silencieuse — `DataSourceSummary`/`MetricsSourceBadge` ; `getPublishedCount`
+  corrigé pour compter les publications réellement "Publié" indépendamment de toute donnée de
+  performance, alors qu'il dépendait à tort de `getMatchingPerformedPublications` ; nouvelles
+  répartitions par type de contenu/objectif/responsable/appel à l'action ; `getWorstPublications`
+  ajouté), `types/publication.ts` (`contentType?`), `KpiGrid.tsx` (11 indicateurs au lieu de 7,
+  badge de source), `TopPublicationsList.tsx`/`ThemePerformanceChart.tsx` (prop `title`
+  personnalisable, réutilisés pour les nouvelles répartitions plutôt que dupliqués),
+  `EvolutionChart.tsx` (11 métriques sélectionnables), `ReportPreview.tsx` (export CSV réel,
+  export PDF resté désactivé "bientôt disponible"), `PerformancesView.tsx` (bandeau d'honnêteté
+  dynamique, import CSV, bascule démonstration).
+- **Répercussions sur le tableau de bord principal** : `dashboard-performance.ts` et les widgets
+  `PerformanceOverview.tsx`/`TopPublicationsWidget.tsx`/`PerformanceChartCard.tsx`
+  consommaient déjà ces fonctions avec l'ancienne signature — mis à jour pour passer
+  `posts`/`importedMetrics`/la préférence de démonstration, sans changement de comportement
+  visible pour l'utilisateur au-delà du même bandeau d'honnêteté implicite.
+- **Tests** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes), `git diff
+  --check` ✅.
+- **Limites connues** : import CSV non synchronisé entre appareils (voir ci-dessus) ; export PDF
+  toujours non implémenté ; aucun fournisseur de statistiques réel (bloqué par l'absence
+  d'identifiants API sociaux, comme documenté en Phase D).
+
+## Phase G — Boucle d'optimisation éditoriale
+
+**Statut : terminée.**
+
+- **Commit** : voir `git log` (à la suite de cette entrée).
+- **Nouveaux fichiers** : `lib/optimization-recommendations.ts` (génère des recommandations
+  typées — `finding`/`recommendation`/`hypothesis`, jamais une seule catégorie indifférenciée —
+  chacune porte un `dataBasis` explicite expliquant sur quoi elle s'appuie ; couvre format/
+  thématique/plateforme/appel à l'action les plus performants, meilleur créneau, évolution du taux
+  d'engagement, fréquence de publication réelle comparée à l'objectif mensuel de la marque —Phase
+  B— quand défini, et une hypothèse de recyclage pour la publication la moins performante de la
+  période), `components/performances/OptimizationPanel.tsx` (nouvel onglet « Optimisation » dans
+  `/performances`, actions réelles par recommandation : Transformer en nouvelle idée / Recycler en
+  autre format / Créer une variante / Ajouter au calendrier / Créer un test / Ignorer — chacune crée
+  réellement une Idée via l'infrastructure existante (`useDevelopIdea`) et ouvre l'Atelier, sauf
+  "Ignorer" qui ne fait disparaître la carte que localement).
+- **Aucun appel Claude automatique** — toutes les recommandations sont calculées de façon
+  déterministe à partir des données déjà affichées dans l'onglet Vue d'ensemble, jamais générées
+  au chargement par un modèle.
+- **Refactorisation opportuniste** : `lib/develop-idea.ts` gagne `buildIdeaFromSeed()`, une
+  construction d'Idée générique déjà nécessaire à la fois pour "Recycler en nouvelle idée" (déjà
+  ajouté en Phase H sur `PublicationView.tsx`) et pour les nouvelles actions d'optimisation —
+  `PublicationView.handleRecycle` refactorisé pour la réutiliser plutôt que de dupliquer la
+  construction.
+- **Tests** : `npx tsc --noEmit` ✅, `npm run lint` ✅, `npm run build` ✅ (40 routes), `git diff
+  --check` ✅.
+- **Note de méthode** : Phases F et G ont été implémentées ensemble (choix explicite de
+  l'utilisateur — périmètre "Complet") mais restent deux commits distincts comme prévu par le
+  mandat, malgré le couplage des deux onglets dans un seul fichier `PerformancesView.tsx` :
+  l'onglet Optimisation a été temporairement retiré, vérifié, commité pour F, puis restauré,
+  revérifié et commité séparément pour G — même technique de reconstruction déjà utilisée plus tôt
+  dans la session pour séparer des diffs entremêlés.
+- **Limites connues** : pas d'analyse de "hooks" récurrents (le champ `hook` n'existe que sur
+  `Idea`, pas sur `Publication` — ajouter ce champ et le faire remonter jusqu'à la publication est
+  un travail distinct, non inclus) ; les tests éditoriaux créés via "Créer un test" sont de simples
+  idées annotées, pas un système de suivi d'expérience A/B dédié (aurait dépassé le périmètre
+  "boucle d'optimisation" demandé).
+- **Prochaine étape** : Phase E (Promotion et diffusion), puis Phase I (Qualité, incluant la
+  suppression du code mort `IdeasBankKanban.tsx` relevé en Phase H) et documentation finale.

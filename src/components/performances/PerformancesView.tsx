@@ -7,6 +7,7 @@ import { DemoDataToggle } from "@/components/performances/DemoDataToggle";
 import { EvolutionChart } from "@/components/performances/EvolutionChart";
 import { FormatPerformanceChart } from "@/components/performances/FormatPerformanceChart";
 import { KpiGrid } from "@/components/performances/KpiGrid";
+import { OptimizationPanel } from "@/components/performances/OptimizationPanel";
 import {
   PerformancesFilters,
   type PeriodPreset,
@@ -39,10 +40,17 @@ import { toISODate } from "@/lib/date-utils";
 import { useBrandsSession } from "@/lib/brands-store";
 import { isDemoAnalyticsEnabled, setDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
+import { buildOptimizationRecommendations } from "@/lib/optimization-recommendations";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
 
 const periodDateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+
+type Tab = "overview" | "optimization";
+const TABS: { id: Tab; label: string }[] = [
+  { id: "overview", label: "Vue d'ensemble" },
+  { id: "optimization", label: "Optimisation" },
+];
 
 function computeRangeForPreset(preset: PeriodPreset, today: Date): { startDate: string; endDate: string } {
   if (preset === "custom") {
@@ -76,6 +84,7 @@ export function PerformancesView() {
   const { importedMetrics, importMetrics } = useImportedMetricsSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
+  const [tab, setTab] = useState<Tab>("overview");
   const [filters, setFilters] = useState<PerformancesFiltersValue>(buildInitialFilters);
   const [demoEnabled, setDemoEnabledState] = useState(() => isDemoAnalyticsEnabled());
 
@@ -127,6 +136,27 @@ export function PerformancesView() {
     ...formatPerformance.map((group) => group.sources)
   );
 
+  const periodDays = Math.round(
+    (new Date(`${filters.endDate}T00:00:00`).getTime() - new Date(`${filters.startDate}T00:00:00`).getTime()) / 86_400_000
+  ) + 1;
+
+  const activeBrand = filters.brand !== "all" ? brands.find((brand) => brand.name === filters.brand) : undefined;
+
+  const recommendations = buildOptimizationRecommendations({
+    topFormat: formatPerformance[0] ?? null,
+    topTheme: themePerformance[0] ?? null,
+    topPlatform: platformPerformance[0] ?? null,
+    topCta: ctaPerformance[0] ?? null,
+    bestTimeSlot: bestTimeSlots.best,
+    currentTotals: totals,
+    previousTotals,
+    topPublications,
+    worstPublications,
+    publishedCount,
+    periodDays,
+    brand: activeBrand,
+  });
+
   const periodLabel = `${periodDateFormatter.format(new Date(`${filters.startDate}T00:00:00`))} – ${periodDateFormatter.format(
     new Date(`${filters.endDate}T00:00:00`)
   )}`;
@@ -156,47 +186,70 @@ export function PerformancesView() {
         démonstration clairement identifiées.
       </p>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <PerformancesFilters value={filters} accounts={accounts} onChange={handleFiltersChange} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
+        <div className="flex gap-1">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              className={`rounded-t-lg px-4 py-2 text-sm font-medium transition-colors ${
+                tab === item.id
+                  ? "border-b-2 border-violet-600 text-violet-700 dark:text-violet-300"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
         <DemoDataToggle enabled={demoEnabled} onChange={handleDemoToggle} />
       </div>
 
+      <PerformancesFilters value={filters} accounts={accounts} onChange={handleFiltersChange} />
+
       <CsvImportPanel publications={filteredPublications} currentUserName={currentUserName} onImport={importMetrics} />
 
-      <KpiGrid totals={totals} previousTotals={previousTotals} publishedCount={publishedCount} previousPublishedCount={previousPublishedCount} sources={overallSources} />
+      {tab === "overview" ? (
+        <>
+          <KpiGrid totals={totals} previousTotals={previousTotals} publishedCount={publishedCount} previousPublishedCount={previousPublishedCount} sources={overallSources} />
 
-      <EvolutionChart currentPoints={currentDailyPoints} previousPoints={previousResult?.points ?? null} />
+          <EvolutionChart currentPoints={currentDailyPoints} previousPoints={previousResult?.points ?? null} />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <PlatformPerformanceChart data={platformPerformance} />
-        <TopPublicationsList publications={topPublications} />
-      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <PlatformPerformanceChart data={platformPerformance} />
+            <TopPublicationsList publications={topPublications} />
+          </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <FormatPerformanceChart data={formatPerformance} />
-        <ThemePerformanceChart data={themePerformance} />
-      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <FormatPerformanceChart data={formatPerformance} />
+            <ThemePerformanceChart data={themePerformance} />
+          </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ThemePerformanceChart data={contentTypePerformance} title="Types de contenu les plus performants" />
-        <ThemePerformanceChart data={objectivePerformance} title="Objectifs les plus performants" />
-      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <ThemePerformanceChart data={contentTypePerformance} title="Types de contenu les plus performants" />
+            <ThemePerformanceChart data={objectivePerformance} title="Objectifs les plus performants" />
+          </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ThemePerformanceChart data={ownerPerformance} title="Performance par responsable" />
-        <ThemePerformanceChart data={ctaPerformance} title="Appels à l'action les plus performants" />
-      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <ThemePerformanceChart data={ownerPerformance} title="Performance par responsable" />
+            <ThemePerformanceChart data={ctaPerformance} title="Appels à l'action les plus performants" />
+          </div>
 
-      <BestTimesHeatmap grid={bestTimeSlots.grid} best={bestTimeSlots.best} />
+          <BestTimesHeatmap grid={bestTimeSlots.grid} best={bestTimeSlots.best} />
 
-      <TopPublicationsList publications={worstPublications} title="Publications les moins performantes" />
+          <TopPublicationsList publications={worstPublications} title="Publications les moins performantes" />
 
-      <ReportPreview
-        periodLabel={periodLabel}
-        totals={totals}
-        topPublicationExcerpt={topPublications[0]?.excerpt ?? null}
-        topRecommendation={null}
-      />
+          <ReportPreview
+            periodLabel={periodLabel}
+            totals={totals}
+            topPublicationExcerpt={topPublications[0]?.excerpt ?? null}
+            topRecommendation={recommendations[0]?.text ?? null}
+          />
+        </>
+      ) : (
+        <OptimizationPanel recommendations={recommendations} />
+      )}
     </div>
   );
 }
