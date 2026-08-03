@@ -1,9 +1,12 @@
 # Configuration des plateformes sociales — ClickPost
 
-Aucune plateforme sociale n'a aujourd'hui d'intégration API réelle dans ce projet. C'est
-volontaire : ClickPost n'affiche jamais un envoi automatique qui n'a pas réellement eu lieu. Ce
-document explique l'architecture déjà en place et la procédure à suivre pour brancher une vraie
-intégration, plateforme par plateforme, quand vous serez prêt.
+**LinkedIn dispose désormais d'une intégration API réelle pilote** — voir
+`docs/linkedin-test-integration.md` pour son architecture, ses variables et sa procédure de
+connexion. Pour toutes les autres plateformes ci-dessous, rien n'a changé : aucune intégration API
+réelle n'existe encore. C'est volontaire : ClickPost n'affiche jamais un envoi automatique qui n'a
+pas réellement eu lieu. Ce document explique l'architecture déjà en place et la procédure à suivre
+pour brancher une vraie intégration, plateforme par plateforme, quand vous serez prêt — LinkedIn
+sert désormais de référence concrète pour ce travail.
 
 ## Architecture existante
 
@@ -24,11 +27,12 @@ intégration, plateforme par plateforme, quand vous serez prêt.
   Connexion requise, Action manuelle requise, Contraintes non respectées, Prêt, Publication en
   cours, Publié, Échec — calculés par `computePublishReadiness()` à partir de faits vérifiables
   (statut du compte, contraintes, configuration du fournisseur), jamais optimistes par défaut.
-- **Comptes sociaux** (`src/types/dashboard.ts`, table `accounts`) : `AccountStatus` inclut déjà
-  `connected`/`syncing`/`expired`/`error` pour une future intégration OAuth réelle, mais seul
-  `profile_only` est écrit par l'application aujourd'hui (« Profil renseigné — connexion API non
-  configurée »). Ne jamais faire passer un compte à `connected` sans une confirmation OAuth/API
-  réelle.
+- **Comptes sociaux** (`src/types/dashboard.ts`, table `accounts`) : `AccountStatus` inclut
+  `connected`/`syncing`/`expired`/`error`/`insufficient_permission`. Pour LinkedIn, ces statuts
+  sont désormais réellement écrits par l'application après une confirmation OAuth effective (voir
+  `docs/linkedin-test-integration.md`). Pour les autres plateformes, seul `profile_only` est
+  encore écrit (« Profil renseigné — connexion API non configurée »). Ne jamais faire passer un
+  compte à `connected` sans une confirmation OAuth/API réelle.
 
 ## Pour brancher une plateforme réelle
 
@@ -39,7 +43,7 @@ ClickPost.
 | Plateforme | Portail développeur | Notes |
 |---|---|---|
 | Instagram / Facebook | developers.facebook.com | Une seule « Meta App » couvre les deux ; revue par Meta requise pour les permissions de publication (`instagram_content_publish`, `pages_manage_posts`). |
-| LinkedIn | developer.linkedin.com | Produit « Share on LinkedIn » ou « Community Management API » selon le cas d'usage ; revue LinkedIn requise. |
+| LinkedIn | developer.linkedin.com | **Intégration pilote déjà implémentée** — voir `docs/linkedin-test-integration.md` pour la procédure de connexion réelle (produit « Share on LinkedIn », portées `openid profile email w_member_social`). |
 | TikTok | developers.tiktok.com | « Content Posting API » — accès sur demande, revue TikTok requise. |
 | X | developer.x.com | Niveau d'accès payant requis pour la publication programmatique. |
 | YouTube | console.cloud.google.com (déjà utilisé pour `YOUTUBE_API_KEY`, lecture seule) | La publication de vidéos nécessite OAuth2 (pas seulement une clé API) et le scope `youtube.upload`. |
@@ -61,7 +65,10 @@ ClickPost.
 
 ### Limites connues (ce projet, aujourd'hui)
 
-- Aucune connexion OAuth réelle n'existe pour aucune plateforme sociale.
-- La publication reste entièrement manuelle (confirmation humaine après action réelle sur la
-  plateforme) tant qu'aucun fournisseur n'est branché.
+- LinkedIn dispose d'une connexion OAuth réelle (pilote) — voir
+  `docs/linkedin-test-integration.md` pour son périmètre exact et ses limites propres
+  (statistiques indisponibles avec les portées minimales, vidéo non supportée, etc.).
+- Aucune autre plateforme sociale n'a de connexion OAuth réelle.
+- La publication reste entièrement manuelle pour ces autres plateformes (confirmation humaine
+  après action réelle sur la plateforme) tant qu'aucun fournisseur n'est branché.
 - Les limites de `platform-constraints.ts` sont indicatives, pas garanties exactes.
