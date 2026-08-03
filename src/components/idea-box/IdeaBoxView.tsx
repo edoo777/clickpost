@@ -10,7 +10,7 @@ type IdeaBoxTab = "generateur" | "banque";
 
 const TABS: { key: IdeaBoxTab; label: string; description: string }[] = [
   { key: "generateur", label: "Générateur d'idées", description: "Produire des sujets à partir d'une thématique" },
-  { key: "banque", label: "Banque d'idées", description: "Filtrer, éditer et transformer les idées existantes" },
+  { key: "banque", label: "Banque d'idées", description: "Rédiger et organiser vos notes libres" },
 ];
 
 function tabFromParam(value: string | null): IdeaBoxTab {
