@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   dismissConflictNotice,
   flushNow,
@@ -9,7 +9,7 @@ import {
   getStatusSnapshot,
   subscribeStatus,
 } from "@/lib/persistence/coordinator";
-import { processSyncQueue } from "@/lib/sync/runtime";
+import { retrySync } from "@/lib/sync/runtime";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
 function useSaveStatus() {
@@ -26,9 +26,17 @@ function localNoticeLabel(status: string): string {
   return "";
 }
 
-/** Même principe côté synchronisation : seuls "error" et "conflict" justifient une notification. */
-function syncNoticeLabel(status: string): string {
+/**
+ * Même principe côté synchronisation : seuls les états qui appellent une action ou une
+ * information réelle produisent un texte. "syncing"/"merging" ne s'affichent que pendant une
+ * tentative explicitement déclenchée par l'utilisateur (voir isRetrying) — le reste du temps,
+ * les synchronisations automatiques restent silencieuses comme avant, pour ne pas réintroduire
+ * du bruit permanent dans la sidebar.
+ */
+function syncNoticeLabel(status: string, isRetrying: boolean): string {
   if (status === "conflict") return "Conflit de synchronisation";
+  if (status === "offline") return "Hors ligne";
+  if (isRetrying && (status === "syncing" || status === "merging")) return "Synchronisation…";
   if (status === "error") return "Erreur de synchronisation";
   return "";
 }
@@ -47,16 +55,33 @@ interface SaveStatusIndicatorProps {
 export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorProps) {
   const { status, errorMessage, conflictNotice } = useSaveStatus();
   const syncStatus = useSyncStatus();
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  async function handleRetrySync() {
+    if (isRetrying) return; // empêche les doubles clics pendant une tentative déjà en cours.
+    setIsRetrying(true);
+    try {
+      await retrySync();
+    } finally {
+      setIsRetrying(false);
+    }
+  }
 
   const localLabel = localNoticeLabel(status);
-  const syncText = syncNoticeLabel(syncStatus.status);
+  const syncText = syncNoticeLabel(syncStatus.status, isRetrying);
   const hasNotice = Boolean(localLabel || syncText || conflictNotice);
 
   if (!hasNotice) return null;
 
   const dotClass = status === "error" ? "bg-destructive" : status === "saving" ? "bg-warning" : "bg-success";
-  const syncDotClass = syncStatus.status === "conflict" || syncStatus.status === "error" ? "bg-destructive" : "bg-success";
+  const syncDotClass =
+    syncStatus.status === "conflict" || syncStatus.status === "error"
+      ? "bg-destructive"
+      : syncStatus.status === "offline"
+        ? "bg-muted-foreground"
+        : "bg-success";
   const combinedLabel = [localLabel, syncText].filter(Boolean).join(" · ") || "Notification de synchronisation";
+  const canRetrySync = syncStatus.status === "error" && !isRetrying;
 
   if (collapsed) {
     return (
@@ -95,14 +120,18 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
       {syncText && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-white/60">
           <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${syncDotClass}`} />
-          <span className="truncate">{syncText}</span>
+          <span className="truncate">
+            {syncText}
+            {syncStatus.status === "error" && syncStatus.isPersistentError && !isRetrying ? " (persistante)" : ""}
+          </span>
           {syncStatus.status === "error" && (
             <button
               type="button"
-              onClick={() => void processSyncQueue()}
-              className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline"
+              onClick={() => void handleRetrySync()}
+              disabled={!canRetrySync}
+              className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline disabled:opacity-50 disabled:hover:no-underline"
             >
-              Réessayer
+              {isRetrying ? "Synchronisation…" : "Réessayer"}
             </button>
           )}
           {syncStatus.status === "conflict" && (
@@ -114,6 +143,9 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
             </Link>
           )}
         </div>
+      )}
+      {syncStatus.status === "error" && syncStatus.errorMessage && !isRetrying && (
+        <p className="text-[11px] text-white/40">{syncStatus.errorMessage}</p>
       )}
       {syncStatus.status === "conflict" && (
         <p className="text-[11px] text-amber-300">

@@ -1,3 +1,4 @@
+import { classifySyncError } from "@/lib/sync/classify-sync-error";
 import { mapRecordToRow, mapRowToRecord } from "@/lib/sync/mappers";
 import * as queueDb from "@/lib/sync/queue";
 import { isSyncableRecordId } from "@/lib/sync/is-user-created";
@@ -12,6 +13,7 @@ let statusState: SyncStatusState = {
   conflictCount: 0,
   lastSyncedAt: null,
   errorMessage: null,
+  isPersistentError: false,
 };
 
 const listeners = new Set<() => void>();
@@ -31,12 +33,15 @@ export function getSyncStatusSnapshot(): SyncStatusState {
 }
 
 export function getSyncStatusServerSnapshot(): SyncStatusState {
-  return { status: "idle", pendingCount: 0, conflictCount: 0, lastSyncedAt: null, errorMessage: null };
+  return { status: "idle", pendingCount: 0, conflictCount: 0, lastSyncedAt: null, errorMessage: null, isPersistentError: false };
 }
 
 // Contexte courant (workspace actif + utilisateur) — jamais de synchronisation sans les deux.
 let currentWorkspaceId: string | null = null;
 let currentUserId: string | null = null;
+// Pull unique par workspace pour la session de navigateur — jamais un booléen global unique,
+// sinon changer d'espace de travail actif n'aurait plus jamais tiré ses propres données.
+let hasPulledThisSession = false;
 
 export function getCurrentWorkspaceId(): string | null {
   return currentWorkspaceId;
@@ -47,12 +52,31 @@ export function getCurrentUserId(): string | null {
 }
 
 export function configureSyncContext(workspaceId: string | null, userId: string | null) {
+  const workspaceChanged = workspaceId !== currentWorkspaceId;
   currentWorkspaceId = workspaceId;
   currentUserId = userId;
+
+  if (workspaceChanged) {
+    // Un changement d'espace de travail (y compris un retour à null) ne doit jamais laisser
+    // affiché un statut ou un indicateur "déjà tiré" hérités du contexte précédent.
+    hasPulledThisSession = false;
+    if (workspaceId) setStatus({ status: "idle", errorMessage: null, isPersistentError: false });
+  }
+
   if (workspaceId && userId) {
     void processSyncQueue();
     void pullAndMerge();
   }
+}
+
+type WorkspaceReloader = () => Promise<void>;
+let workspaceReloader: WorkspaceReloader | null = null;
+
+/** Permet à WorkspaceSessionProvider de s'enregistrer sans dépendance circulaire (runtime.ts ne
+ * doit jamais importer workspace-provider.tsx) — utilisé uniquement par retrySync() lorsque le
+ * contexte workspace est manquant au moment du clic sur « Réessayer ». */
+export function registerWorkspaceReloader(reloader: WorkspaceReloader | null) {
+  workspaceReloader = reloader;
 }
 
 // Notifié à chaque nouveau conflit détecté ou résolu (F1.7) — le Centre des conflits et les
@@ -97,10 +121,15 @@ export function enqueueSyncOperation(
 let isProcessing = false;
 
 /** Vide la file locale vers Supabase. Aucune donnée locale n'est jamais supprimée ici :
- * un échec laisse l'opération en file pour une nouvelle tentative ultérieure. */
+ * un échec transitoire laisse l'opération en file pour une nouvelle tentative ultérieure ; un
+ * échec définitif (voir classify-sync-error.ts) y reste aussi — jamais supprimée silencieusement
+ * — mais est marquée `permanent` pour un affichage honnête plutôt qu'un "Réessayer" trompeur. */
 export async function processSyncQueue() {
   if (isProcessing) return;
-  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    setStatus({ status: "offline" });
+    return;
+  }
   if (!currentWorkspaceId || !currentUserId) return;
   if (!queueDb.isSyncQueueAvailable()) return;
 
@@ -109,39 +138,90 @@ export async function processSyncQueue() {
     const operations = await queueDb.getAllOperations();
     if (operations.length === 0) {
       const conflictCount = await queueDb.countConflicts();
-      setStatus({ status: conflictCount > 0 ? "conflict" : "synced", pendingCount: 0, conflictCount });
+      setStatus({
+        status: conflictCount > 0 ? "conflict" : "synced",
+        pendingCount: 0,
+        conflictCount,
+        errorMessage: null,
+        isPersistentError: false,
+      });
       return;
     }
 
     setStatus({ status: "syncing", pendingCount: operations.length });
     const supabase = createSupabaseBrowserClient();
-    let hadError = false;
+    let hadTransientError = false;
+    let hadPermanentError = false;
+    let lastErrorMessage: string | null = null;
 
     for (const op of operations) {
       try {
         await processOperation(supabase, op);
       } catch (error) {
-        hadError = true;
+        const classified = classifySyncError(error);
+        lastErrorMessage = classified.message;
+        if (classified.permanent) hadPermanentError = true;
+        else hadTransientError = true;
         if (op.queueId !== undefined) {
           await queueDb.updateOperation(op.queueId, {
             attempts: op.attempts + 1,
-            lastError: error instanceof Error ? error.message : String(error),
+            lastError: classified.message,
+            permanent: classified.permanent,
           });
         }
       }
     }
 
+    const hasError = hadTransientError || hadPermanentError;
     const remaining = await queueDb.countPendingOperations();
     const conflictCount = await queueDb.countConflicts();
     setStatus({
-      status: conflictCount > 0 ? "conflict" : remaining > 0 ? (hadError ? "error" : "syncing") : "synced",
+      status: conflictCount > 0 ? "conflict" : remaining > 0 ? (hasError ? "error" : "syncing") : "synced",
       pendingCount: remaining,
       conflictCount,
+      errorMessage: hasError ? lastErrorMessage : null,
+      isPersistentError: hasError && hadPermanentError,
       lastSyncedAt: remaining === 0 ? new Date().toISOString() : statusState.lastSyncedAt,
     });
   } finally {
     isProcessing = false;
   }
+}
+
+/**
+ * Point d'entrée du bouton « Réessayer » — implémente la procédure complète attendue : vérifie
+ * la connexion, recharge la session/le workspace si le contexte est manquant (jamais un no-op
+ * silencieux), reprend les opérations en attente, effectue un pull + fusion puis un push. Ne
+ * marque jamais "synced" sans confirmation réelle : c'est processSyncQueue()/pullAndMerge() qui
+ * décident du statut final, à partir des réponses Supabase effectivement reçues.
+ */
+export async function retrySync(): Promise<void> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    setStatus({ status: "offline" });
+    return;
+  }
+
+  if ((!currentWorkspaceId || !currentUserId) && workspaceReloader) {
+    try {
+      await workspaceReloader();
+    } catch {
+      // Le rechargement gère déjà son propre état d'erreur côté WorkspaceSessionProvider ; on
+      // retente quand même la suite ci-dessous plutôt que d'abandonner immédiatement.
+    }
+  }
+
+  if (!currentWorkspaceId || !currentUserId) {
+    setStatus({
+      status: "error",
+      errorMessage: "Espace de travail introuvable — rechargez la page ou reconnectez-vous.",
+      isPersistentError: true,
+    });
+    return;
+  }
+
+  hasPulledThisSession = false; // force un vrai pull, pas seulement un push, pour ce clic explicite.
+  await pullAndMerge();
+  await processSyncQueue();
 }
 
 async function processOperation(
@@ -239,6 +319,7 @@ export function ensureSyncTriggers() {
   triggersInitialized = true;
 
   window.addEventListener("online", () => void processSyncQueue());
+  window.addEventListener("offline", () => setStatus({ status: "offline" }));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") void processSyncQueue();
   });
@@ -328,13 +409,16 @@ export function applyRemoteAdoption(entityType: SyncEntityType, record: RecordWi
   upsertLocalRecord(entityType, record, true);
 }
 
-let hasPulledThisSession = false;
-
-/** Pull unique par session : une requête par entité, filtrée sur le workspace actif. */
+/** Pull une fois par workspace pour la session de navigateur (voir hasPulledThisSession, remis à
+ * zéro à chaque changement d'espace de travail et par retrySync()) : une requête par entité,
+ * filtrée sur le workspace actif. */
 export async function pullAndMerge() {
   if (hasPulledThisSession) return;
   if (!currentWorkspaceId || !currentUserId) return;
-  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    setStatus({ status: "offline" });
+    return;
+  }
   hasPulledThisSession = true;
 
   setStatus({ status: "merging" });
@@ -357,6 +441,8 @@ export async function pullAndMerge() {
       status: conflictCount > 0 ? "conflict" : "synced",
       conflictCount,
       lastSyncedAt: new Date().toISOString(),
+      errorMessage: null,
+      isPersistentError: false,
     });
   } catch {
     // Échec réseau/partiel : on retentera au prochain appel de configureSyncContext

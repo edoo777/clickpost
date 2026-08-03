@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { applyBrandingTokens, buildDefaultBranding, cacheBrandingLocally, readCachedBranding } from "@/lib/branding-tokens";
-import { configureSyncContext, ensureSyncTriggers } from "@/lib/sync/runtime";
+import { configureSyncContext, ensureSyncTriggers, registerWorkspaceReloader } from "@/lib/sync/runtime";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
@@ -171,6 +171,13 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
     // `load` met à jour de l'état local, mais uniquement après ses propres `await`.
     const timeout = setTimeout(() => void load(), 0);
     return () => clearTimeout(timeout);
+  }, [load]);
+
+  // Permet à retrySync() (bouton « Réessayer » de la synchronisation) de redemander un
+  // rechargement complet de la session/du workspace sans dépendance circulaire vers runtime.ts.
+  useEffect(() => {
+    registerWorkspaceReloader(load);
+    return () => registerWorkspaceReloader(null);
   }, [load]);
 
   // Synchronisation multi-onglets : si un autre onglet enregistre une nouvelle identité
