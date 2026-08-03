@@ -11,7 +11,7 @@ import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationModeToggle, type PublicationCreationMode } from "@/components/publications/PublicationModeToggle";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { approvePublication, rejectPublication, requestChanges } from "@/lib/approval";
+import { approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
@@ -86,7 +86,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
-  const { workspace } = useWorkspaceSession();
+  const { workspace, isAdmin } = useWorkspaceSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const from = searchParams.get("from");
@@ -165,13 +165,23 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       router.push(`/publications/${draft.id}${returnSuffix}`);
       return;
     }
+    // Une publication déjà approuvée ne doit jamais être modifiée silencieusement : toute
+    // modification de son contenu la remet automatiquement en révision, avec une entrée
+    // d'historique distincte qui explique pourquoi le statut a changé.
+    const revertedToReview = Boolean(
+      existing && existing.status === "approved" && hasApprovedContentChanged(existing, draft)
+    );
     const historyEntry: PublicationHistoryEntry = {
       id: crypto.randomUUID(),
-      action: "Modifiée",
+      action: revertedToReview ? "Repassée en révision (modifiée après approbation)" : "Modifiée",
       actorName: currentUserName,
       createdAt: new Date().toISOString(),
     };
-    const updated: Publication = { ...draft, history: [...draft.history, historyEntry] };
+    const updated: Publication = {
+      ...draft,
+      status: revertedToReview ? "in_review" : draft.status,
+      history: [...draft.history, historyEntry],
+    };
     updatePost(updated.id, updated);
     if (existing) syncToIdea(existing, updated);
     setIsEditing(false);
@@ -345,6 +355,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
             <>
               <ApprovalActions
                 publication={existing}
+                canAct={isAdmin || (Boolean(currentUserName) && currentUserName === existing.approver)}
                 onApprove={handleApprove}
                 onRequestChanges={handleRequestChanges}
                 onReject={handleReject}

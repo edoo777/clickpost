@@ -16,7 +16,7 @@ const IDEA_TO_PUBLICATION_STATUS: Partial<Record<IdeaStatus, PublicationStatus>>
   ready_to_schedule: "ready_to_schedule",
   scheduled: "scheduled",
   published: "published",
-  needs_changes: "in_production",
+  needs_changes: "needs_changes",
   failed: "failed",
   // blocked, archived : aucun équivalent pertinent côté publication — pas de propagation automatique.
 };
@@ -28,6 +28,7 @@ const PUBLICATION_TO_IDEA_STATUS: Partial<Record<PublicationStatus, IdeaStatus>>
   draft: "draft",
   in_production: "needs_changes",
   in_review: "in_review",
+  needs_changes: "needs_changes",
   pending_client: "in_review",
   approved: "approved",
   ready_to_schedule: "ready_to_schedule",

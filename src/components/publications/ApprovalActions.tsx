@@ -7,17 +7,34 @@ type PendingAction = "changes" | "reject" | null;
 
 interface ApprovalActionsProps {
   publication: Publication;
+  /** L'utilisateur courant peut-il agir ici — approbateur désigné ou administrateur/propriétaire
+   * du workspace. Les boutons restent masqués pour tout autre membre : l'approbation n'est jamais
+   * une action ouverte à n'importe quel visiteur de la publication. */
+  canAct: boolean;
   onApprove: () => void;
   onRequestChanges: (note: string) => void;
   onReject: (reason: string) => void;
 }
 
-export function ApprovalActions({ publication, onApprove, onRequestChanges, onReject }: ApprovalActionsProps) {
+export function ApprovalActions({ publication, canAct, onApprove, onRequestChanges, onReject }: ApprovalActionsProps) {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [note, setNote] = useState("");
 
   if (publication.status !== "in_review" && publication.status !== "pending_client") {
     return null;
+  }
+
+  if (!canAct) {
+    return (
+      <section className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5  ">
+        <h2 className="text-sm font-semibold text-foreground ">Actions d&apos;approbation</h2>
+        <p className="text-sm text-muted-foreground ">
+          Seul{publication.approver ? ` ${publication.approver}` : " l'approbateur désigné"} ou un
+          administrateur du workspace peut approuver, demander des modifications ou refuser cette
+          publication.
+        </p>
+      </section>
+    );
   }
 
   function submit() {

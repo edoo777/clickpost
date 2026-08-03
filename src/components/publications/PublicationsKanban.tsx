@@ -16,6 +16,7 @@ const COLUMN_STATUSES: PublicationStatus[] = [
   "draft",
   "in_production",
   "in_review",
+  "needs_changes",
   "pending_client",
   "approved",
   "ready_to_schedule",
@@ -88,6 +89,11 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
     if (!id) return;
     const dragged = publications.find((post) => post.id === id);
     if (!dragged) return;
+    // L'approbation ne doit jamais être un simple glisser-déposer : seule la colonne
+    // « Actions d'approbation » de la fiche publication peut faire passer un contenu à
+    // « Approuvé ». Un dépôt vers cette colonne est ignoré silencieusement (la carte revient à
+    // sa place) plutôt que d'accepter une approbation sans validation.
+    if (status === "approved" && dragged.status !== "approved") return;
     const scheduledFor = computeReorderedScheduledFor(columnPosts(status), target, id);
     if (dragged.status !== status) {
       changeStatus(id, status, currentUserName);
@@ -175,7 +181,11 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                         aria-label={`Déplacer ${post.excerpt || "cette publication"} vers un autre statut (alternative au glisser-déposer)`}
                       >
                         {COLUMN_STATUSES.map((option) => (
-                          <option key={option} value={option}>
+                          <option
+                            key={option}
+                            value={option}
+                            disabled={option === "approved" && post.status !== "approved"}
+                          >
                             {STATUS_LABEL[option]}
                           </option>
                         ))}

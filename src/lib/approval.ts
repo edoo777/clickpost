@@ -30,6 +30,7 @@ export function getApprovalQueue(publications: Publication[], filters: ApprovalF
 export function getNextActor(publication: Publication): string | null {
   switch (publication.status) {
     case "in_production":
+    case "needs_changes":
       return publication.owner || null;
     case "in_review":
     case "pending_client":
@@ -37,6 +38,25 @@ export function getNextActor(publication: Publication): string | null {
     default:
       return null;
   }
+}
+
+/** Champs dont la modification, sur une publication déjà approuvée, doit la remettre en revue —
+ * jamais un écrasement silencieux d'un contenu déjà validé (métadonnées de suivi comme
+ * `internalNotes`/`owner`/`priority` sont volontairement exclues : elles ne changent pas ce qui a
+ * été approuvé). */
+export function hasApprovedContentChanged(previous: Publication, updated: Publication): boolean {
+  if (previous.text !== updated.text) return true;
+  if (previous.excerpt !== updated.excerpt) return true;
+  if (previous.cta !== updated.cta) return true;
+  if (previous.firstComment !== updated.firstComment) return true;
+  if (previous.scheduledFor !== updated.scheduledFor) return true;
+  if (previous.platform !== updated.platform) return true;
+  if (previous.format !== updated.format) return true;
+  if (JSON.stringify(previous.hashtags) !== JSON.stringify(updated.hashtags)) return true;
+  const previousMediaIds = previous.media.map((item) => item.id).join(",");
+  const updatedMediaIds = updated.media.map((item) => item.id).join(",");
+  if (previousMediaIds !== updatedMediaIds) return true;
+  return false;
 }
 
 function appendHistory(publication: Publication, action: string, actorName: string, note?: string): Publication {
@@ -57,7 +77,7 @@ export function approvePublication(publication: Publication, actorName: string):
 export function requestChanges(publication: Publication, note: string, actorName: string): Publication {
   const withComment: Publication = {
     ...publication,
-    status: "in_production",
+    status: "needs_changes",
     comments: [
       ...publication.comments,
       {

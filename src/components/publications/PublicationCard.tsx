@@ -50,6 +50,11 @@ export function PublicationCard({ publication, onClick }: PublicationCardProps) 
       <p className="truncate text-xs text-muted-foreground ">
         {publication.theme || "Sans thématique"} · {publication.owner || "Non assigné"}
       </p>
+      {publication.comments.length > 0 && (
+        <span className="w-fit rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ">
+          {publication.comments.length} commentaire{publication.comments.length > 1 ? "s" : ""}
+        </span>
+      )}
     </Link>
   );
 }

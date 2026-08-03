@@ -18,6 +18,7 @@ const ALL_STATUSES: PublicationStatus[] = [
   "draft",
   "in_production",
   "in_review",
+  "needs_changes",
   "pending_client",
   "approved",
   "ready_to_schedule",
@@ -256,7 +257,7 @@ export function PublicationsTable({
             onChange={(event) => changeStatus(post.id, event.target.value as PublicationStatus, currentUserName)}
           >
             {ALL_STATUSES.map((status) => (
-              <option key={status} value={status}>
+              <option key={status} value={status} disabled={status === "approved" && post.status !== "approved"}>
                 {STATUS_LABEL[status]}
               </option>
             ))}

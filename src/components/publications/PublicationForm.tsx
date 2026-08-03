@@ -340,8 +340,13 @@ export function PublicationForm({ publication, editable, onChange }: Publication
             className={INPUT_CLASS}
           >
             {ALL_STATUSES.map((status) => (
-              <option key={status} value={status}>
+              <option
+                key={status}
+                value={status}
+                disabled={status === "approved" && publication.status !== "approved"}
+              >
                 {STATUS_LABEL[status]}
+                {status === "approved" && publication.status !== "approved" ? " (via Actions d'approbation)" : ""}
               </option>
             ))}
           </select>

@@ -8,7 +8,7 @@ import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
 
 const MAX_ITEMS = 4;
-const ACTIONABLE_STATUSES = new Set(["in_production", "in_review", "pending_client"]);
+const ACTIONABLE_STATUSES = new Set(["in_production", "needs_changes", "in_review", "pending_client"]);
 
 export function MyTasksWidget() {
   const { posts } = usePostsSession();

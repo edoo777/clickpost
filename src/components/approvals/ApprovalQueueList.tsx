@@ -57,6 +57,11 @@ export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
                   Prochain intervenant :{" "}
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">{nextActor ?? "—"}</span>
                 </span>
+                {publication.comments.length > 0 && (
+                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ">
+                    {publication.comments.length} commentaire{publication.comments.length > 1 ? "s" : ""}
+                  </span>
+                )}
                 <span
                   className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[publication.status]}`}
                 >
