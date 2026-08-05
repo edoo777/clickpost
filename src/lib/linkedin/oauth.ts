@@ -54,10 +54,31 @@ export function verifyCallbackState(state: string): StateVerificationResult {
   return verifyOAuthState(state, config.clientSecret);
 }
 
-export type TokenExchangeResult = { ok: true; token: LinkedInTokenResponse } | { ok: false; status: number; message: string };
+export type TokenExchangeResult =
+  | { ok: true; token: LinkedInTokenResponse }
+  | { ok: false; status: number; message: string; error?: string; errorDescription?: string };
+
+async function parseTokenErrorBody(response: Response): Promise<{ error?: string; errorDescription?: string }> {
+  try {
+    const body = (await response.json()) as { error?: string; error_description?: string };
+    return { error: body.error, errorDescription: body.error_description };
+  } catch {
+    return {};
+  }
+}
+
+// TEMPORAIRE — diagnostic de l'échange de code OAuth, à retirer une fois une connexion réelle
+// confirmée fonctionnelle. Jamais de secret, de code complet ni de jeton journalisé : uniquement
+// statut HTTP, error/error_description LinkedIn (non sensibles, ce sont des codes d'erreur
+// standard OAuth), présence/longueur des identifiants, et l'endpoint/redirect_uri/content-type
+// réellement envoyés (non sensibles, déjà visibles de LinkedIn lui-même côté requête).
+function logTokenExchangeDiagnostic(phase: "request" | "response", details: Record<string, unknown>) {
+  console.log(`[linkedin-oauth-diagnostic:${phase}]`, JSON.stringify(details));
+}
 
 /** Échange le code d'autorisation contre un jeton — appelé uniquement côté serveur (route
- * callback), jamais depuis le navigateur. Ne journalise jamais le code ni le jeton lui-même. */
+ * callback), jamais depuis le navigateur. Ne journalise jamais le code complet ni le jeton
+ * lui-même (seulement sa longueur, voir logTokenExchangeDiagnostic). */
 export async function exchangeCodeForToken(code: string): Promise<TokenExchangeResult> {
   const config = getLinkedInConfig();
   if (!config) return { ok: false, status: 503, message: "Intégration LinkedIn non configurée." };
@@ -68,6 +89,18 @@ export async function exchangeCodeForToken(code: string): Promise<TokenExchangeR
     redirect_uri: config.redirectUri,
     client_id: config.clientId,
     client_secret: config.clientSecret,
+  });
+
+  logTokenExchangeDiagnostic("request", {
+    endpoint: TOKEN_URL,
+    contentType: "application/x-www-form-urlencoded",
+    redirectUriSent: config.redirectUri,
+    clientIdPresent: Boolean(config.clientId),
+    clientIdLength: config.clientId.length,
+    clientSecretPresent: Boolean(config.clientSecret),
+    clientSecretLength: config.clientSecret.length,
+    codePresent: Boolean(code),
+    codeLength: code.length,
   });
 
   let response: Response;
@@ -83,9 +116,13 @@ export async function exchangeCodeForToken(code: string): Promise<TokenExchangeR
 
   if (!response.ok) {
     // Le corps peut contenir `error`/`error_description` — jamais le code ni un secret à
-    // journaliser ; le message renvoyé à l'appelant reste générique.
-    return { ok: false, status: response.status, message: `Échange du code refusé par LinkedIn (${response.status}).` };
+    // journaliser ; le message renvoyé à l'appelant reste générique, mais error/errorDescription
+    // (codes standard OAuth, non sensibles) sont conservés pour le diagnostic serveur.
+    const { error, errorDescription } = await parseTokenErrorBody(response);
+    logTokenExchangeDiagnostic("response", { status: response.status, error, errorDescription });
+    return { ok: false, status: response.status, message: `Échange du code refusé par LinkedIn (${response.status}).`, error, errorDescription };
   }
+  logTokenExchangeDiagnostic("response", { status: response.status, error: undefined, errorDescription: undefined });
 
   const data = (await response.json()) as {
     access_token: string;

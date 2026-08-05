@@ -16,11 +16,16 @@ export interface LinkedInConfig {
   apiVersion: string;
 }
 
+/** `.trim()` sur chaque valeur : un `.env.local` édité à la main accumule facilement un espace ou
+ * un retour à la ligne de fin (déjà observé dans ce projet sur d'autres variables) — silencieux
+ * dans la plupart des cas, mais fatal pour `clientSecret`/`clientId` : LinkedIn compare la valeur
+ * exacte et rejette tout caractère parasite sans message explicite côté ClickPost au-delà d'un
+ * échec d'échange générique. */
 export function getLinkedInConfig(): LinkedInConfig | null {
-  const clientId = process.env.LINKEDIN_CLIENT_ID;
-  const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
-  const redirectUri = process.env.LINKEDIN_REDIRECT_URI;
-  const apiVersion = process.env.LINKEDIN_API_VERSION;
+  const clientId = process.env.LINKEDIN_CLIENT_ID?.trim();
+  const clientSecret = process.env.LINKEDIN_CLIENT_SECRET?.trim();
+  const redirectUri = process.env.LINKEDIN_REDIRECT_URI?.trim();
+  const apiVersion = process.env.LINKEDIN_API_VERSION?.trim();
   if (!clientId || !clientSecret || !redirectUri || !apiVersion) return null;
   return { clientId, clientSecret, redirectUri, apiVersion };
 }
