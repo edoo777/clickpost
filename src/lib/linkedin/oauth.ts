@@ -56,32 +56,26 @@ export function verifyCallbackState(state: string): StateVerificationResult {
 
 export type TokenExchangeResult =
   | { ok: true; token: LinkedInTokenResponse }
-  | { ok: false; status: number; message: string; error?: string; errorDescription?: string };
+  | { ok: false; status: number; message: string; category: string; correlationId: string };
 
-async function parseTokenErrorBody(response: Response): Promise<{ error?: string; errorDescription?: string }> {
-  try {
-    const body = (await response.json()) as { error?: string; error_description?: string };
-    return { error: body.error, errorDescription: body.error_description };
-  } catch {
-    return {};
-  }
-}
-
-// TEMPORAIRE — diagnostic de l'échange de code OAuth, à retirer une fois une connexion réelle
-// confirmée fonctionnelle. Jamais de secret, de code complet ni de jeton journalisé : uniquement
-// statut HTTP, error/error_description LinkedIn (non sensibles, ce sont des codes d'erreur
-// standard OAuth), présence/longueur des identifiants, et l'endpoint/redirect_uri/content-type
-// réellement envoyés (non sensibles, déjà visibles de LinkedIn lui-même côté requête).
-function logTokenExchangeDiagnostic(phase: "request" | "response", details: Record<string, unknown>) {
-  console.log(`[linkedin-oauth-diagnostic:${phase}]`, JSON.stringify(details));
+/** Journal sécurisé, permanent — uniquement code HTTP, catégorie d'erreur (code OAuth standard
+ * type `invalid_client`, jamais la description détaillée de LinkedIn qui peut varier), message
+ * non sensible, et un identifiant de corrélation à usage interne. Jamais de secret, de code
+ * OAuth, de jeton, d'en-tête ou de corps de réponse complet. */
+function logSecureExchangeError(correlationId: string, status: number, category: string) {
+  console.error(`[linkedin-oauth] échec d'échange de code — réf=${correlationId} statut=${status} catégorie=${category}`);
 }
 
 /** Échange le code d'autorisation contre un jeton — appelé uniquement côté serveur (route
- * callback), jamais depuis le navigateur. Ne journalise jamais le code complet ni le jeton
- * lui-même (seulement sa longueur, voir logTokenExchangeDiagnostic). */
+ * callback), jamais depuis le navigateur. Ne journalise jamais le code, le client secret, ni le
+ * jeton — voir logSecureExchangeError(). */
 export async function exchangeCodeForToken(code: string): Promise<TokenExchangeResult> {
+  const correlationId = crypto.randomUUID();
   const config = getLinkedInConfig();
-  if (!config) return { ok: false, status: 503, message: "Intégration LinkedIn non configurée." };
+  if (!config) {
+    logSecureExchangeError(correlationId, 503, "not_configured");
+    return { ok: false, status: 503, message: "Intégration LinkedIn non configurée.", category: "not_configured", correlationId };
+  }
 
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -89,18 +83,6 @@ export async function exchangeCodeForToken(code: string): Promise<TokenExchangeR
     redirect_uri: config.redirectUri,
     client_id: config.clientId,
     client_secret: config.clientSecret,
-  });
-
-  logTokenExchangeDiagnostic("request", {
-    endpoint: TOKEN_URL,
-    contentType: "application/x-www-form-urlencoded",
-    redirectUriSent: config.redirectUri,
-    clientIdPresent: Boolean(config.clientId),
-    clientIdLength: config.clientId.length,
-    clientSecretPresent: Boolean(config.clientSecret),
-    clientSecretLength: config.clientSecret.length,
-    codePresent: Boolean(code),
-    codeLength: code.length,
   });
 
   let response: Response;
@@ -111,18 +93,27 @@ export async function exchangeCodeForToken(code: string): Promise<TokenExchangeR
       body: body.toString(),
     });
   } catch {
-    return { ok: false, status: 0, message: "LinkedIn injoignable (réseau)." };
+    logSecureExchangeError(correlationId, 0, "network_unreachable");
+    return { ok: false, status: 0, message: "LinkedIn injoignable (réseau).", category: "network_unreachable", correlationId };
   }
 
   if (!response.ok) {
-    // Le corps peut contenir `error`/`error_description` — jamais le code ni un secret à
-    // journaliser ; le message renvoyé à l'appelant reste générique, mais error/errorDescription
-    // (codes standard OAuth, non sensibles) sont conservés pour le diagnostic serveur.
-    const { error, errorDescription } = await parseTokenErrorBody(response);
-    logTokenExchangeDiagnostic("response", { status: response.status, error, errorDescription });
-    return { ok: false, status: response.status, message: `Échange du code refusé par LinkedIn (${response.status}).`, error, errorDescription };
+    let category = "linkedin_rejected";
+    try {
+      const parsed = (await response.json()) as { error?: string };
+      if (parsed.error) category = parsed.error;
+    } catch {
+      // Corps non-JSON — catégorie générique conservée, jamais le corps journalisé.
+    }
+    logSecureExchangeError(correlationId, response.status, category);
+    return {
+      ok: false,
+      status: response.status,
+      message: `Échange du code refusé par LinkedIn (${response.status}).`,
+      category,
+      correlationId,
+    };
   }
-  logTokenExchangeDiagnostic("response", { status: response.status, error: undefined, errorDescription: undefined });
 
   const data = (await response.json()) as {
     access_token: string;
@@ -143,8 +134,12 @@ export async function exchangeCodeForToken(code: string): Promise<TokenExchangeR
 }
 
 export async function refreshAccessToken(refreshToken: string): Promise<TokenExchangeResult> {
+  const correlationId = crypto.randomUUID();
   const config = getLinkedInConfig();
-  if (!config) return { ok: false, status: 503, message: "Intégration LinkedIn non configurée." };
+  if (!config) {
+    logSecureExchangeError(correlationId, 503, "not_configured");
+    return { ok: false, status: 503, message: "Intégration LinkedIn non configurée.", category: "not_configured", correlationId };
+  }
 
   const body = new URLSearchParams({
     grant_type: "refresh_token",
@@ -161,11 +156,20 @@ export async function refreshAccessToken(refreshToken: string): Promise<TokenExc
       body: body.toString(),
     });
   } catch {
-    return { ok: false, status: 0, message: "LinkedIn injoignable (réseau)." };
+    logSecureExchangeError(correlationId, 0, "network_unreachable");
+    return { ok: false, status: 0, message: "LinkedIn injoignable (réseau).", category: "network_unreachable", correlationId };
   }
 
   if (!response.ok) {
-    return { ok: false, status: response.status, message: `Rafraîchissement refusé par LinkedIn (${response.status}).` };
+    let category = "linkedin_rejected";
+    try {
+      const parsed = (await response.json()) as { error?: string };
+      if (parsed.error) category = parsed.error;
+    } catch {
+      // Corps non-JSON — catégorie générique conservée, jamais le corps journalisé.
+    }
+    logSecureExchangeError(correlationId, response.status, category);
+    return { ok: false, status: response.status, message: `Rafraîchissement refusé par LinkedIn (${response.status}).`, category, correlationId };
   }
 
   const data = (await response.json()) as { access_token: string; expires_in: number; refresh_token?: string; scope?: string };

@@ -171,7 +171,22 @@ export async function processSyncQueue() {
 
   isProcessing = true;
   try {
-    const operations = await queueDb.getAllOperations();
+    const allOperations = await queueDb.getAllOperations();
+
+    // Purge défensive : une opération portant sur un identifiant de donnée de démonstration
+    // (registre explicite, voir seed-registry.ts) n'aurait jamais dû être mise en file — que ce
+    // soit une opération antérieure à ce garde-fou (déjà présente en file avant son ajout) ou
+    // réintroduite autrement, elle ne peut jamais aboutir (l'id n'est pas un UUID valide côté
+    // Supabase). On la retire définitivement plutôt que de la laisser se bloquer et afficher
+    // indéfiniment « Données locales à réparer » pour une donnée qui n'a jamais eu vocation à
+    // être synchronisée — jamais une donnée réelle exclue, seule la forme de l'id du registre
+    // explicite compte ici.
+    for (const op of allOperations) {
+      if (isSyncableRecordId(op.recordId)) continue;
+      if (op.queueId !== undefined) await queueDb.removeOperation(op.queueId);
+    }
+    const operations = allOperations.filter((op) => isSyncableRecordId(op.recordId));
+
     if (operations.length === 0) {
       const conflictCount = await queueDb.countConflicts();
       setStatus({

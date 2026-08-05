@@ -8,8 +8,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
  * Étape 2/2 du flux OAuth LinkedIn. Ne journalise jamais le `code` ni le jeton — voir
- * exchangeCodeForToken() pour le diagnostic temporaire (statut/erreur LinkedIn, présence et
- * longueur des identifiants, jamais leur contenu). Le `state` est revérifié (signature +
+ * exchangeCodeForToken() pour le journal sécurisé permanent (statut HTTP, catégorie d'erreur
+ * standard OAuth, identifiant de corrélation, jamais de secret ni de payload complet). Le
+ * `state` est revérifié (signature +
  * expiration) avant toute action — un `state` invalide ou expiré est rejeté explicitement,
  * jamais traité comme "probablement valide". L'utilisateur et son rôle admin sont revérifiés ici
  * aussi (pas seulement à l'étape /connect) : un `state` signé reste valide 10 minutes, la session
@@ -64,7 +65,7 @@ async function processCallback(code: string, state: string): Promise<string> {
   // Aucun profil local n'est créé ni modifié avant ce point : l'échange du code est la toute
   // première action pouvant échouer, et échoue ici sans toucher `accounts`.
   const tokenResult = await exchangeCodeForToken(code);
-  if (!tokenResult.ok) return errorPath("token_exchange_failed");
+  if (!tokenResult.ok) return `${errorPath("token_exchange_failed")}&ref=${tokenResult.correlationId}`;
 
   const identityResult = await fetchLinkedInIdentity(tokenResult.token.accessToken);
   if (!identityResult.ok) return errorPath("identity_fetch_failed");
