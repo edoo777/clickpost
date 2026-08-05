@@ -33,8 +33,13 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAuthCallback = pathname.startsWith("/auth/callback");
+  // Les routes de tâches planifiées (ex. déclencheur LinkedIn, voir vercel.json) s'authentifient
+  // elles-mêmes via CRON_SECRET, jamais une session utilisateur — un appel de Vercel Cron n'a
+  // aucun cookie de session et serait sinon systématiquement redirigé vers /connexion avant même
+  // d'atteindre le handler de la route, empêchant toute exécution planifiée.
+  const isCronRoute = pathname.startsWith("/api/cron/");
 
-  if (!isAuthCallback) {
+  if (!isAuthCallback && !isCronRoute) {
     if (!user && !PUBLIC_PATHS.includes(pathname)) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/connexion";

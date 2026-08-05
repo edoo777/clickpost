@@ -16,6 +16,11 @@ export type PublicationStatus =
   | "approved"
   | "ready_to_schedule"
   | "scheduled"
+  /** Tentative de publication automatique en cours (planificateur réel, voir
+   * src/lib/linkedin/scheduler.ts) — sert aussi de verrou : une publication ne peut être
+   * réclamée par une seconde exécution concurrente du planificateur que si elle n'est plus dans
+   * cet état. Jamais posé par une action manuelle. */
+  | "publishing"
   | "published"
   | "failed"
   | "rejected"

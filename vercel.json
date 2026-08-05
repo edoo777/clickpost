@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/linkedin-publish",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

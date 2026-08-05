@@ -342,11 +342,13 @@ export function PublicationForm({ publication, editable, onChange }: Publication
             {ALL_STATUSES.map((status) => {
               const lockedApproved = status === "approved" && publication.status !== "approved";
               const lockedPublished = status === "published" && publication.status !== "published";
+              const lockedPublishing = status === "publishing";
               return (
-                <option key={status} value={status} disabled={lockedApproved || lockedPublished}>
+                <option key={status} value={status} disabled={lockedApproved || lockedPublished || lockedPublishing}>
                   {STATUS_LABEL[status]}
                   {lockedApproved ? " (via Actions d'approbation)" : ""}
                   {lockedPublished ? " (via Publication manuelle)" : ""}
+                  {lockedPublishing ? " (posé par le planificateur uniquement)" : ""}
                 </option>
               );
             })}

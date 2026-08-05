@@ -2,6 +2,7 @@ import { classifySyncError } from "@/lib/sync/classify-sync-error";
 import { mapRecordToRow, mapRowToRecord } from "@/lib/sync/mappers";
 import * as queueDb from "@/lib/sync/queue";
 import { isSyncableRecordId } from "@/lib/sync/is-user-created";
+import { zonedNaiveToUtcInstant, utcInstantToZonedNaive } from "@/lib/scheduling-time";
 import { SYNC_TABLE_BY_ENTITY, type SyncEntityType, type SyncOperationKind, type SyncStatusState } from "@/lib/sync/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -347,6 +348,12 @@ async function processOperation(
     return;
   }
   const row = mapRecordToRow(op.payload);
+  // `scheduled_for` est un timestamptz côté Supabase mais saisi localement comme une date-heure
+  // naïve (champ datetime-local) interprétée dans `time_zone` — sans cette conversion, Postgres
+  // l'interpréterait dans le fuseau de session (UTC), pas celui réellement choisi.
+  if (op.entityType === "posts" && typeof row.scheduled_for === "string" && typeof row.time_zone === "string") {
+    row.scheduled_for = zonedNaiveToUtcInstant(row.scheduled_for, row.time_zone).toISOString();
+  }
 
   if (!syncState) {
     const { data, error } = await supabase
@@ -538,6 +545,21 @@ export async function pullAndMerge() {
   }
 }
 
+/** Inverse de la conversion appliquée au push (voir processOperation) : `scheduled_for` revient
+ * de Supabase comme un instant UTC réel — reconverti vers la représentation naïve dans
+ * `time_zone` pour un réaffichage correct dans le champ datetime-local local, sans dérive au
+ * fil des allers-retours. */
+function mapRemoteRowForEntity(entityType: SyncEntityType, row: Record<string, unknown>): Record<string, unknown> {
+  const record = mapRowToRecord(row);
+  if (entityType === "posts" && typeof record.scheduledFor === "string" && typeof record.timeZone === "string") {
+    const instant = new Date(record.scheduledFor);
+    if (!Number.isNaN(instant.getTime())) {
+      record.scheduledFor = utcInstantToZonedNaive(instant, record.timeZone);
+    }
+  }
+  return record;
+}
+
 /**
  * Fusionne des lignes distantes dans l'état local déjà monté d'une entité : jamais
  * d'écrasement d'un enregistrement dont une modification locale est encore dans la file
@@ -584,7 +606,7 @@ async function mergeEntityRows(
 
     const remoteUpdatedAt = row.updated_at as string | undefined;
     if (index === -1) {
-      result.push(mapRowToRecord(row) as RecordWithId);
+      result.push(mapRemoteRowForEntity(entityType, row) as RecordWithId);
       changed = true;
       newlySyncedRows.push(row);
       continue;
@@ -594,7 +616,7 @@ async function mergeEntityRows(
     const remoteIsNewer =
       !localUpdatedAt || (remoteUpdatedAt !== undefined && new Date(remoteUpdatedAt).getTime() > new Date(localUpdatedAt).getTime());
     if (remoteIsNewer) {
-      result[index] = mapRowToRecord(row) as RecordWithId;
+      result[index] = mapRemoteRowForEntity(entityType, row) as RecordWithId;
       changed = true;
       newlySyncedRows.push(row);
     }
