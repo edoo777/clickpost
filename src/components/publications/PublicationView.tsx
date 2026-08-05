@@ -9,6 +9,7 @@ import { ClaudeGenerationPanel } from "@/components/publications/ClaudeGeneratio
 import { CollaborationPanel } from "@/components/publications/CollaborationPanel";
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
 import { LinkedInPublishAction } from "@/components/publications/LinkedInPublishAction";
+import { buildLinkedInPostUrl } from "@/lib/linkedin/post-url";
 import { ManualPublishPanel } from "@/components/publications/ManualPublishPanel";
 import { PromotionChecklist } from "@/components/publications/PromotionChecklist";
 import { PublicationForm } from "@/components/publications/PublicationForm";
@@ -150,6 +151,10 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   const displayed = isEditing ? draft : (existing ?? draft);
   const Icon = platformIcons[displayed.platform];
+  const latestAutomaticSuccess = (displayed.publishAttempts ?? [])
+    .filter((attempt) => attempt.mode === "automatic" && attempt.status === "success")
+    .at(-1);
+  const linkedInPostUrl = displayed.platform === "linkedin" ? buildLinkedInPostUrl(latestAutomaticSuccess?.externalPostId) : null;
 
   function syncToIdea(previous: Publication, updated: Publication) {
     if (!updated.ideaId) return;
@@ -406,6 +411,16 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
               >
                 {STATUS_LABEL[displayed.status]}
               </span>
+              {linkedInPostUrl && (
+                <a
+                  href={linkedInPostUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Voir sur LinkedIn ↗
+                </a>
+              )}
             </div>
           </div>
         </div>
