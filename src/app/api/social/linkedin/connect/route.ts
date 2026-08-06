@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { isLinkedInOAuthConfigured } from "@/lib/linkedin/config";
+import {
+  isLinkedInOAuthConfigured,
+  isLinkedInOrganizationAccessEnabled,
+  LINKEDIN_MEMBER_SCOPES,
+  LINKEDIN_ORGANIZATION_SCOPES,
+} from "@/lib/linkedin/config";
 import { buildAuthorizationUrl } from "@/lib/linkedin/oauth";
 import { isWorkspaceAdmin } from "@/lib/linkedin/workspace-guard";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -37,6 +42,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/comptes?linkedin_error=forbidden", request.url));
   }
 
-  const authorizationUrl = buildAuthorizationUrl({ workspaceId, brandId, userId: user.id, platform: "linkedin" });
+  // Portées Page Entreprise (Phase 4) demandées uniquement sur demande explicite ET si l'accès
+  // organisation est réellement activé côté serveur — jamais réclamées par défaut.
+  const includeOrganization = searchParams.get("includeOrganization") === "true" && isLinkedInOrganizationAccessEnabled();
+  const scopes = includeOrganization ? [...LINKEDIN_MEMBER_SCOPES, ...LINKEDIN_ORGANIZATION_SCOPES] : LINKEDIN_MEMBER_SCOPES;
+
+  const authorizationUrl = buildAuthorizationUrl({ workspaceId, brandId, userId: user.id, platform: "linkedin" }, scopes);
   return NextResponse.redirect(authorizationUrl);
 }

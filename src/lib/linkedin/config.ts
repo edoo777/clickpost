@@ -7,6 +7,22 @@ import { isServiceRoleConfigured } from "@/lib/supabase/service-role";
  * tard, une fois l'architecture Page Entreprise réellement utilisée). */
 export const LINKEDIN_MEMBER_SCOPES = ["openid", "profile", "email", "w_member_social"];
 
+/** Portées Page Entreprise (Phase 4) — jamais demandées par défaut, jamais mélangées aux portées
+ * minimales ci-dessus. `r_organization_admin` liste les organisations administrées par le
+ * membre, `w_organization_social` autorise la publication en tant qu'organisation. Ces deux
+ * portées nécessitent un produit LinkedIn supplémentaire ("Community Management API" ou
+ * équivalent selon l'offre actuelle) soumis à revue LinkedIn — non approuvé par défaut. */
+export const LINKEDIN_ORGANIZATION_SCOPES = ["r_organization_admin", "w_organization_social"];
+
+/** Vrai uniquement si le propriétaire du projet a explicitement confirmé (via cette variable)
+ * que LinkedIn a réellement approuvé l'accès organisation pour cette application — jamais détecté
+ * automatiquement (une tentative d'appel API échouée ne suffit pas à distinguer "pas encore
+ * approuvé" de "temporairement indisponible"). Tant que ce n'est pas activé, aucune UI ni route
+ * ne propose la connexion d'une Page LinkedIn — voir docs/linkedin-production-readiness.md. */
+export function isLinkedInOrganizationAccessEnabled(): boolean {
+  return process.env.LINKEDIN_ORGANIZATION_ACCESS_ENABLED === "true";
+}
+
 /** Ne préfixer aucune de ces variables par NEXT_PUBLIC_ — toutes doivent rester côté serveur
  * uniquement (voir .env.example). */
 export interface LinkedInConfig {

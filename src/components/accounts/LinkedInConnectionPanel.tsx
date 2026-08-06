@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LinkedInOrganizationsPanel } from "@/components/accounts/LinkedInOrganizationsPanel";
 import { OAUTH_CONNECTION_STATE_LABEL, type OAuthConnectionSummary } from "@/types/oauth-connection";
 import type { SocialAccount } from "@/types/dashboard";
+
+const ORGANIZATION_SCOPES = ["r_organization_admin", "w_organization_social"];
+
+// Duplication volontaire (pas d'import de organizations.ts/config.ts ici) : ces modules tirent
+// des dépendances serveur uniquement (service-role, chiffrement) qui ne doivent jamais entrer
+// dans le bundle client, même indirectement — voir la même décision documentée pour providers.ts.
+function isLinkedInOrganizationAccount(externalAccountId: string | undefined): boolean {
+  return Boolean(externalAccountId?.startsWith("urn:li:organization:"));
+}
 
 const STATE_TONE: Record<OAuthConnectionSummary["state"], "muted" | "success" | "warning" | "error"> = {
   not_configured: "muted",
@@ -148,6 +158,23 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
         <p className="text-[11px] text-muted-foreground ">
           Jeton valide jusqu&apos;au {new Date(summary.tokenExpiresAt).toLocaleString("fr-FR")}.
         </p>
+      )}
+
+      {state === "connected" && !isLinkedInOrganizationAccount(account.externalAccountId) && (
+        <>
+          {ORGANIZATION_SCOPES.every((scope) => (summary?.scopes ?? []).includes(scope)) ? (
+            <LinkedInOrganizationsPanel adminAccountId={account.id} brandId={account.brandId} />
+          ) : (
+            account.brandId && (
+              <a
+                href={`/api/social/linkedin/connect?brandId=${encodeURIComponent(account.brandId)}&includeOrganization=true`}
+                className="w-fit text-[11px] font-medium text-violet-700 hover:underline dark:text-violet-300"
+              >
+                Autoriser aussi la publication sur une Page LinkedIn administrée
+              </a>
+            )
+          )}
+        </>
       )}
 
       {error && <p className="text-xs font-medium text-red-600 dark:text-red-400">{error}</p>}

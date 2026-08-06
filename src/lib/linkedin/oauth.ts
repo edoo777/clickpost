@@ -32,15 +32,21 @@ function buildRedirectAndState(payload: Omit<OAuthStatePayload, "nonce" | "issue
 }
 
 /** Construit l'URL de redirection vers LinkedIn — jamais appelée si `getLinkedInConfig()` est
- * `null` (l'appelant doit vérifier `isLinkedInOAuthConfigured()` avant). */
-export function buildAuthorizationUrl(payload: Omit<OAuthStatePayload, "nonce" | "issuedAt">): string {
+ * `null` (l'appelant doit vérifier `isLinkedInOAuthConfigured()` avant). `scopes` par défaut aux
+ * portées minimales du membre ; le flux Page Entreprise (Phase 4) passe la liste étendue
+ * uniquement lorsque `isLinkedInOrganizationAccessEnabled()` est vrai côté appelant — jamais
+ * demandée par défaut. */
+export function buildAuthorizationUrl(
+  payload: Omit<OAuthStatePayload, "nonce" | "issuedAt">,
+  scopes: string[] = LINKEDIN_MEMBER_SCOPES
+): string {
   const { config, state } = buildRedirectAndState(payload);
   const url = new URL(AUTHORIZATION_URL);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("redirect_uri", config.redirectUri);
   url.searchParams.set("state", state);
-  url.searchParams.set("scope", LINKEDIN_MEMBER_SCOPES.join(" "));
+  url.searchParams.set("scope", scopes.join(" "));
   return url.toString();
 }
 
