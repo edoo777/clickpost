@@ -14,6 +14,11 @@ Voir `.env.example` pour le patron exact (jamais de secret commité). Résumé :
 | `ANTHROPIC_API_KEY` | Non (dégrade proprement) | Serveur uniquement | Sans elle, génération Claude désactivée avec message explicite (`isAnthropicConfigured()`), jamais simulée comme réussie. |
 | `ANTHROPIC_MODEL` | Non | Serveur uniquement | Modèle Claude utilisé pour toute génération. |
 | `YOUTUBE_API_KEY` | Non | Serveur uniquement | Sans elle, `/tendances` affiche un état "configuration manquante" pour cette source, jamais de fausses tendances. |
+| `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` / `LINKEDIN_REDIRECT_URI` / `LINKEDIN_API_VERSION` | Non (LinkedIn reste désactivé sans elles) | Serveur uniquement | Voir `docs/linkedin-production-readiness.md`. |
+| `TOKEN_ENCRYPTION_KEY` | Requise si LinkedIn activé | Serveur uniquement | Chiffrement des jetons OAuth stockés — jamais réutilisée entre environnements. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Requise si LinkedIn activé | Serveur uniquement | Contourne la RLS par conception — jamais exposée au client, jamais utilisée hors des routes LinkedIn. |
+| `CRON_SECRET` | Requise si le planificateur LinkedIn est utilisé | Serveur uniquement (+ config Vercel Cron) | Authentifie les appels de `/api/cron/linkedin-publish`. |
+| `LINKEDIN_ORGANIZATION_ACCESS_ENABLED` | Non | Serveur uniquement | Reste `false` tant que LinkedIn n'a pas approuvé l'accès Page Entreprise — voir Phase 4 de `docs/linkedin-production-readiness.md`. |
 
 Aucune autre plateforme sociale n'a de variable d'environnement — voir
 `docs/social-platform-setup.md` pour la procédure complète le jour où l'une d'elles sera branchée.
@@ -52,10 +57,15 @@ Aucune autre plateforme sociale n'a de variable d'environnement — voir
 
 ## Configuration Vercel (ou équivalent Next.js)
 
-- Renseigner les 5 variables d'environnement ci-dessus dans les paramètres du projet (jamais dans
-  le dépôt).
+- Renseigner toutes les variables d'environnement ci-dessus dans les paramètres du projet (jamais
+  dans le dépôt).
 - Build command standard Next.js (`next build`) — déjà vérifié fonctionnel dans ce dépôt.
 - Domaine de production à synchroniser avec le **Site URL** Supabase (voir plus haut).
+- **Cron LinkedIn** (`vercel.json`) : exécution planifiée toutes les 5 minutes de
+  `/api/cron/linkedin-publish`. Le palier gratuit Vercel limite les Cron Jobs à une exécution
+  quotidienne — sur ce palier, adapter `vercel.json` en conséquence ou déclencher manuellement
+  (voir `docs/linkedin-production-readiness.md`). `CRON_SECRET` doit être défini côté Vercel pour
+  que l'en-tête d'autorisation automatique soit envoyé.
 
 ## Configuration Anthropic
 
@@ -71,10 +81,11 @@ Aucune autre plateforme sociale n'a de variable d'environnement — voir
   activée, restriction "API restrictions" recommandée (voir commentaire dans `.env.example`).
 - Quota gratuit : 10 000 unités/jour, 1 unité par appel `videos.list`.
 
-## Configuration des futurs réseaux sociaux
+## Configuration des réseaux sociaux
 
-Voir `docs/social-platform-setup.md` — architecture déjà prête (`PublishProvider`/
-`StatsProvider`), aucune plateforme configurée aujourd'hui.
+LinkedIn dispose d'une intégration réelle (voir `docs/linkedin-production-readiness.md`) —
+toutes les autres plateformes restent au stade architecture prête uniquement
+(`PublishProvider`/`StatsProvider`, voir `docs/social-platform-setup.md`).
 
 ## Procédure de test avant mise en production
 

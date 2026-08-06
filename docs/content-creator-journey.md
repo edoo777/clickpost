@@ -43,11 +43,17 @@ publication publiée peut être recyclée en nouvelle idée.
 11. **Approuver** — `/approbations` ou directement sur la fiche publication ; réservé à
     l'approbateur désigné ou à un administrateur du workspace. Une publication déjà approuvée qui
     est modifiée repasse automatiquement en révision (jamais de modification silencieuse).
-12. **Planifier** — statut « Programmé », date/heure choisies sur la fiche publication.
-13. **Publier** — **manuellement** aujourd'hui (aucune plateforme sociale n'a d'intégration API
-    réelle) : panneau « Publication manuelle » sur la fiche, avec copie du texte, téléchargement
-    des médias, checklist, puis confirmation explicite. Ne prétend jamais qu'un envoi automatique
-    a eu lieu.
+12. **Planifier** — statut « Programmé », date/heure et fuseau horaire choisis sur la fiche
+    publication. Pour LinkedIn, le planificateur réel (`/api/cron/linkedin-publish`, voir
+    `docs/linkedin-production-readiness.md`) publie automatiquement à l'heure prévue, dans le
+    fuseau choisi.
+13. **Publier** — **LinkedIn (profil personnel connecté)** : réellement automatique, via le
+    bouton « Publier via LinkedIn » (immédiat) ou le planificateur (programmé) — statut « Publié »
+    jamais affiché sans confirmation réelle de LinkedIn (identifiant de post réel, lien direct
+    affiché sur la fiche). Pages LinkedIn administrées : architecture prête, en attente de
+    l'approbation LinkedIn (voir Phase 4). **Toutes les autres plateformes** : manuel aujourd'hui,
+    panneau « Publication manuelle » sur la fiche, avec copie du texte, téléchargement des médias,
+    checklist, puis confirmation explicite — ne prétend jamais qu'un envoi automatique a eu lieu.
 14. **Promouvoir** — checklist de promotion générée automatiquement à la publication (repartage
     en story, diffusion communautaire, réponse aux commentaires, mention d'un partenaire, demande
     de partage à l'équipe, recyclage, relance différée, promotion payante facultative), visible
@@ -68,7 +74,7 @@ publication publiée peut être recyclée en nouvelle idée.
 | Étape | État |
 |---|---|
 | 1–12 (marque → planification) | Entièrement fonctionnel, données réelles. |
-| 13 (publication) | Fonctionnel en mode manuel uniquement — aucune API sociale connectée. |
+| 13 (publication) | LinkedIn (profil personnel) : réel, automatique, immédiat ou programmé. Autres plateformes : mode manuel uniquement — aucune autre API sociale connectée. |
 | 14 (promotion) | Fonctionnel, checklist réelle rattachée à la publication. |
 | 15 (analyse) | Fonctionnel pour le nombre de publications ; le reste nécessite un import CSV ou reste à zéro. |
 | 16 (optimisation) | Fonctionnel, calculs déterministes sur les données déjà affichées. |

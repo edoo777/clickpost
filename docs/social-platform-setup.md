@@ -1,8 +1,11 @@
 # Configuration des plateformes sociales — ClickPost
 
-**LinkedIn dispose désormais d'une intégration API réelle pilote** — voir
-`docs/linkedin-test-integration.md` pour son architecture, ses variables et sa procédure de
-connexion. Pour toutes les autres plateformes ci-dessous, rien n'a changé : aucune intégration API
+**LinkedIn dispose désormais d'une intégration API réelle**, confirmée par un premier test
+complet (connexion, publication réelle, planificateur) — voir
+`docs/linkedin-production-readiness.md` pour l'état d'ensemble à jour (ce qui fonctionne
+réellement, permissions, limites, tests restants) et `docs/linkedin-test-integration.md` pour
+l'architecture détaillée du pilote initial. Pour toutes les autres plateformes ci-dessous, rien
+n'a changé : aucune intégration API
 réelle n'existe encore. C'est volontaire : ClickPost n'affiche jamais un envoi automatique qui n'a
 pas réellement eu lieu. Ce document explique l'architecture déjà en place et la procédure à suivre
 pour brancher une vraie intégration, plateforme par plateforme, quand vous serez prêt — LinkedIn

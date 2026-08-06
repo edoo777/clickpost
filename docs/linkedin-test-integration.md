@@ -1,10 +1,19 @@
 # Intégration LinkedIn réelle (plateforme pilote) — ClickPost
 
 LinkedIn est la première plateforme sociale de ClickPost à disposer d'une intégration API réelle
-(OAuth, publication, statut). Ce document décrit l'architecture mise en place, les variables à
-fournir, le flux OAuth, la publication, les médias, la programmation, les statistiques, les
-limites connues, les tests effectués, et les procédures de connexion réelle / déconnexion /
-retour en arrière.
+(OAuth, publication, statut). Ce document décrit l'architecture initiale mise en place lors du
+pilote : variables à fournir, flux OAuth, publication, médias, limites connues, tests effectués,
+et procédures de connexion réelle / déconnexion / retour en arrière.
+
+**Depuis le premier test réel réussi** (OAuth fonctionnel, compte personnel connecté, publication
+réelle confirmée), le développement complet a repris — planificateur réel, Pages LinkedIn
+administrées, statistiques honnêtes, nettoyage et durcissement. Voir
+**`docs/linkedin-production-readiness.md`** pour l'état d'ensemble à jour (ce qui fonctionne
+réellement aujourd'hui, ce qui attend encore l'approbation LinkedIn, permissions utilisées,
+limites, tests à réaliser avant production). Ce document-ci reste la référence pour
+l'architecture du pilote initial (OAuth membre, publication personnelle, médias) ; les sections
+Programmation et Statistiques ci-dessous sont partiellement obsolètes (le planificateur décrit en
+section 7 est aujourd'hui réellement implémenté, voir la Phase 3 du rapport de production).
 
 ## 1. Architecture
 
