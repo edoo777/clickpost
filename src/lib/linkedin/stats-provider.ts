@@ -14,6 +14,14 @@ import type { StatsProvider } from "@/types/stats-provider";
  * une vraie mesure, jamais une donnée inventée. L'import CSV et la saisie manuelle existants
  * (Phase F) restent la seule source de statistiques LinkedIn tant qu'une portée d'analyse n'est
  * pas explicitement demandée et accordée dans une itération future.
+ *
+ * Préparation Phase 4 (Pages LinkedIn) : même une fois `r_organization_admin` et
+ * `w_organization_social` accordés (publication en tant que Page), les statistiques d'une Page
+ * restent inaccessibles sans une portée supplémentaire distincte (`r_organization_social`,
+ * également soumise à revue LinkedIn) — ne jamais supposer que les statistiques deviennent
+ * disponibles simplement parce que la publication sur Page l'est. Ce fournisseur devra vérifier
+ * cette portée précise avant de tenter le moindre appel, le jour où elle est explicitement
+ * demandée et accordée.
  */
 export const linkedInStatsProvider: StatsProvider = {
   platform: "linkedin",

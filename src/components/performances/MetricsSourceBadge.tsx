@@ -1,9 +1,18 @@
 import type { DataSourceSummary } from "@/lib/analytics-report";
 
 /** Rend explicite la provenance des chiffres affichés — jamais un mélange silencieux (voir
- * mergeSourceSummaries dans analytics-report.ts). Ne rend rien si aucune source (état vide). */
+ * mergeSourceSummaries dans analytics-report.ts). Sans aucune source (ni import, ni démonstration
+ * — le cas de LinkedIn aujourd'hui, dont les portées actuelles ne donnent accès à aucune API de
+ * statistiques, voir linkedin/stats-provider.ts), l'affiche explicitement plutôt que de laisser
+ * un silence ambigu entre "aucune donnée" et "pas encore vérifié". */
 export function MetricsSourceBadge({ sources }: { sources: DataSourceSummary }) {
-  if (!sources.hasImported && !sources.hasDemo) return null;
+  if (!sources.hasImported && !sources.hasDemo) {
+    return (
+      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+        Données non encore disponibles
+      </span>
+    );
+  }
 
   if (sources.hasImported && sources.hasDemo) {
     return (
