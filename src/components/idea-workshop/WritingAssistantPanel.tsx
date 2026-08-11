@@ -104,8 +104,8 @@ export function WritingAssistantPanel({
         {tab === "assistant" && (
           <div className="flex flex-col gap-1">
             <p className="mb-2 rounded-lg bg-muted px-2.5 py-2 text-xs text-muted-foreground">
-              « Génération complète » peut utiliser Claude (IA réelle) si configuré côté serveur ;
-              les autres actions restent générées localement (mode démonstration).
+              Les actions de l&apos;Atelier utilisent Claude (IA réelle) si le serveur est configuré ;
+              en cas d&apos;échec, un résultat simulé de repli est appliqué.
             </p>
             {resultSlot}
             {CATEGORIES.map((category) => {

@@ -72,6 +72,25 @@ function resolveTextBody(currentVersion: ContentVersion | undefined, context: AI
   return generated.body as TextBody;
 }
 
+function buildCurrentVersionText(currentVersion: ContentVersion | undefined, context: AIGenerationContext): string | undefined {
+  if (currentVersion?.format === "text") {
+    const { hook, intro, body, conclusion, cta, hashtags, firstComment } = currentVersion.body;
+    const segments = [
+      hook ? `Accroche : ${hook}` : null,
+      intro ? `Introduction : ${intro}` : null,
+      body ? `Corps : ${body}` : null,
+      conclusion ? `Conclusion : ${conclusion}` : null,
+      cta ? `Appel à l'action : ${cta}` : null,
+      hashtags?.length ? `Hashtags : ${hashtags.join(" ")}` : null,
+      firstComment ? `Premier commentaire : ${firstComment}` : null,
+    ].filter((segment): segment is string => Boolean(segment));
+    if (segments.length > 0) return segments.join("\n\n");
+  }
+
+  const ideaBody = context.idea.body?.trim();
+  return ideaBody ? ideaBody : undefined;
+}
+
 function textResultVersion(
   source: ContentVersion | undefined,
   transformedBody: TextBody,
@@ -218,10 +237,9 @@ type RemoteOutcome = { result: PresetResult } | { reason: string };
 
 /**
  * Fournisseur actif par défaut. N'appelle jamais Anthropic directement (aucun SDK importé ici,
- * ce module est chargé côté client) — uniquement `fetch` vers notre propre route serveur
- * `/api/ia/atelier/generation-complete`, qui seule détient la clé et décide si un appel réel a
- * lieu. Toute action non encore branchée à Claude (F2.1 : tout sauf « Génération complète » sur
- * un preset) est déléguée telle quelle au générateur simulé — aucune logique dupliquée.
+ * ce module est chargé côté client) — uniquement `fetch` vers nos propres routes serveur qui
+ * détiennent la clé et décident si un appel réel a lieu. Toutes les actions de l'Atelier peuvent
+ * désormais tenter Claude ; un échec tombe en repli sur le générateur simulé, pour ne jamais bloquer.
  */
 class RemoteAIContentGenerationProvider implements ContentGenerationProvider {
   readonly isSimulated = false;
@@ -263,16 +281,72 @@ class RemoteAIContentGenerationProvider implements ContentGenerationProvider {
     }
   }
 
+  private async tryRemotePresetGeneration(
+    preset: PromptPreset,
+    context: AIGenerationContext,
+    currentVersion: ContentVersion | undefined,
+    versions: ContentVersion[]
+  ): Promise<RemoteOutcome> {
+    try {
+      const response = await fetch("/api/ia/atelier/preset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ideaId: context.idea.id,
+          presetId: preset.id,
+          tone: context.tone,
+          length: context.length,
+          instructions: context.instructions ?? "",
+          currentText: buildCurrentVersionText(currentVersion, context),
+          currentFormat: currentVersion?.format,
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { status: "ok"; resultKind: "version"; content: TextBody }
+        | { status: "ok"; resultKind: "text_list"; items: string[] }
+        | { status: "ok"; resultKind: "report"; items: string[] }
+        | { status: "error"; code: string; message: string }
+        | null;
+      if (!data) return { reason: `http_${response.status}` };
+      if (data.status !== "ok") return { reason: data.code };
+
+      if (data.resultKind === "version") {
+        const version = textResultVersion(currentVersion, data.content, versions, preset.name, context.idea.id);
+        return { result: { kind: "version", version, source: "claude" } };
+      }
+
+      const label = preset.action === "hooks"
+        ? "Choisissez un hook à insérer"
+        : preset.action === "angles"
+          ? "Choisissez un angle à développer"
+          : "Résultat de la génération";
+
+      if (data.resultKind === "text_list") {
+        return { result: { kind: "text_list", label, items: data.items } };
+      }
+
+      return { result: { kind: "report", label: "Résultat de la vérification", items: data.items } };
+    } catch {
+      return { reason: "network_error" };
+    }
+  }
+
   async generateFromPreset(
     preset: PromptPreset,
     context: AIGenerationContext,
     currentVersion: ContentVersion | undefined,
     versions: ContentVersion[]
   ): Promise<PresetResult | null> {
-    if (preset.action !== "full_generation") {
-      return this.fallback.generateFromPreset(preset, context, currentVersion, versions);
+    if (preset.action === "full_generation") {
+      const outcome = await this.tryRemoteFullGeneration(context, currentVersion, versions, preset.name);
+      if ("result" in outcome) return outcome.result;
+
+      const fallbackResult = await this.fallback.generateFromPreset(preset, context, currentVersion, versions);
+      if (fallbackResult?.kind === "version") return { ...fallbackResult, fallbackReason: outcome.reason };
+      return fallbackResult;
     }
-    const outcome = await this.tryRemoteFullGeneration(context, currentVersion, versions, preset.name);
+
+    const outcome = await this.tryRemotePresetGeneration(preset, context, currentVersion, versions);
     if ("result" in outcome) return outcome.result;
 
     const fallbackResult = await this.fallback.generateFromPreset(preset, context, currentVersion, versions);

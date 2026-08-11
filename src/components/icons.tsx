@@ -50,6 +50,24 @@ export function IconSend(props: IconProps) {
   );
 }
 
+export function IconChatBubble(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7l-5 5V6a2 2 0 0 1 2-2Z" />
+      <path d="M8 10h8M8 14h5" />
+    </Base>
+  );
+}
+
+export function IconClock(props: IconProps) {
+  return (
+    <Base {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v4l3 2" />
+    </Base>
+  );
+}
+
 export function IconUsers(props: IconProps) {
   return (
     <Base {...props}>
