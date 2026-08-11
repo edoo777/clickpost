@@ -394,7 +394,7 @@ export function TopicGeneratorForm({
           {brandAccounts.length === 0 ? (
             <p className="text-xs text-muted-foreground ">
               Aucun compte de marque configuré — vous pouvez quand même choisir les plateformes
-              ciblées et générer vos idées.{" "}
+              ciblées et générer vos sujets.{" "}
               <Link href="/marques" className="text-violet-600 hover:underline dark:text-violet-400">
                 Configurer les comptes de la marque
               </Link>

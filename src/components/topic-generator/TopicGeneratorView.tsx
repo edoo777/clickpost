@@ -193,6 +193,7 @@ export function TopicGeneratorView() {
         selected: false,
         locked: false,
         contentType: generated.contentType,
+        angle: generated.angle,
       });
     });
     setLotsByBatch((prev) => patchLot(prev, batchId, index, { status: "success" }));
@@ -575,7 +576,7 @@ export function TopicGeneratorView() {
         unique.forEach((generated, offset) => {
           const target = unlocked[cursor + offset];
           if (!target) return;
-          updateTopic(target.id, { label: generated.label, contentType: generated.contentType, selected: false });
+          updateTopic(target.id, { label: generated.label, contentType: generated.contentType, angle: generated.angle, selected: false });
           totalReplaced += 1;
         });
         lastSource = outcome.result.source;
@@ -666,9 +667,9 @@ export function TopicGeneratorView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Générateur d&apos;idées</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Générateur de sujets</h1>
         <p className="text-sm text-muted-foreground ">
-          Génère un ou plusieurs blocs d&apos;idées, un par thématique, avec leur propre répartition de
+          Génère un ou plusieurs blocs de sujets, un par thématique, avec leur propre répartition de
           types de contenu — par lots de {DEFAULT_LOT_SIZE} pour rester fiable sur de grandes demandes.
         </p>
       </header>

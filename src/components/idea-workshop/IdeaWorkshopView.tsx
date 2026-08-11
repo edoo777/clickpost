@@ -13,7 +13,7 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import type { AIGenerationContext } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useCampaignsSession } from "@/lib/campaigns-store";
-import { contentGenerationProvider, type PresetResult } from "@/lib/content-generation-provider";
+import { contentGenerationProvider, type PresetResult, type RewriteSelectionResult } from "@/lib/content-generation-provider";
 import { applyVersionToIdea, buildVersionFromIdea, duplicateVersion } from "@/lib/content-versions";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { mapIdeaStatusToPublicationStatus, SYNC_ACTOR_NAME } from "@/lib/idea-publication-sync";
@@ -201,9 +201,9 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     setConfirmation("Proposition insérée.");
   }
 
-  function handleRewriteSelection(selectedText: string, instruction: string): string {
+  async function handleRewriteSelection(selectedText: string, instruction: string): Promise<RewriteSelectionResult> {
     const context = buildContext();
-    if (!context) return selectedText;
+    if (!context) return { text: selectedText, source: "simulated" };
     return contentGenerationProvider.rewriteSelection(selectedText, instruction, context);
   }
 

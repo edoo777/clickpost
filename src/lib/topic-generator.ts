@@ -141,6 +141,9 @@ export function detectExistingIdeaMatches(topics: Topic[], existingIdeas: Idea[]
 export interface GeneratedTopic {
   label: string;
   contentType?: ContentType;
+  /** Angle recommandé pour ce sujet — présent uniquement lorsque la génération vient réellement
+   * de Claude (absent en mode simulé, jamais inventé côté client). */
+  angle?: string;
 }
 
 /** Attache un type de contenu à chaque sujet généré, dans l'ordre de la répartition demandée —
@@ -243,7 +246,7 @@ export interface SharedGenerationParams {
 
 interface TopicsApiSuccessGroup {
   themeId: string;
-  ideas: { title: string; contentType: ContentType }[];
+  ideas: { title: string; contentType: ContentType; angle?: string }[];
   rejectedCount: number;
 }
 interface TopicsApiSuccess {
@@ -336,7 +339,7 @@ export async function generateTopicsLot(
     return {
       result: {
         themeId: request.themeId,
-        topics: group.ideas.map((idea) => ({ label: idea.title, contentType: idea.contentType })),
+        topics: group.ideas.map((idea) => ({ label: idea.title, contentType: idea.contentType, angle: idea.angle })),
         source: "claude",
         rejectedCount: group.rejectedCount,
       },

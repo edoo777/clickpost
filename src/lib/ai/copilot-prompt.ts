@@ -3,6 +3,7 @@ import type { ContentFormat } from "@/types/editorial-calendar";
 import type { SocialAccount } from "@/types/dashboard";
 import type { Theme } from "@/types/theme";
 import type { CopilotHistoryItem } from "@/lib/ai/validate-copilot-request";
+import { buildBrandContextLines } from "@/lib/ai/prompt-context";
 
 export interface CopilotPromptInput {
   brand: BrandProfile;
@@ -10,33 +11,8 @@ export interface CopilotPromptInput {
   themes: Theme[];
   ideas: { title: string; status: string; platform?: string; format?: ContentFormat }[];
   publications: { theme: string; scheduledFor: string; platform: string; status: string }[];
-  editorialCalendarSummary: string | null;
   message: string;
   history?: CopilotHistoryItem[];
-}
-
-function joinList(items: string[], label: string): string | null {
-  if (items.length === 0) return null;
-  return `${label} : ${items.slice(0, 6).join(", ")}`;
-}
-
-function buildBrandContext(brand: BrandProfile): string[] {
-  return [
-    `Marque : ${brand.name}`,
-    `Secteur : ${brand.industry || "non précisé"}`,
-    brand.positioning ? `Positionnement : ${brand.positioning}` : null,
-    brand.valueProposition ? `Offre : ${brand.valueProposition}` : null,
-    brand.description ? `Description : ${brand.description}` : null,
-    `Audience cible : ${brand.targetAudience || "non précisée"}`,
-    joinList(brand.productsAndServices, "Produits & services"),
-    joinList(brand.priorityTopics, "Thématiques prioritaires"),
-    joinList(brand.communicationGoals, "Objectifs marketing"),
-    joinList(brand.topicsToAvoid, "Sujets à éviter"),
-    joinList(brand.preferredPhrases, "Mots à privilégier"),
-    joinList(brand.forbiddenWords, "Mots interdits"),
-    joinList(brand.preferredCtas, "Appels à l'action préférés"),
-    joinList(brand.socialPlatforms, "Réseaux sociaux"),
-  ].filter((line): line is string => Boolean(line));
 }
 
 function buildConnectedAccounts(connectedAccounts: SocialAccount[]): string | null {
@@ -83,12 +59,11 @@ export function buildCopilotPrompt(input: CopilotPromptInput) {
 
   const userLines = [
     "Contexte de marque :",
-    ...buildBrandContext(input.brand),
+    ...buildBrandContextLines(input.brand),
     buildConnectedAccounts(input.connectedAccounts),
     buildThemes(input.themes),
     buildIdeas(input.ideas),
     buildPublications(input.publications),
-    input.editorialCalendarSummary ? `Calendrier éditorial : ${input.editorialCalendarSummary}` : null,
     "---",
     `Demande : ${input.message}`,
   ].filter((line): line is string => Boolean(line));

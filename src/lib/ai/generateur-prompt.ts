@@ -25,6 +25,13 @@ export interface GenerateurPromptInput {
   valueProposition?: string;
   audiencePainPoints?: string[];
   preferredContentTypes?: string[];
+  /** Positionnement et description de la marque — jamais requis, ignorés si absents. */
+  positioning?: string;
+  description?: string;
+  /** Titres déjà présents dans le workspace (sujets/idées existants pour cette marque) — jamais
+   * envoyés pour être recopiés, uniquement pour que Claude évite de générer un doublon ou une
+   * simple paraphrase d'un sujet déjà traité. */
+  existingTitles?: string[];
 }
 
 export interface GenerateurPrompt {
@@ -46,29 +53,43 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
 
   const system = [
     "Tu es un stratège de contenu francophone pour une agence marketing. Tu dois générer des",
-    "idées de publications regroupées par thématique, pour la marque suivante :",
+    "sujets de publications regroupés par thématique, pour la marque suivante :",
     `- Marque : ${input.brandName}`,
     `- Niche (secteur) : ${input.niche || "non précisée"}`,
+    input.positioning ? `- Positionnement : ${input.positioning}` : null,
+    input.description ? `- Description : ${input.description}` : null,
     "",
-    "DISTINCTION STRICTE À RESPECTER — cinq concepts différents, jamais interchangeables :",
+    "DISTINCTION STRICTE À RESPECTER — six concepts différents, jamais interchangeables :",
     "1. niche : le secteur général de la marque (ex. Fitness, Immobilier) — déjà fourni ci-dessus, à reporter tel quel.",
-    "2. thématique (theme) : un sujet qui découle de la niche (ex. Musculation, Nutrition, Course à pied) — JAMAIS un angle éditorial, JAMAIS le nom d'un réseau social.",
-    `3. type de contenu (contentType) : l'angle éditorial utilisé pour traiter la thématique. Valeurs autorisées UNIQUEMENT : ${CONTENT_TYPE_LIST}.`,
-    "4. format : la forme de la publication (ex. Carrousel, Vidéo courte).",
-    "5. plateforme (platform) : le réseau social visé (ex. Instagram, LinkedIn) — un simple contexte éditorial pour adapter le ton/format, jamais un sujet ni une thématique.",
+    "2. thématique (theme) : un pilier éditorial récurrent qui découle de la niche (ex. Musculation, Nutrition, Course à pied) — large et stable dans le temps, JAMAIS un sujet précis, JAMAIS un angle, JAMAIS le nom d'un réseau social.",
+    "3. sujet (title) : une déclinaison concrète et spécifique de la thématique (ex. pour la thématique « Automatisation » : « 5 tâches qu'un dirigeant devrait automatiser ») — jamais une reformulation générique de la thématique elle-même.",
+    "4. angle (angle) : le point de vue ou la façon précise de traiter ce sujet (ex. « Pourquoi continuer à les faire soi-même coûte plus cher ») — une prise de position ou un fil conducteur concret, jamais un mot-clé isolé, jamais une répétition du titre.",
+    `5. type de contenu (contentType) : la catégorie éditoriale du sujet. Valeurs autorisées UNIQUEMENT : ${CONTENT_TYPE_LIST}.`,
+    "6. format et plateforme : la forme de la publication et le réseau social visé — un contexte éditorial pour adapter le ton/format, jamais un sujet ni une thématique.",
     "",
     'INTERDICTION ABSOLUE : ne jamais placer un type de contenu ("Conseil", "Preuve", "Offre", "Témoignage"…) dans le champ theme.',
     'INTERDICTION ABSOLUE : ne jamais déduire ou inventer une thématique à partir d\'une plateforme — ne transforme jamais "Instagram", "LinkedIn" ou "TikTok" en thématique.',
     "Le champ theme doit toujours être exactement l'un des libellés de thématique fournis dans la demande, reproduit à l'identique.",
     hasPlatforms
-      ? "Adapte le comportement et le format suggéré des idées aux plateformes visées ci-dessous, sans jamais changer la thématique elle-même."
-      : 'Aucune plateforme spécifique n\'est visée : génère des idées générales, adaptables à plusieurs contextes, sans supposer une plateforme précise ni la mentionner comme "au choix" dans le contenu.',
+      ? "Adapte le comportement et le format suggéré des sujets aux plateformes visées ci-dessous, sans jamais changer la thématique elle-même."
+      : 'Aucune plateforme spécifique n\'est visée : génère des sujets généraux, adaptables à plusieurs contextes, sans supposer une plateforme précise ni la mentionner comme "au choix" dans le contenu.',
+    "",
+    "QUALITÉ ATTENDUE — chaque sujet doit être concret et spécifique à cette marque et à cette",
+    "audience, jamais un titre générique interchangeable avec n'importe quelle autre marque du",
+    "même secteur. Interdits explicites : les titres formulés comme \"<Thématique> : <mot-clé>\"",
+    "ou \"<Thématique> — ce qu'il faut savoir sur <mot-clé>\" (gabarits creux) ; les paraphrases d'un",
+    "même sujet au sein de la même génération ; les titres à consonance SEO artificielle",
+    "(\"Top 10\", \"Le guide ultime\", \"Tout savoir sur\") sans contenu concret derrière ; deux sujets",
+    "qui ne diffèrent que par un mot. Chaque sujet doit pouvoir se distinguer clairement des autres",
+    "par son idée, pas seulement par sa formulation.",
     "",
     "Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, exactement de cette forme :",
-    '{"groups":[{"themeId":"...","ideas":[{"title":"...","description":"...","niche":"...","theme":"...","contentType":"advice","format":"...","objective":"...","platform":"..."}]}]}',
+    '{"groups":[{"themeId":"...","ideas":[{"title":"...","angle":"...","description":"...","niche":"...","theme":"...","contentType":"advice","format":"...","objective":"...","platform":"..."}]}]}',
     `Le champ contentType doit être l'une de ces valeurs exactes (en anglais, minuscules) : ${ALL_CONTENT_TYPES.join(", ")}.`,
     "Un objet « groups » par thématique demandée, dans le même ordre que la demande, avec le même themeId.",
-  ].join("\n");
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 
   const themeLines = input.themes.map((theme) => {
     const distributionText = Object.entries(theme.distribution)
@@ -100,6 +121,13 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
       ? `Types de contenu privilégiés par la marque : ${input.preferredContentTypes.join(", ")}`
       : null,
     input.instructions ? `Instructions supplémentaires : ${input.instructions}` : null,
+    input.existingTitles && input.existingTitles.length > 0
+      ? [
+          "Sujets déjà présents dans le workspace de cette marque — ne les recopie jamais, ne les",
+          "paraphrase jamais, propose uniquement des sujets réellement distincts de cette liste :",
+          ...input.existingTitles.map((title) => `- ${title}`),
+        ].join("\n")
+      : null,
   ].filter((line): line is string => Boolean(line));
 
   return { system, user: userLines.join("\n") };

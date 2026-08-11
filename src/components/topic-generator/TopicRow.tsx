@@ -42,13 +42,16 @@ export function TopicRow({
         onChange={onToggleSelect}
         aria-label="Sélectionner ce sujet"
       />
-      <input
-        value={topic.label}
-        onChange={(event) => onChangeLabel(event.target.value)}
-        disabled={topic.locked}
-        aria-label="Modifier le libellé du sujet"
-        className="flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-zinc-200 focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
-      />
+      <div className="flex flex-1 flex-col">
+        <input
+          value={topic.label}
+          onChange={(event) => onChangeLabel(event.target.value)}
+          disabled={topic.locked}
+          aria-label="Modifier le libellé du sujet"
+          className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-zinc-200 focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
+        />
+        {topic.angle && <span className="truncate px-2 text-xs text-muted-foreground">Angle : {topic.angle}</span>}
+      </div>
       {topic.contentType && (
         <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ">
           {CONTENT_TYPE_LABEL[topic.contentType]}

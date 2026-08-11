@@ -38,6 +38,12 @@ export type PresetResult =
   | { kind: "text_list"; label: string; items: string[] }
   | { kind: "report"; label: string; items: string[] };
 
+export interface RewriteSelectionResult {
+  text: string;
+  source: GenerationSource;
+  fallbackReason?: string;
+}
+
 /**
  * Abstraction de génération de contenu — implémentée par un générateur simulé (déterministe,
  * aucun appel réseau) et par `RemoteAIContentGenerationProvider` (Claude réel, F2.1). Seules
@@ -54,7 +60,7 @@ export interface ContentGenerationProvider {
     currentVersion: ContentVersion | undefined,
     versions: ContentVersion[]
   ): Promise<PresetResult | null>;
-  rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string;
+  rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): Promise<RewriteSelectionResult>;
   generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion>;
   generateHooks(context: AIGenerationContext, count?: number): string[];
   generateCTA(context: AIGenerationContext): string;
@@ -195,8 +201,8 @@ class SimulatedContentGenerationProvider implements ContentGenerationProvider {
     return result.kind === "version" ? { ...result, source: "simulated" } : result;
   }
 
-  rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string {
-    return rewriteSelectionText(selectedText, instruction, context);
+  async rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): Promise<RewriteSelectionResult> {
+    return { text: rewriteSelectionText(selectedText, instruction, context), source: "simulated" };
   }
 
   async generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion> {
@@ -354,8 +360,26 @@ class RemoteAIContentGenerationProvider implements ContentGenerationProvider {
     return fallbackResult;
   }
 
-  rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): string {
-    return this.fallback.rewriteSelection(selectedText, instruction, context);
+  async rewriteSelection(selectedText: string, instruction: string, context: AIGenerationContext): Promise<RewriteSelectionResult> {
+    try {
+      const response = await fetch("/api/ia/atelier/rewrite-selection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ideaId: context.idea.id, selectedText, instruction }),
+      });
+      const data = (await response.json().catch(() => null)) as
+        | { status: "ok"; text: string }
+        | { status: "error"; code: string; message: string }
+        | null;
+      if (data?.status === "ok") {
+        return { text: data.text, source: "claude" };
+      }
+      const fallback = await this.fallback.rewriteSelection(selectedText, instruction, context);
+      return { ...fallback, fallbackReason: data?.status === "error" ? data.code : `http_${response.status}` };
+    } catch {
+      const fallback = await this.fallback.rewriteSelection(selectedText, instruction, context);
+      return { ...fallback, fallbackReason: "network_error" };
+    }
   }
 
   async generateFullContent(context: AIGenerationContext, format: ContentFormat, versions: ContentVersion[]): Promise<ContentVersion> {

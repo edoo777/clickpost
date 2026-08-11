@@ -10,12 +10,13 @@ import { EditorToolbar } from "@/components/idea-workshop/editor/EditorToolbar";
 import { SelectionToolbar } from "@/components/idea-workshop/editor/SelectionToolbar";
 import { SlashCommand } from "@/components/idea-workshop/editor/slash-command-extension";
 import { EMPTY_DOCUMENT } from "@/lib/rich-document";
+import type { RewriteSelectionResult } from "@/lib/content-generation-provider";
 import type { RichDocument } from "@/types/rich-document";
 
 interface WorkshopEditorProps {
   initialContent?: RichDocument;
   onChange: (doc: RichDocument) => void;
-  onRewriteSelection: (selectedText: string, instruction: string) => string;
+  onRewriteSelection: (selectedText: string, instruction: string) => Promise<RewriteSelectionResult>;
   placeholder?: string;
   editable?: boolean;
 }

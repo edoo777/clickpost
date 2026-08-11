@@ -35,7 +35,7 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
     icon: IconLightbulb,
     aliases: ["/generateur-idees", "/banque-idees"],
     subItems: [
-      { label: "Générateur d'idées", href: "/boite-idees?tab=generateur" },
+      { label: "Générateur de sujets", href: "/boite-idees?tab=generateur" },
       { label: "Banque d'idées", href: "/boite-idees?tab=banque" },
     ],
   },
@@ -75,7 +75,7 @@ const PAGE_TITLES: PageTitleEntry[] = [
   { href: "/calendrier", label: "Calendrier éditorial" },
   { href: "/publications/new", label: "Nouvelle publication" },
   { href: "/publications", label: "Publications" },
-  { href: "/generateur-idees", label: "Générateur d'idées" },
+  { href: "/generateur-idees", label: "Générateur de sujets" },
   { href: "/banque-idees", label: "Banque d'idées" },
   { href: "/boite-idees", label: "Boîte à idées" },
   { href: "/assistant-ia", label: "Assistant IA" },

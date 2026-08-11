@@ -71,6 +71,7 @@ export function useDevelopIdea() {
       adhocThemeLabel: batch.themeId ? undefined : batch.adhocThemeLabel,
       batchId: batch.id,
       title: topic.label,
+      angle: topic.angle,
       source: "generated",
       status: "idea",
       platform: batch.platforms[0],

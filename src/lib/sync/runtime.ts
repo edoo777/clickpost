@@ -1,7 +1,7 @@
 import { classifySyncError } from "@/lib/sync/classify-sync-error";
 import { mapRecordToRow, mapRowToRecord } from "@/lib/sync/mappers";
 import * as queueDb from "@/lib/sync/queue";
-import { isSyncableRecordId } from "@/lib/sync/is-user-created";
+import { isSyncableRecordId, stripSeedReferences } from "@/lib/sync/is-user-created";
 import { zonedNaiveToUtcInstant, utcInstantToZonedNaive } from "@/lib/scheduling-time";
 import { SYNC_TABLE_BY_ENTITY, type SyncEntityType, type SyncOperationKind, type SyncStatusState } from "@/lib/sync/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -347,7 +347,7 @@ async function processOperation(
     if (op.queueId !== undefined) await queueDb.removeOperation(op.queueId);
     return;
   }
-  const row = mapRecordToRow(op.payload);
+  const row = stripSeedReferences(mapRecordToRow(op.payload));
   // `scheduled_for` est un timestamptz côté Supabase mais saisi localement comme une date-heure
   // naïve (champ datetime-local) interprétée dans `time_zone` — sans cette conversion, Postgres
   // l'interpréterait dans le fuseau de session (UTC), pas celui réellement choisi.

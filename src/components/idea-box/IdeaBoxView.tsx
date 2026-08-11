@@ -9,7 +9,7 @@ import { TopicGeneratorView } from "@/components/topic-generator/TopicGeneratorV
 type IdeaBoxTab = "generateur" | "banque";
 
 const TABS: { key: IdeaBoxTab; label: string; description: string }[] = [
-  { key: "generateur", label: "Générateur d'idées", description: "Produire des sujets à partir d'une thématique" },
+  { key: "generateur", label: "Générateur de sujets", description: "Produire des sujets à partir d'une thématique" },
   { key: "banque", label: "Banque d'idées", description: "Rédiger et organiser vos notes libres" },
 ];
 

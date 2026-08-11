@@ -6,6 +6,7 @@ import { WeekGrid } from "@/components/editorial-calendar/WeekGrid";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
+import { WEEKDAYS } from "@/lib/editorial-constants";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { BrandEditorialCalendar, EditorialDayPlan, EditorialWeekPlan } from "@/types/editorial-calendar";
@@ -23,25 +24,55 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
   };
 }
 
+function buildEmptyWeekPlan(): EditorialWeekPlan {
+  return {
+    id: crypto.randomUUID(),
+    label: "Semaine type",
+    days: WEEKDAYS.map((day) => ({ day, enabled: false, themeIds: [], platforms: [], formats: [], frequency: 0 })),
+  };
+}
+
+/** Calendrier d'un brand réel — reprend le modèle de démonstration (Nova Cosmetics) uniquement
+ * si son id correspond exactement (jamais le cas pour un vrai brand, dont l'id est un UUID) ;
+ * sinon un plan vide que l'utilisateur construit lui-même. Ne jamais réutiliser tel quel un
+ * calendrier de démonstration pour un vrai brand : ses thématiques (`theme-nova-1`, etc.) ne
+ * correspondent à aucune thématique réelle du workspace. */
+function buildCalendarForBrand(brandId: string): BrandEditorialCalendar {
+  const seedCalendar = brandEditorialCalendars.find((calendar) => calendar.brandId === brandId);
+  if (seedCalendar) return { ...seedCalendar, weekPlans: seedCalendar.weekPlans.map(cloneWeekPlan) };
+  return { brandId, weekPlans: [buildEmptyWeekPlan()] };
+}
+
 export function EditorialCalendarView() {
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { addIdea } = useContentWorkspace();
-  const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() =>
-    brandEditorialCalendars.map((calendar) => ({
-      ...calendar,
-      weekPlans: calendar.weekPlans.map(cloneWeekPlan),
-    }))
-  );
-  const [selectedBrandId, setSelectedBrandId] = useState(calendars[0].brandId);
+  const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() => brands.map((brand) => buildCalendarForBrand(brand.id)));
+  const [selectedBrandId, setSelectedBrandId] = useState(brands[0]?.id ?? "");
+
+  // Ajustement pendant le rendu (motif déjà utilisé ailleurs dans l'app, ex. AssistantCopilotView)
+  // plutôt que dans un effet : garde `calendars`/`selectedBrandId` synchronisés dès qu'un vrai
+  // brand apparaît/disparaît (nouveau brand créé pendant que la page est ouverte, suppression...).
+  const brandIdsKey = brands.map((brand) => brand.id).join(",");
+  const [trackedBrandIdsKey, setTrackedBrandIdsKey] = useState(brandIdsKey);
+  if (brandIdsKey !== trackedBrandIdsKey) {
+    setTrackedBrandIdsKey(brandIdsKey);
+    const missing = brands.filter((brand) => !calendars.some((calendar) => calendar.brandId === brand.id));
+    if (missing.length > 0) {
+      setCalendars((prev) => [...prev, ...missing.map((brand) => buildCalendarForBrand(brand.id))]);
+    }
+    if (!selectedBrandId || !brands.some((brand) => brand.id === selectedBrandId)) {
+      setSelectedBrandId(brands[0]?.id ?? "");
+    }
+  }
+
   const currentCalendar = calendars.find((c) => c.brandId === selectedBrandId) ?? calendars[0];
-  const [selectedPlanId, setSelectedPlanId] = useState(currentCalendar.weekPlans[0].id);
+  const [selectedPlanId, setSelectedPlanId] = useState(currentCalendar?.weekPlans[0]?.id ?? "");
   const [isEditing, setIsEditing] = useState(false);
   const [draftPlan, setDraftPlan] = useState<EditorialWeekPlan | null>(null);
   const [isGenerationModalOpen, setIsGenerationModalOpen] = useState(false);
 
-  const currentPlan =
-    currentCalendar.weekPlans.find((p) => p.id === selectedPlanId) ?? currentCalendar.weekPlans[0];
+  const currentPlan = currentCalendar?.weekPlans.find((p) => p.id === selectedPlanId) ?? currentCalendar?.weekPlans[0];
   const displayedPlan = isEditing && draftPlan ? draftPlan : currentPlan;
   const brandThemes = getActiveThemesForBrand(themes, selectedBrandId);
 
@@ -52,6 +83,24 @@ export function EditorialCalendarView() {
     setIsEditing(false);
     setDraftPlan(null);
   }
+
+  if (brands.length === 0) {
+    return (
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Calendrier éditorial</h1>
+          <p className="text-sm text-muted-foreground">
+            Définissez les thématiques récurrentes de chaque marque pour guider la génération de contenu.
+          </p>
+        </header>
+        <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16]">
+          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour définir un calendrier éditorial.
+        </p>
+      </div>
+    );
+  }
+
+  if (!currentCalendar || !currentPlan) return null;
 
   function handleSelectPlan(planId: string) {
     setSelectedPlanId(planId);
@@ -141,14 +190,11 @@ export function EditorialCalendarView() {
             onChange={(event) => handleSelectBrand(event.target.value)}
             className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300"
           >
-            {calendars.map((calendar) => {
-              const brand = brands.find((b) => b.id === calendar.brandId);
-              return (
-                <option key={calendar.brandId} value={calendar.brandId}>
-                  {brand?.name ?? calendar.brandId}
-                </option>
-              );
-            })}
+            {brands.map((brand) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.name}
+              </option>
+            ))}
           </select>
 
           <div className="flex flex-wrap items-center gap-1.5">

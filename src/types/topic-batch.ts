@@ -56,7 +56,12 @@ export interface Topic {
   duplicateOfId?: string;
   /** Idée déjà créée à partir de ce sujet — évite les doublons lors d'un nouveau clic sur « Développer ». */
   ideaId?: string;
-  /** Type de contenu (angle éditorial) de ce sujet — jamais une thématique. Absent pour les
-   * sujets générés avant cette fonctionnalité ou pour les sujets sans type de contenu défini. */
+  /** Type de contenu (catégorie éditoriale : Conseil, Preuve, Offre…) de ce sujet — jamais une
+   * thématique. Absent pour les sujets générés avant cette fonctionnalité ou sans type défini. */
   contentType?: ContentType;
+  /** Angle recommandé pour traiter ce sujet (ex. « Pourquoi continuer à le faire soi-même coûte
+   * plus cher ») — distinct du type de contenu (une catégorie) et de la thématique (un pilier
+   * récurrent). Repris tel quel dans `Idea.angle` lors du développement du sujet. Absent pour les
+   * sujets générés avant cette fonctionnalité ou en mode simulé. */
+  angle?: string;
 }

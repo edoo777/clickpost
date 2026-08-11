@@ -100,8 +100,6 @@ export async function POST(request: Request) {
     ? (publicationRows as Record<string, unknown>[]).map((row) => mapRowToRecord(row) as unknown as Publication)
     : [];
 
-  const editorialCalendarSummary = themes.length > 0 ? `Thématiques actives : ${themes.map((theme) => theme.label).slice(0, 5).join(", ")}` : null;
-
   const prompt = buildCopilotPrompt({
     brand,
     connectedAccounts,
@@ -118,7 +116,6 @@ export async function POST(request: Request) {
       platform: publication.platform,
       status: publication.status,
     })),
-    editorialCalendarSummary,
     message,
     history,
   });

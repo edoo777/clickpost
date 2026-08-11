@@ -2,6 +2,7 @@ import { ALL_CONTENT_TYPES, matchContentTypeLabel, type ContentType } from "@/li
 
 export interface ParsedTopicIdea {
   title: string;
+  angle: string;
   description: string;
   niche: string;
   theme: string;
@@ -65,6 +66,7 @@ export function parseTopicsResponse(rawText: string, expectedThemeIds: string[])
       }
       const ideaRecord = ideaRaw as Record<string, unknown>;
       const title = boundedString(ideaRecord.title);
+      const angle = boundedString(ideaRecord.angle) ?? "";
       const description = boundedString(ideaRecord.description) ?? "";
       const niche = boundedString(ideaRecord.niche) ?? "";
       const theme = boundedString(ideaRecord.theme);
@@ -87,7 +89,7 @@ export function parseTopicsResponse(rawText: string, expectedThemeIds: string[])
         continue;
       }
 
-      ideas.push({ title, description, niche, theme, contentType: contentTypeRaw as ContentType, format, objective, platform });
+      ideas.push({ title, angle, description, niche, theme, contentType: contentTypeRaw as ContentType, format, objective, platform });
     }
 
     groups.push({ themeId, ideas, rejectedCount });

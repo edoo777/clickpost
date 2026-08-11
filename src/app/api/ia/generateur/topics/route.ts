@@ -51,6 +51,9 @@ export async function POST(request: Request) {
   let brandValueProposition: string | undefined;
   let brandAudiencePainPoints: string[] | undefined;
   let brandPreferredContentTypes: string[] | undefined;
+  let brandPositioning: string | undefined;
+  let brandDescription: string | undefined;
+  let existingTitles: string[] | undefined;
   if (!standalone) {
     const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
     if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
@@ -60,12 +63,30 @@ export async function POST(request: Request) {
       valueProposition?: string;
       audiencePainPoints?: string[];
       preferredContentTypes?: string[];
+      positioning?: string;
+      description?: string;
     };
     promptNiche = brand.industry;
     brandName = brand.name;
     brandValueProposition = brand.valueProposition;
     brandAudiencePainPoints = brand.audiencePainPoints;
     brandPreferredContentTypes = brand.preferredContentTypes;
+    brandPositioning = brand.positioning;
+    brandDescription = brand.description;
+
+    // Contenu déjà présent pour cette marque — jamais recopié à Claude, seulement pour lui
+    // permettre d'éviter un doublon ou une simple paraphrase d'un sujet déjà traité.
+    const { data: existingIdeaRows } = await supabase
+      .from("ideas")
+      .select("title")
+      .eq("brand_id", brandId)
+      .order("updated_at", { ascending: false })
+      .limit(30);
+    if (Array.isArray(existingIdeaRows) && existingIdeaRows.length > 0) {
+      existingTitles = existingIdeaRows
+        .map((row) => (row as { title?: unknown }).title)
+        .filter((title): title is string => typeof title === "string" && title.trim().length > 0);
+    }
   }
 
   // Les thématiques ponctuelles (isAdhoc) ne sont jamais enregistrées dans la table themes tant
@@ -101,6 +122,9 @@ export async function POST(request: Request) {
     valueProposition: brandValueProposition,
     audiencePainPoints: brandAudiencePainPoints,
     preferredContentTypes: brandPreferredContentTypes,
+    positioning: brandPositioning,
+    description: brandDescription,
+    existingTitles,
   });
 
   const totalRequested = themes.reduce((sum, theme) => sum + theme.requestedCount, 0);
@@ -156,6 +180,7 @@ export async function POST(request: Request) {
         themeId: group.themeId,
         ideas: group.ideas.map((idea) => ({
           title: idea.title,
+          angle: idea.angle,
           description: idea.description,
           niche: idea.niche,
           theme: idea.theme,
