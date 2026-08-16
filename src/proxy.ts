@@ -1,10 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isPlatformAdminEmail } from "@/lib/admin/is-platform-admin";
 
 // Accessibles sans session valide. Tout le reste (le groupe dashboard, en pratique) est protégé.
-const PUBLIC_PATHS = ["/connexion", "/inscription", "/mot-de-passe-oublie", "/reinitialiser-mot-de-passe"];
-// Un utilisateur déjà connecté ne doit pas rester sur ces deux pages précises.
-const REDIRECT_IF_AUTHENTICATED_PATHS = ["/connexion", "/inscription"];
+const PUBLIC_PATHS = [
+  "/connexion",
+  "/inscription",
+  "/mot-de-passe-oublie",
+  "/reinitialiser-mot-de-passe",
+  "/bienvenue",
+  "/conditions",
+  "/confidentialite",
+];
+// Un utilisateur déjà connecté ne doit pas rester sur ces pages précises.
+const REDIRECT_IF_AUTHENTICATED_PATHS = ["/connexion", "/inscription", "/bienvenue"];
 
 /**
  * Rafraîchissement de session Supabase (F1.1) + protection des routes (F1.2) pour l'App Router.
@@ -42,11 +51,22 @@ export async function proxy(request: NextRequest) {
   if (!isAuthCallback && !isCronRoute) {
     if (!user && !PUBLIC_PATHS.includes(pathname)) {
       const redirectUrl = request.nextUrl.clone();
-      redirectUrl.pathname = "/connexion";
+      // La racine "/" est le tableau de bord authentifié — un visiteur non connecté y voit
+      // d'abord la landing page publique, jamais directement le formulaire de connexion.
+      redirectUrl.pathname = pathname === "/" ? "/bienvenue" : "/connexion";
       return NextResponse.redirect(redirectUrl);
     }
 
     if (user && REDIRECT_IF_AUTHENTICATED_PATHS.includes(pathname)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Espace Admin ClickPost — jamais un rôle de workspace, une liste d'e-mails serveur
+    // uniquement (voir is-platform-admin.ts). Première ligne de défense seulement : le layout
+    // /admin revérifie indépendamment côté serveur (défense en profondeur).
+    if (pathname.startsWith("/admin") && !isPlatformAdminEmail(user?.email)) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = "/";
       return NextResponse.redirect(redirectUrl);
