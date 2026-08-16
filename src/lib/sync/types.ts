@@ -12,7 +12,8 @@ export type SyncEntityType =
   | "savedViews"
   | "posts"
   | "importantDates"
-  | "savedTrends";
+  | "savedTrends"
+  | "reports";
 
 export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   accounts: "accounts",
@@ -29,6 +30,7 @@ export const SYNC_TABLE_BY_ENTITY: Record<SyncEntityType, string> = {
   posts: "publications",
   importantDates: "important_dates",
   savedTrends: "saved_trends",
+  reports: "reports",
 };
 
 export type SyncOperationKind = "upsert" | "delete";

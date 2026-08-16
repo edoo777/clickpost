@@ -12,6 +12,7 @@ import { IdeaNotesSessionProvider } from "@/lib/idea-notes-store";
 import { ImportantDatesSessionProvider } from "@/lib/important-dates-store";
 import { ImportedMetricsSessionProvider } from "@/lib/imported-metrics-store";
 import { PostsSessionProvider } from "@/lib/posts-store";
+import { ReportsSessionProvider } from "@/lib/reports-store";
 import { SavedTrendsSessionProvider } from "@/lib/saved-trends-store";
 import { SettingsSessionProvider } from "@/lib/settings-store";
 import { SidebarStateProvider } from "@/lib/sidebar-store";
@@ -33,18 +34,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       <IdeaNotesSessionProvider>
                         <ImportantDatesSessionProvider>
                           <SavedTrendsSessionProvider>
-                            <ImportedMetricsSessionProvider>
-                              <UserProfileSessionProvider>
-                                <SidebarStateProvider>
-                                  <div className="flex h-dvh w-full flex-col bg-background">
-                                    <Sidebar />
-                                    <TopBar />
-                                    <DashboardMainContent>{children}</DashboardMainContent>
-                                    <FloatingAssistantButton />
-                                  </div>
-                                </SidebarStateProvider>
-                              </UserProfileSessionProvider>
-                            </ImportedMetricsSessionProvider>
+                            <ReportsSessionProvider>
+                              <ImportedMetricsSessionProvider>
+                                <UserProfileSessionProvider>
+                                  <SidebarStateProvider>
+                                    <div className="flex h-dvh w-full flex-col bg-background">
+                                      <Sidebar />
+                                      <TopBar />
+                                      <DashboardMainContent>{children}</DashboardMainContent>
+                                      <FloatingAssistantButton />
+                                    </div>
+                                  </SidebarStateProvider>
+                                </UserProfileSessionProvider>
+                              </ImportedMetricsSessionProvider>
+                            </ReportsSessionProvider>
                           </SavedTrendsSessionProvider>
                         </ImportantDatesSessionProvider>
                       </IdeaNotesSessionProvider>

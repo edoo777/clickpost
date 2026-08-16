@@ -11,7 +11,9 @@ import type { Publication } from "@/types/publication";
 export interface PerformanceFilters {
   brand: string | "all";
   accountId: string | "all";
-  platform: SocialPlatform | "all";
+  /** Une plateforme unique (usage historique, Performances), plusieurs (Rapports, F-Rapports v2)
+   * ou "all". Un tableau vide se comporte comme "all" — jamais un filtre qui exclut tout. */
+  platform: SocialPlatform | SocialPlatform[] | "all";
   startDate: string;
   endDate: string;
 }
@@ -73,9 +75,15 @@ function resolvePublicationPerformance(
   return null;
 }
 
+function matchesPlatform(publicationPlatform: SocialPlatform, filterPlatform: PerformanceFilters["platform"]): boolean {
+  if (filterPlatform === "all") return true;
+  const allowed = Array.isArray(filterPlatform) ? filterPlatform : [filterPlatform];
+  return allowed.length === 0 || allowed.includes(publicationPlatform);
+}
+
 function matchesFilters(publication: Publication, filters: PerformanceFilters): boolean {
   if (filters.brand !== "all" && publication.brand !== filters.brand) return false;
-  if (filters.platform !== "all" && publication.platform !== filters.platform) return false;
+  if (!matchesPlatform(publication.platform, filters.platform)) return false;
   if (filters.accountId !== "all" && publication.accountId !== filters.accountId) return false;
   const date = publication.scheduledFor.slice(0, 10);
   if (date < filters.startDate || date > filters.endDate) return false;
@@ -158,7 +166,7 @@ export function getDailySeries(
         if (!brandProfile) continue;
 
         let platforms: SocialPlatform[] = brandProfile.socialPlatforms;
-        if (filters.platform !== "all") platforms = platforms.filter((platform) => platform === filters.platform);
+        platforms = platforms.filter((platform) => matchesPlatform(platform, filters.platform));
         if (filters.accountId !== "all") {
           const account = accounts.find((candidate) => candidate.id === filters.accountId);
           platforms = account ? platforms.filter((platform) => platform === account.platform) : [];

@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import {
   IconAlertTriangle,
   IconCalendar,
+  IconChartBar,
   IconClipboardCheck,
   IconDashboard,
   IconIdBadge,
@@ -41,6 +42,7 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
   },
   { label: "Assistant IA", href: "/assistant-ia", icon: IconWand },
   { label: "Tendances", href: "/tendances", icon: IconTrendingUp },
+  { label: "Rapports", href: "/rapports", icon: IconChartBar },
 ];
 
 /**
@@ -80,6 +82,7 @@ const PAGE_TITLES: PageTitleEntry[] = [
   { href: "/boite-idees", label: "Boîte à idées" },
   { href: "/assistant-ia", label: "Assistant IA" },
   { href: "/tendances", label: "Tendances" },
+  { href: "/rapports", label: "Rapports" },
   { href: "/atelier", label: "Atelier" },
   { href: "/comptes", label: "Comptes" },
   { href: "/equipe", label: "Équipe" },

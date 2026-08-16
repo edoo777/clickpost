@@ -17,6 +17,7 @@ export const CONFLICT_ENTITY_LABEL: Record<SyncEntityType, string> = {
   posts: "Publication",
   importantDates: "Date importante",
   savedTrends: "Tendance enregistrée",
+  reports: "Rapport",
 };
 
 const TITLE_FIELD_BY_ENTITY: Partial<Record<SyncEntityType, string>> = {
@@ -34,6 +35,7 @@ const TITLE_FIELD_BY_ENTITY: Partial<Record<SyncEntityType, string>> = {
   posts: "excerpt",
   importantDates: "title",
   savedTrends: "title",
+  reports: "summary",
 };
 
 function readStringField(record: Record<string, unknown> | null | undefined, field: string): string | undefined {

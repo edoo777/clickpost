@@ -7,6 +7,7 @@ import type { Idea } from "@/types/idea";
 import type { IdeaNote } from "@/types/idea-note";
 import type { ImportantDate } from "@/types/important-date";
 import type { Publication } from "@/types/publication";
+import type { Report } from "@/types/report";
 import type { SavedView } from "@/types/saved-view";
 import type { AgencySettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
@@ -38,6 +39,7 @@ export interface WorkspaceData {
   userProfiles: Record<string, UserProfileExtra>;
   importantDates: ImportantDate[];
   savedTrends: SavedTrend[];
+  reports: Report[];
   /** Persistance locale uniquement (IndexedDB) — jamais poussée vers Supabase (voir
    * imported-metrics-store.tsx). Reste propre à cet appareil/navigateur pour l'instant. */
   importedMetrics: ImportedMetricRecord[];
