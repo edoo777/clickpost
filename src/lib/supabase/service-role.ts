@@ -10,10 +10,12 @@ import { createClient } from "@supabase/supabase-js";
  * ici — même principe déjà appliqué par `createSupabaseServerClient` (server.ts), qui n'a pas
  * cette dépendance non plus et s'appuie sur `next/headers`.
  *
- * Usage strictement réservé à la table `social_connections` (jetons OAuth chiffrés, RLS sans
- * aucune politique pour `authenticated`/`anon` — voir la migration associée) : ce client est le
- * SEUL moyen légitime d'y lire ou d'y écrire, depuis les routes serveur OAuth/publication
- * uniquement. Ne jamais l'utiliser pour une autre table — toutes les autres données du workspace
+ * Usage strictement réservé aux tables dont la RLS n'accorde AUCUNE politique d'écriture cliente
+ * par conception : `social_connections` (jetons OAuth chiffrés, routes serveur OAuth/publication
+ * uniquement) et les tables de configuration plateforme de l'espace Admin —
+ * `prompt_overrides`/`product_texts`/`feature_flags` (écriture réservée aux routes
+ * `src/app/api/admin/**`, elles-mêmes gardées par `isPlatformAdminEmail()` avant tout appel à ce
+ * client). Ne jamais l'utiliser pour une autre table — toutes les autres données du workspace
  * restent gouvernées par la RLS via le client serveur habituel (`createSupabaseServerClient`, qui
  * respecte la session de l'utilisateur réel).
  */

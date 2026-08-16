@@ -4,6 +4,7 @@ import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildRapportsGeneratePrompt } from "@/lib/ai/rapports-prompt";
 import { validateRapportsGenerateRequest } from "@/lib/ai/validate-rapports-generate-request";
+import { getPromptExtraInstructions } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -74,7 +75,8 @@ export async function POST(request: Request) {
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
 
-  const prompt = buildRapportsGeneratePrompt({ snapshot, brand, reportType: snapshot.reportType });
+  const extraInstructions = await getPromptExtraInstructions("rapports");
+  const prompt = buildRapportsGeneratePrompt({ snapshot, brand, reportType: snapshot.reportType, extraInstructions });
 
   try {
     const client = getAnthropicClient();

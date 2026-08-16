@@ -32,6 +32,9 @@ export interface GenerateurPromptInput {
    * envoyés pour être recopiés, uniquement pour que Claude évite de générer un doublon ou une
    * simple paraphrase d'un sujet déjà traité. */
   existingTitles?: string[];
+  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  extraInstructions?: string;
 }
 
 export interface GenerateurPrompt {
@@ -83,6 +86,7 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     "qui ne diffèrent que par un mot. Chaque sujet doit pouvoir se distinguer clairement des autres",
     "par son idée, pas seulement par sa formulation.",
     "",
+    input.extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${input.extraInstructions}` : null,
     "Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, exactement de cette forme :",
     '{"groups":[{"themeId":"...","ideas":[{"title":"...","angle":"...","description":"...","niche":"...","theme":"...","contentType":"advice","format":"...","objective":"...","platform":"..."}]}]}',
     `Le champ contentType doit être l'une de ces valeurs exactes (en anglais, minuscules) : ${ALL_CONTENT_TYPES.join(", ")}.`,

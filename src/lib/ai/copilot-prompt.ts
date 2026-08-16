@@ -13,6 +13,9 @@ export interface CopilotPromptInput {
   publications: { theme: string; scheduledFor: string; platform: string; status: string }[];
   message: string;
   history?: CopilotHistoryItem[];
+  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * toujours ajouté après les règles de base, jamais un remplacement. Vide par défaut. */
+  extraInstructions?: string;
 }
 
 function buildConnectedAccounts(connectedAccounts: SocialAccount[]): string | null {
@@ -55,7 +58,8 @@ export function buildCopilotPrompt(input: CopilotPromptInput) {
     "Réponds toujours de manière structurée, actionnable et tournée vers le travail réel en ClickPost.",
     "Suggère des actions concrètes quand c'est pertinent : enregistrer une idée, ouvrir l'Atelier, préparer un planning, transformer un contenu existant, ou améliorer un hook.",
     "Ne réponds jamais de façon générique. Si le contexte reste insuffisant, demande des précisions sur la marque, les réseaux ou les objectifs.",
-  ];
+    input.extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${input.extraInstructions}` : null,
+  ].filter((line): line is string => Boolean(line));
 
   const userLines = [
     "Contexte de marque :",

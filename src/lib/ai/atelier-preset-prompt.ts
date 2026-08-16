@@ -24,8 +24,11 @@ export function buildAtelierPresetPrompt(params: {
   context: AIGenerationContext;
   currentText?: string;
   currentFormat?: ContentFormat;
+  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  extraInstructions?: string;
 }): AtelierPresetPrompt {
-  const { preset, context, currentText, currentFormat } = params;
+  const { preset, context, currentText, currentFormat, extraInstructions } = params;
   const responseKind: AtelierPresetPrompt["responseKind"] =
     preset.action === "hooks" || preset.action === "angles"
       ? "text_list"
@@ -33,12 +36,13 @@ export function buildAtelierPresetPrompt(params: {
       ? "report"
       : "version";
 
-  const systemLines: string[] = [
+  const systemLines: Array<string | null> = [
     "Tu es un rédacteur publicitaire francophone spécialisé dans les publications pour les réseaux sociaux.",
     "Tu dois exécuter une seule action sur cette idée, en respectant le contexte de marque et les consignes.",
     ...buildBrandContextLines(context.brand),
     "Respecte le ton demandé et ne propose pas de contenu qui viole les interdits de la marque.",
     `Action à exécuter : ${preset.instruction}`,
+    extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${extraInstructions}` : null,
     responseSchema(preset),
   ];
 

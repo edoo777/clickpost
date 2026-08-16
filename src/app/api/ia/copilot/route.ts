@@ -3,6 +3,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/lib/ai/anthropic-client";
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildCopilotPrompt } from "@/lib/ai/copilot-prompt";
+import { getPromptExtraInstructions } from "@/lib/admin/prompt-overrides";
 import { validateCopilotRequest } from "@/lib/ai/validate-copilot-request";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -100,6 +101,8 @@ export async function POST(request: Request) {
     ? (publicationRows as Record<string, unknown>[]).map((row) => mapRowToRecord(row) as unknown as Publication)
     : [];
 
+  const extraInstructions = await getPromptExtraInstructions("copilot");
+
   const prompt = buildCopilotPrompt({
     brand,
     connectedAccounts,
@@ -118,6 +121,7 @@ export async function POST(request: Request) {
     })),
     message,
     history,
+    extraInstructions,
   });
 
   try {

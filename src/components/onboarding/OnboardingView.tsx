@@ -14,6 +14,7 @@ import {
   UsageTypeStep,
   WorkspaceNameStep,
 } from "@/components/onboarding/OnboardingSteps";
+import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
@@ -31,9 +32,16 @@ const STEP_TITLES = [
 
 const TOTAL_STEPS = STEP_TITLES.length;
 
-export function OnboardingView() {
+interface OnboardingViewProps {
+  /** Texte configurable depuis l'espace Admin (voir src/lib/admin/product-texts.ts) — valeur par
+   * défaut déjà appliquée côté serveur si rien n'a été personnalisé. */
+  welcomeTitle: string;
+  welcomeSubtitle: string;
+}
+
+export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingViewProps) {
   const router = useRouter();
-  const { profile, workspace, branding, isLoading, updateProfile, updateWorkspace, updateBranding, refresh } =
+  const { profile, workspace, branding, isLoading, workspaceError, updateProfile, updateWorkspace, updateBranding, refresh } =
     useWorkspaceSession();
 
   const [step, setStep] = useState(1);
@@ -54,6 +62,19 @@ export function OnboardingView() {
     setStep(Math.min(Math.max(workspace.onboarding_step, 1), TOTAL_STEPS));
   }
   const hasInitialized = Boolean(initializedFromId);
+
+  // Un échec de chargement du workspace (RPC ensure_default_workspace, réseau...) ne doit jamais
+  // laisser un nouvel utilisateur bloqué sur un spinner infini sans message ni moyen de réessayer
+  // — même traitement que /marques et les paramètres (voir WorkspaceErrorNotice).
+  if (!isLoading && workspaceError && !hasInitialized) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md">
+          <WorkspaceErrorNotice error={workspaceError} onRetry={refresh} />
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading || !hasInitialized || !draftProfile || !draftWorkspace || !draftBranding) {
     return (
@@ -154,12 +175,14 @@ export function OnboardingView() {
             <IconLogoMark className="h-5 w-5 text-white" />
           </span>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-foreground">Bienvenue sur ClickPost</span>
+            <span className="text-sm font-semibold text-foreground">{welcomeTitle}</span>
             <span className="text-xs text-muted-foreground">
               Étape {step} sur {TOTAL_STEPS} — {STEP_TITLES[step - 1]}
             </span>
           </div>
         </div>
+
+        <p className="text-sm text-muted-foreground">{welcomeSubtitle}</p>
 
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
           <div

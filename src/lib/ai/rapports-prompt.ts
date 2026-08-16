@@ -126,8 +126,15 @@ function formatSnapshotLines(snapshot: ReportKpiSnapshot): string[] {
  * narration de TOUTES les sections en un seul appel (remplace l'ancienne action isolée
  * "Analyser avec Claude" : la génération du rapport EST l'appel IA principal du module).
  */
-export function buildRapportsGeneratePrompt(params: { snapshot: ReportKpiSnapshot; brand: BrandContextSource; reportType: ReportType }): RapportsGeneratePrompt {
-  const { snapshot, brand, reportType } = params;
+export function buildRapportsGeneratePrompt(params: {
+  snapshot: ReportKpiSnapshot;
+  brand: BrandContextSource;
+  reportType: ReportType;
+  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  extraInstructions?: string;
+}): RapportsGeneratePrompt {
+  const { snapshot, brand, reportType, extraInstructions } = params;
 
   const toneInstruction =
     reportType === "client"
@@ -136,10 +143,11 @@ export function buildRapportsGeneratePrompt(params: { snapshot: ReportKpiSnapsho
         ? "Le rapport est destiné à un décideur/dirigeant pressé : très synthétique, orienté impact business et décisions à prendre, minimise le détail opérationnel."
         : "Le rapport est interne, destiné au gestionnaire/à l'équipe : peut être plus détaillé et mentionner explicitement les statuts de production et points de friction opérationnels.";
 
-  const systemLines = [
+  const systemLines: Array<string | null> = [
     "Tu es un analyste stratégique senior qui rédige un rapport de performance de contenu social professionnel pour une agence ou un créateur de contenu.",
     ...buildBrandContextLines(brand),
     toneInstruction,
+    extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${extraInstructions}` : null,
     "",
     "STYLE DE RÉDACTION OBLIGATOIRE pour chaque texte narratif (executiveSummary.narrative, workDoneNarrative, performanceOverviewNarrative, performanceByPlatformNarrative, contentPerformanceNarrative, aiAnalysis.narrative) : toujours enchaîner CONSTAT → INTERPRÉTATION → RECOMMANDATION, jamais une simple restitution de chiffres. Exemple attendu :",
     '« Le taux d\'engagement progresse de 18 % par rapport à la période précédente. Les contenus éducatifs expliquent principalement cette progression. Nous recommandons d\'augmenter leur présence dans le prochain calendrier éditorial. »',
@@ -155,7 +163,7 @@ export function buildRapportsGeneratePrompt(params: { snapshot: ReportKpiSnapsho
   ];
 
   return {
-    system: systemLines.join("\n"),
+    system: systemLines.filter((line): line is string => Boolean(line)).join("\n"),
     user: formatSnapshotLines(snapshot).join("\n"),
   };
 }
