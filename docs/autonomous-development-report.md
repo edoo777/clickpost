@@ -1,149 +1,191 @@
-# ClickPost — Rapport de session autonome (2026-08-17)
+# ClickPost — Rapport de session autonome (2026-08-17, 3e passage)
 
-Session de poursuite : finalisation de l'espace Admin (prompts IA administrables), audit de
-robustesse des modules jamais vérifiés, et complétude de la landing page publique. Fait suite à la
-session précédente (voir `docs/overnight-beta-report.md`, `docs/beta-readiness-audit.md`) qui avait
-déjà livré l'Admin MVP, la landing page et le module Rapports.
+Session de 3 heures en autonomie complète : configuration de l'environnement (`ADMIN_EMAILS`),
+vérification réelle de l'espace Admin avec un compte administrateur fonctionnel, puis audit de
+sécurité et de robustesse en profondeur sur des modules jamais vérifiés dans l'historique du
+projet. Fait suite aux sessions précédentes (voir `docs/beta-readiness-audit.md`,
+`docs/overnight-beta-report.md`) qui avaient livré l'Admin MVP, la landing page, le module Rapports
+et une première vague de corrections (Tendances).
 
-## 1. Travaux réalisés
+## 1. Ce qui était déjà fonctionnel
 
-1. **Espace Admin > Prompts IA — champs manquants complétés.** L'éditeur ne permettait jusqu'ici
-   que de modifier des instructions supplémentaires (texte libre ajouté en fin de prompt). Étendu
-   pour couvrir les 6 champs minimum requis pour une vraie administration : identifiant (clé),
-   nom, fonction concernée, prompt système (nouveau — prépendu au prompt codé en dur, jamais un
-   remplacement), instructions supplémentaires (existant, ajouté en fin), statut actif/inactif
-   (nouveau), date de modification.
-2. **Repli sécurisé vérifié et documenté.** Un prompt admin absent, en erreur de lecture, ou
-   explicitement désactivé retombe automatiquement et silencieusement sur le prompt codé en dur —
-   aucune génération IA ne peut être bloquée par une mauvaise configuration admin.
-3. **Audit de robustesse des 3 modules jamais vérifiés dans l'historique du projet** (Paramètres,
-   Tendances, Performances) — chaîne complète page → composants → lib → routes API → tables
-   Supabase tracée pour chacun.
-4. **3 bugs réels corrigés dans Tendances** (voir section 3).
-5. **Sweep boutons morts / liens cassés sur l'ensemble du dashboard** — aucun `onClick` vide,
-   aucun `href="#"` non intentionnel, aucun `router.push`/lien interne pointant vers une route
-   inexistante, aucun TODO/FIXME ni `console.log` oublié dans le code composant/dashboard.
-6. **Landing page `/bienvenue` complétée** sans redesign — ajout des éléments manquants du cahier
-   des charges (voir section 2).
+Confirmé par cette session, sans modification : authentification (connexion/inscription/mot de
+passe oublié, gestion propre des liens expirés) ; `ensure_default_workspace()` réellement protégée
+contre la double création (verrou consultatif Postgres) ; middleware de protection des routes
+cohérent ; espace Admin (accès, protection multi-couches, textes produit, fonctionnalités) ; modules
+Paramètres, Performances, Tendances, Rapports (déjà audités lors d'une session précédente) ;
+isolation par workspace de la quasi-totalité des lectures Supabase (RLS `is_workspace_member`) ;
+messages simulé/réel honnêtes sur les fonctions IA réellement branchées (Copilote, Atelier
+« Génération complète » et « Réécriture de sélection », Générateur de sujets).
 
-## 2. Fonctionnalités terminées
+## 2. Configuration effectuée
 
-- Administration complète des 4 prompts IA (Copilote, Atelier, Générateur de sujets, Rapports)
-  avec les 6 champs requis, upsert + une marche arrière (restauration des instructions
-  précédentes), écrit via `service_role` après double vérification `ADMIN_EMAILS`.
-- Landing page publique désormais explicite sur : approbateurs clients (audience cible manquante),
-  Performances comme fonctionnalité distincte des Rapports, Approbation & collaboration comme
-  fonctionnalité distincte (le workflow existe réellement : `/approbations`, `ApprovalQueueList`,
-  `CollaborationPanel`, invitations d'équipe).
+- **`ADMIN_EMAILS=adminclickpost@gmail.com`** ajouté à `.env.local`, toutes les autres variables
+  conservées.
+- **Compte administrateur créé et vérifié réellement fonctionnel** : `adminclickpost@gmail.com`
+  (id `bd3fd222-4259-41bc-9643-d911d11d3dde`), créé via l'API Admin Supabase (`service_role`, jamais
+  exposée), e-mail pré-confirmé. Mot de passe généré aléatoirement — **communiqué séparément, à
+  changer dès la première connexion** (ou utiliser « Mot de passe oublié »).
+- Testé avec une vraie session (jamais seulement par lecture de code) : les 5 pages Admin
+  répondent 200 et affichent de vraies données (utilisateurs, workspaces, feature flags) ; une
+  écriture réelle sur un prompt IA a été faite puis vérifiée persistée en base, puis restaurée à son
+  état initial ; un compte non-admin temporaire a confirmé le blocage (redirections 307 sur les
+  pages, 403 sur l'API) ; le compte non-admin a été supprimé après test.
 
-## 3. Bugs corrigés
+## 3. Bugs trouvés et corrigés
 
-1. **Cache de veille Web (Tendances) non isolé par workspace** —
-   `src/app/api/ia/tendances/web-search/route.ts` : la clé de cache omettait `workspaceId`. Un
-   workspace pouvait obtenir un résultat en cache issu de la recherche d'un autre workspace (même
-   filtres), tout en voyant ses propres compteurs de quota/usage crédités comme si sa recherche
-   avait réellement été exécutée. Corrigé en intégrant `workspaceId` dans la clé de cache.
-2. **Actions Tendances écrivant un identifiant vide avant la fin du chargement de session** —
-   `src/components/trends/TrendActionsMenu.tsx` : `handleSave` (Enregistrer/Masquer/Non
-   pertinente) et `handleCreateNote` retombaient sur `userId ?? ""` si l'utilisateur cliquait avant
-   la résolution de la session workspace, produisant des lignes `SavedTrend`/Note orphelines
-   (`savedBy`/`workspaceId` vides). Corrigé : ces actions sont désormais refusées avec un message
-   (« Session en cours de chargement — réessayez dans un instant ») tant que `userId` n'est pas
-   résolu, jamais un écrit avec un identifiant vide.
-3. **Bouton mort dans la section Musique de Tendances** —
-   `src/components/trends/MusicTrendsSection.tsx` : le bouton « Explorer toutes les plateformes »
-   de l'état « aucun signal » était câblé sur `() => {}` (la section recherche déjà
-   systématiquement toutes les plateformes pertinentes, il n'y avait rien de plus à faire).
-   `WebSearchNoSignalState.onExploreAllPlatforms` est désormais optionnel ; le bouton n'est plus
-   rendu quand il n'y a pas d'action réelle à proposer.
+### 3.1 CRITIQUE — Contournement de l'approbation LinkedIn (publication réelle sans validation humaine)
 
-## 4. Fichiers et modules importants modifiés
+Cinq surfaces indépendantes (Kanban, tableau, formulaire, calendrier, bouton « Publier via
+LinkedIn ») permettaient de faire passer une publication au statut « Programmée » sans être passée
+par l'approbation — et le planificateur LinkedIn réel publie automatiquement tout ce qui est
+« Programmée » à l'échéance. Corrigé à la fois :
+- **En base de données** (verrou réel, indépendant de tout bug client futur) : nouveau trigger
+  Postgres sur `publications` qui refuse toute transition vers « scheduled »/« publishing »/
+  « published » sauf depuis un statut déjà approuvé. Testé avec 13 scénarios (tous les chemins
+  légitimes + toutes les tentatives de contournement) dans une transaction annulée — 13/13 réussis.
+- **Côté application** : garde-fous ajoutés aux 5 surfaces ; la route de publication manuelle exige
+  désormais le statut approuvé, un rôle owner/admin du workspace, et réclame la publication par une
+  mise à jour conditionnelle (même principe que le planificateur) pour empêcher une double
+  publication en cas de double clic ou deux onglets.
 
-- `supabase/migrations/20260817010000_prompt_overrides_metadata.sql` (nouvelle migration
-  additive)
-- `src/lib/admin/prompt-override-types.ts`, `src/lib/admin/prompt-overrides.ts`
-- `src/app/api/admin/prompts/route.ts`
-- `src/components/admin/PromptOverrideEditor.tsx`, `src/app/admin/prompts/page.tsx`
-- `src/lib/ai/{copilot,atelier-preset,generateur,rapports}-prompt.ts` et les 4 routes
-  `src/app/api/ia/{copilot,atelier/preset,generateur/topics,rapports/generate}/route.ts`
-- `src/app/bienvenue/page.tsx`
-- `src/app/api/ia/tendances/web-search/route.ts`
-- `src/components/trends/TrendActionsMenu.tsx`, `MusicTrendsSection.tsx`,
-  `WebSearchNoSignalState.tsx`
-- `docs/limites-connues.md`, `docs/remaining-before-beta.md`
+### 3.2 CRITIQUE — Fuite de données entre comptes sur navigateur partagé
 
-## 5. Tests effectués
+Le stockage local (IndexedDB) n'était jamais nettoyé à la déconnexion et n'était rattaché à aucune
+identité. Sur un navigateur partagé, des opérations encore en attente de synchronisation au moment
+de la déconnexion d'un utilisateur pouvaient être poussées vers Supabase après la connexion d'un
+autre utilisateur, sous sa propre identité. Corrigé : nettoyage complet (workspace + file de
+synchronisation) à la déconnexion explicite, et filet de sécurité supplémentaire qui détecte un
+changement d'identité au chargement et nettoie avant d'armer la synchronisation.
 
-- `npx tsc --noEmit` — exécuté 3 fois au fil des changements (après le lot Admin prompts, après la
-  revue landing page, après les corrections Tendances).
-- `npm run lint` (ESLint) — exécuté 2 fois.
-- `npm run build` (Next.js/Turbopack, build de production complet) — exécuté 2 fois, toutes les
-  routes générées avec succès à chaque fois (67 routes, dont `/admin/prompts`,
-  `/api/admin/prompts`, `/tendances`, `/performances`, `/parametres`, `/bienvenue`).
-- Sweep statique manuel (grep) : tous les `href`/`router.push` internes de l'application vérifiés
-  contre l'arborescence réelle des routes issue du build — aucune cible cassée trouvée.
-- Aucun test navigateur humain effectué (pas d'environnement navigateur disponible dans cette
-  session) — voir section 7.
+### 3.3 MEDIUM — Fuite cross-workspace dans le contexte du Copilote
 
-## 6. Résultats des tests
+Le contexte « publications » envoyé à Claude par le Copilote était filtré par nom de marque (texte
+libre) plutôt que par workspace — un utilisateur membre de deux workspaces ayant chacun une marque
+du même nom pouvait voir le contexte de l'autre workspace mélangé dans une réponse IA. Corrigé par
+un filtre supplémentaire sur `workspace_id`.
 
-- TypeScript : 0 erreur à chaque exécution.
-- ESLint : 0 erreur ; 1 avertissement préexistant et non lié à cette session
-  (`ReportCoverSection.tsx` — `<img>` plutôt que `next/image`, module Rapports d'une session
-  précédente).
-- Build de production : succès (code de sortie 0) à chaque exécution.
-- Audit Paramètres et Performances : aucun bug réel trouvé — implémentation jugée solide,
-  distinction correcte entre données réelles/importées/démonstration/absentes.
-- Audit Tendances : 3 bugs réels trouvés et corrigés (section 3) ; 3 constats supplémentaires de
-  sévérité faible à moyenne documentés mais non corrigés par choix (section 7).
+### 3.4 HIGH — Thématique orpheline créée en mode « génération sans marque »
 
-## 7. Fonctionnalités encore incomplètes / éléments non corrigés par choix
+Le bouton « Ajouter cette thématique aux paramètres de la marque » restait actif en mode « Continuer
+sans marque », créant une thématique réelle en base avec un `brand_id` vide — invisible et
+ingérable pour toujours. Corrigé : le bouton est masqué et l'action refusée en mode sans marque.
 
-- **Cast de type non vérifié sur les résultats de veille Web**
-  (`src/components/trends/WebSearchTrigger.tsx`) : le client fait confiance à son propre paramètre
-  `focus` pour interpréter la forme de `result.items`, sans discriminant sur la réponse elle-même.
-  Correct aujourd'hui (le serveur respecte le même `focus`), mais fragile si un futur changement
-  venait à mélanger les entrées de cache. Sévérité faible, non corrigé (pas de bug actuel
-  démontrable).
-- **Assertions non-null et `Map` non bornées dans les fournisseurs/quotas Tendances** — plusieurs
-  `provider.method!(...)` sur des méthodes typées optionnelles, et les `Map` de quota/cache/débit
-  ne purgent jamais les entrées d'utilisateurs/workspaces inactifs. Sévérité faible (fuite lente
-  sur un processus long-vivant), non corrigé.
-- **Quotas et cache de veille Web en mémoire de processus, non partagés entre instances** — voir
-  `docs/limites-connues.md`. Corriger nécessiterait un magasin partagé (ligne Supabase, Redis...),
-  donc une nouvelle dépendance à valider avec vous avant toute installation (règle du projet) — non
-  entrepris dans cette session.
-- Tout le reste déjà documenté dans `docs/remaining-before-beta.md` (tests navigateur humains
-  obligatoires, décisions produit ouvertes, dette technique mineure, hors périmètre volontaire)
-  reste inchangé et toujours valable.
+### 3.5 HIGH — Données de démonstration affichées comme réelles au tableau de bord
 
-## 8. Éléments nécessitant votre intervention
+`accounts-store`, `posts-store` et `themes-store` retombaient par défaut sur des données de
+démonstration (faux comptes connectés, fausses publications, thématiques d'exemple) plutôt que sur
+un tableau vide, contrairement à `brands-store` et aux autres magasins déjà corrigés lors d'une
+session antérieure — un nouvel utilisateur voyait de faux comptes connectés, une fausse tâche
+d'approbation en attente et de fausses entrées d'activité récente. Corrigé : les trois retombent
+désormais sur `[]`, alignés sur le reste de l'application. Le widget « Comptes sociaux connectés »
+n'avait aucun état vide (masqué jusqu'ici par les fausses données) — ajouté.
 
-1. **Aucune n'a pu être faite par l'agent** — voir la liste figée dans
-   `docs/remaining-before-beta.md` § « Configuration manuelle requise » (`ANTHROPIC_MODEL`,
-   `ADMIN_EMAILS`, déploiement Vercel réel).
-2. **Tests navigateur humains** listés dans `docs/remaining-before-beta.md` — en particulier le
-   point 3 (Espace Admin : modifier un prompt avec le nouveau champ « prompt système » et vérifier
-   son effet réel sur une génération IA) devient pertinent maintenant que ce champ existe.
-3. Décision produit à prendre si le trafic de la bêta dépasse une seule instance serveur active en
-   continu : accepter la limite documentée du quota Tendances par instance, ou budgéter un magasin
-   de quota partagé (nouvelle dépendance).
+### 3.6 MEDIUM — Message trompeur après génération de sujets
 
-## 9. Variables d'environnement encore nécessaires
+Le message de succès promettait que les idées enregistrées se trouvaient « dans la Banque d'idées »,
+alors que cet onglet n'affiche aujourd'hui que des notes libres — les idées restent réellement
+enregistrées, mais un testeur allant vérifier dans cet onglet n'y trouverait rien et pourrait croire
+à une perte de données. Message corrigé pour ne plus promettre un emplacement inexact.
 
-Inchangé depuis la session précédente — voir `docs/remaining-before-beta.md` § 1 :
-`ANTHROPIC_MODEL`, `ADMIN_EMAILS`, variables de déploiement Vercel de production.
+### 3.7 MEDIUM — Erreur de chargement du workspace jamais affichée dans le tableau de bord
 
-## 10. Recommandations pour la prochaine session
+Si `ensure_default_workspace()` échouait, l'utilisateur restait sur un tableau de bord
+silencieusement vide (fonctionnant sur les seules données locales), sans bannière ni bouton
+« Réessayer », contrairement à toutes les autres pages dépendant du workspace. Corrigé : bannière
+d'erreur désormais toujours montée dans la barre supérieure du tableau de bord.
 
-1. Exécuter les tests navigateur humains obligatoires (liste dans `remaining-before-beta.md`),
-   en priorité le parcours complet bout-en-bout et la vérification Admin > Prompts IA avec un vrai
-   compte administrateur.
-2. Si vous comptez inviter des testeurs bêta sous peu, configurer `ANTHROPIC_MODEL` et
-   `ADMIN_EMAILS` en premier — ce sont les deux seuls blocages pour tester réellement l'IA et
-   l'espace Admin.
-3. Envisager d'appliquer la migration `20260817010000_prompt_overrides_metadata.sql` sur votre
-   instance Supabase de développement pour tester l'espace Admin > Prompts IA de bout en bout.
-4. Aucun autre module n'a de dette technique bloquante identifiée à ce stade — le prochain audit de
-   robustesse pourrait se concentrer sur les scénarios multi-utilisateurs concurrents (section B de
-   `docs/tests-manuels.md`), jamais testés en conditions réelles faute d'environnement navigateur.
+### 3.8 MEDIUM — `/onboarding` rejouable après complétion
+
+Un utilisateur ayant déjà terminé l'onboarding pouvait y revenir (favori, bouton précédent, URL
+tapée) et revoir l'assistant. Corrigé : redirection automatique vers « / » si
+`workspace.onboarding_completed` est vrai.
+
+## 4. Tests effectués
+
+- `npx tsc --noEmit`, `npm run lint`, `npm run build` — exécutés à plusieurs reprises au fil des
+  changements, 0 erreur à chaque fois (1 avertissement préexistant non lié, module Rapports).
+- Migrations Supabase : `db push --dry-run` puis `db push` pour les 4 migrations en attente (dont
+  la nouvelle protection LinkedIn), `migration list` confirmant la synchronisation locale/distante,
+  `db advisors --linked --type security` confirmant qu'aucune nouvelle alerte n'a été introduite
+  (les 6 alertes WARN existantes restent toutes déjà documentées et acceptées).
+- Vérification du trigger de sécurité : 13 scénarios (6 légitimes, 7 tentatives de contournement)
+  exécutés dans une transaction Postgres annulée — aucune donnée réelle touchée, 13/13 réussis.
+- Tests HTTP en conditions réelles avec deux sessions authentifiées (admin + non-admin temporaire) :
+  toutes les routes principales, toutes les routes Admin, tous les endpoints IA (Copilote,
+  Générateur, Atelier, Rapports, Tendances) — vérification de l'authentification, de la validation,
+  et de l'absence d'erreur serveur, sans déclencher d'appel Claude réel payant.
+- Trois audits de code en parallèle (lecture seule) couvrant : authentification/onboarding/tableau
+  de bord ; marques/thématiques/boîte à idées/générateur ; Assistant IA/Atelier/publications/
+  calendrier — au total plus de 15 constats, dont 2 critiques, traités dans ce rapport.
+
+## 5. Résultats des tests
+
+- TypeScript, ESLint, build : succès à chaque exécution.
+- Sécurité base de données : 0 nouvelle alerte, protection LinkedIn vérifiée à 100 % (13/13).
+- Toutes les routes testées (dashboard, Admin, API Admin, API IA) répondent correctement selon
+  leur statut d'authentification/autorisation attendu — jamais un accès non autorisé, jamais un
+  crash serveur (500) non intentionnel après correction du trigger.
+
+## 6. Blocages rencontrés
+
+- Un processus `next dev` orphelin d'une session précédente occupait le port 3000 et renvoyait des
+  erreurs 500 sur toutes les routes — identifié et arrêté (faussait les premières vérifications).
+- `rm -rf .next` exécuté une fois pendant qu'un serveur de développement tournait encore a corrompu
+  le cache Turbopack — diagnostiqué comme un artefact de méthode, pas un bug ClickPost, corrigé par
+  un nettoyage complet et redémarrage.
+- Aucun blocage bloquant le travail : chaque problème rencontré a été diagnostiqué et résolu dans la
+  session.
+
+## 7. Ce qui nécessite encore une intervention humaine
+
+1. **Tests navigateur humains** — voir la liste complète dans `docs/remaining-before-beta.md`,
+   en particulier le nouveau parcours d'approbation LinkedIn de bout en bout.
+2. **Décision produit sur l'identité d'équipe** (sélecteur « Connecté en tant que ») — voir
+   `docs/remaining-before-beta.md`, non modifié volontairement cette session.
+3. **Changer le mot de passe du compte administrateur** généré automatiquement (communiqué
+   séparément), ou utiliser « Mot de passe oublié » pour en définir un nouveau.
+4. Décider si l'approbation doit aussi être appliquée par une politique RLS (actuellement vérifiée
+   côté client uniquement pour le passage à « approved » — voir dette technique).
+
+## 8. Fonctionnalités restant avant bêta
+
+Voir `docs/remaining-before-beta.md` (entièrement remis à jour cette session) pour la liste
+exhaustive : configuration manuelle restante, tests navigateur obligatoires, décisions produit
+ouvertes, dette technique mineure, hors périmètre volontaire.
+
+## 9. Fichiers modifiés cette session
+
+- `.env.local` (ADMIN_EMAILS, non commité — ignoré par git)
+- `supabase/migrations/20260817020000_publications_status_transition_guard.sql`,
+  `20260817020100_publications_status_transition_guard_fix.sql`
+- `src/app/api/social/linkedin/publish/route.ts`, `src/app/api/ia/copilot/route.ts`
+- `src/components/publications/{PublicationsKanban,PublicationsTable,PublicationForm,LinkedInPublishAction}.tsx`
+- `src/components/calendar/CalendarWorkspace.tsx`
+- `src/lib/persistence/coordinator.ts`, `src/lib/sync/queue.ts`, `src/lib/supabase/workspace-provider.tsx`
+- `src/components/layout/{Sidebar,TopBar}.tsx`
+- `src/lib/{accounts-store,posts-store,themes-store}.tsx`
+- `src/components/dashboard/ConnectedAccounts.tsx`
+- `src/components/topic-generator/{TopicGeneratorForm,TopicGeneratorView}.tsx`
+- `src/components/onboarding/OnboardingView.tsx`
+- `docs/remaining-before-beta.md`, `docs/autonomous-development-report.md`
+
+## 10. Commits créés (locaux uniquement, rien poussé)
+
+1. `fix: close LinkedIn approval bypass — content could be published live without approval`
+2. `fix: clear local IndexedDB data on sign-out and on detected user switch`
+3. `fix: scope Copilot's publications context by workspace_id, not brand name`
+4. `fix: prevent orphaned theme creation in standalone (no-brand) generator mode`
+5. `fix: stop showing demo data as real; surface workspace errors; guard onboarding replay`
+
+## 11. Recommandations pour la prochaine session
+
+1. Exécuter le parcours de test navigateur d'approbation LinkedIn en priorité absolue — c'est la
+   correction la plus critique de cette session, jamais vérifiée par un humain en conditions
+   réelles.
+2. Trancher la décision produit sur l'identité d'équipe avant d'inviter plusieurs testeurs dans le
+   même workspace.
+3. Envisager une politique RLS dédiée pour le passage au statut « approved » (actuellement seule
+   protection client-side), une fois la décision d'identité d'équipe prise.
+4. URL locale : `http://localhost:3000` (serveur de développement laissé actif). Espace Admin :
+   `http://localhost:3000/admin`.
