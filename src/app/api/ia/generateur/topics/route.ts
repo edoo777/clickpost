@@ -3,7 +3,7 @@ import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildGenerateurPrompt, type GenerateurPromptTheme } from "@/lib/ai/generateur-prompt";
 import { parseTopicsResponse } from "@/lib/ai/parse-topics-response";
-import { getPromptExtraInstructions } from "@/lib/admin/prompt-overrides";
+import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { validateTopicsRequest } from "@/lib/ai/validate-topics-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     distribution: theme.distribution,
   }));
 
-  const extraInstructions = await getPromptExtraInstructions("generateur");
+  const promptOverride = await getPromptOverrideConfig("generateur");
 
   const prompt = buildGenerateurPrompt({
     niche: promptNiche,
@@ -128,7 +128,8 @@ export async function POST(request: Request) {
     positioning: brandPositioning,
     description: brandDescription,
     existingTitles,
-    extraInstructions,
+    systemPromptOverride: promptOverride.systemPromptOverride,
+    extraInstructions: promptOverride.extraInstructions,
   });
 
   const totalRequested = themes.reduce((sum, theme) => sum + theme.requestedCount, 0);

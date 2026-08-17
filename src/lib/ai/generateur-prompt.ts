@@ -32,8 +32,10 @@ export interface GenerateurPromptInput {
    * envoyés pour être recopiés, uniquement pour que Claude évite de générer un doublon ou une
    * simple paraphrase d'un sujet déjà traité. */
   existingTitles?: string[];
-  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
-   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
+   * strict : jamais un remplacement des règles existantes. */
+  systemPromptOverride?: string;
   extraInstructions?: string;
 }
 
@@ -55,6 +57,7 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
   const platformList = hasPlatforms ? input.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") : null;
 
   const system = [
+    input.systemPromptOverride ? `Note de l'administrateur ClickPost : ${input.systemPromptOverride}` : null,
     "Tu es un stratège de contenu francophone pour une agence marketing. Tu dois générer des",
     "sujets de publications regroupés par thématique, pour la marque suivante :",
     `- Marque : ${input.brandName}`,

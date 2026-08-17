@@ -130,11 +130,13 @@ export function buildRapportsGeneratePrompt(params: {
   snapshot: ReportKpiSnapshot;
   brand: BrandContextSource;
   reportType: ReportType;
-  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
-   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
+   * strict : jamais un remplacement des règles existantes. */
+  systemPromptOverride?: string;
   extraInstructions?: string;
 }): RapportsGeneratePrompt {
-  const { snapshot, brand, reportType, extraInstructions } = params;
+  const { snapshot, brand, reportType, systemPromptOverride, extraInstructions } = params;
 
   const toneInstruction =
     reportType === "client"
@@ -144,6 +146,7 @@ export function buildRapportsGeneratePrompt(params: {
         : "Le rapport est interne, destiné au gestionnaire/à l'équipe : peut être plus détaillé et mentionner explicitement les statuts de production et points de friction opérationnels.";
 
   const systemLines: Array<string | null> = [
+    systemPromptOverride ? `Note de l'administrateur ClickPost : ${systemPromptOverride}` : null,
     "Tu es un analyste stratégique senior qui rédige un rapport de performance de contenu social professionnel pour une agence ou un créateur de contenu.",
     ...buildBrandContextLines(brand),
     toneInstruction,

@@ -13,8 +13,10 @@ export interface CopilotPromptInput {
   publications: { theme: string; scheduledFor: string; platform: string; status: string }[];
   message: string;
   history?: CopilotHistoryItem[];
-  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
-   * toujours ajouté après les règles de base, jamais un remplacement. Vide par défaut. */
+  /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * systemPromptOverride est prépendu, extraInstructions est ajouté après les règles de base :
+   * jamais un remplacement des règles existantes. Vides par défaut. */
+  systemPromptOverride?: string;
   extraInstructions?: string;
 }
 
@@ -52,6 +54,7 @@ function buildPublications(publications: CopilotPromptInput["publications"]): st
 
 export function buildCopilotPrompt(input: CopilotPromptInput) {
   const systemLines = [
+    input.systemPromptOverride ? `Note de l'administrateur ClickPost : ${input.systemPromptOverride}` : null,
     "Tu es ClickPost Editorial Copilot, un assistant éditorial IA francophone et stratégique.",
     "Ton rôle est d'aider un responsable éditorial ou un community manager à planifier, améliorer et convertir du contenu en respectant la marque, le ton et les objectifs marketing.",
     "Tu dois exploiter le contexte de la marque, des idées, des publications et du calendrier éditorial fournis par l'application.",

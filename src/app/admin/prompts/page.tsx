@@ -9,9 +9,12 @@ export default async function AdminPromptsPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Prompts IA</h1>
         <p className="text-sm text-muted-foreground">
-          Un complément par fonction, ajouté à la fin du prompt système existant — jamais un
-          remplacement des règles de sécurité codées en dur (anti-invention de données, format de
-          réponse strict). Une seule marche arrière disponible par prompt.
+          Un prompt administrable par fonction IA de ClickPost : nom, statut actif/inactif, note
+          système (ajoutée au début) et instructions supplémentaires (ajoutées à la fin) —
+          toujours en complément, jamais un remplacement des règles de sécurité codées en dur
+          (anti-invention de données, format de réponse strict). Un prompt inactif ou absent
+          retombe automatiquement sur le comportement standard. Une seule marche arrière
+          disponible par prompt, sur les instructions supplémentaires.
         </p>
       </header>
 

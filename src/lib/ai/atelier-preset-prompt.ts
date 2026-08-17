@@ -24,11 +24,13 @@ export function buildAtelierPresetPrompt(params: {
   context: AIGenerationContext;
   currentText?: string;
   currentFormat?: ContentFormat;
-  /** Complément configurable depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
-   * toujours ajouté avant la règle de format JSON strict, jamais un remplacement. */
+  /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
+   * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
+   * strict : jamais un remplacement des règles existantes. */
+  systemPromptOverride?: string;
   extraInstructions?: string;
 }): AtelierPresetPrompt {
-  const { preset, context, currentText, currentFormat, extraInstructions } = params;
+  const { preset, context, currentText, currentFormat, systemPromptOverride, extraInstructions } = params;
   const responseKind: AtelierPresetPrompt["responseKind"] =
     preset.action === "hooks" || preset.action === "angles"
       ? "text_list"
@@ -37,6 +39,7 @@ export function buildAtelierPresetPrompt(params: {
       : "version";
 
   const systemLines: Array<string | null> = [
+    systemPromptOverride ? `Note de l'administrateur ClickPost : ${systemPromptOverride}` : null,
     "Tu es un rédacteur publicitaire francophone spécialisé dans les publications pour les réseaux sociaux.",
     "Tu dois exécuter une seule action sur cette idée, en respectant le contexte de marque et les consignes.",
     ...buildBrandContextLines(context.brand),

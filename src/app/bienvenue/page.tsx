@@ -49,6 +49,11 @@ const AUDIENCES = [
     title: "Équipes marketing internes",
     description: "Alignez stratégie, approbation et publication dans un seul flux de travail partagé.",
   },
+  {
+    icon: IconClipboardCheck,
+    title: "Approbateurs clients",
+    description: "Validez ou demandez des retouches sur chaque contenu avant sa publication, en un clic.",
+  },
 ];
 
 const PROBLEMS = [
@@ -77,8 +82,9 @@ const FEATURES = [
   { icon: IconCalendar, title: "Calendrier éditorial", description: "Vue claire de ce qui est prévu, programmé et publié." },
   { icon: IconLinkedin, title: "Publication LinkedIn", description: "Connexion OAuth réelle, programmation automatique, suivi des tentatives." },
   { icon: IconChartBar, title: "Rapports narrés par IA", description: "Interne, client ou exécutif — aperçu éditable avant enregistrement." },
+  { icon: IconTrendingUp, title: "Performances", description: "Statistiques réelles de publication, jamais de chiffre simulé présenté comme réel." },
   { icon: IconUsers, title: "Espace multi-marques", description: "Gérez plusieurs marques dans un même workspace, isolées les unes des autres." },
-  { icon: IconClipboardCheck, title: "Suivi éditorial", description: "Statuts clairs, de l'idée jusqu'à la publication." },
+  { icon: IconClipboardCheck, title: "Approbation & collaboration", description: "Workflow de validation avec vos clients ou votre équipe avant chaque publication." },
 ];
 
 export default function BienvenuePage() {
@@ -146,7 +152,7 @@ export default function BienvenuePage() {
               <SectionEyebrow>Pour qui</SectionEyebrow>
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Conçu pour ceux qui produisent du contenu chaque semaine</h2>
             </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {AUDIENCES.map((audience) => (
                 <div key={audience.title} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6">
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">

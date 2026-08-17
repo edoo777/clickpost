@@ -4,7 +4,7 @@ import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildAtelierPresetPrompt } from "@/lib/ai/atelier-preset-prompt";
 import { validateAtelierPresetRequest } from "@/lib/ai/validate-atelier-preset-request";
-import { getPromptExtraInstructions } from "@/lib/admin/prompt-overrides";
+import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -98,14 +98,15 @@ export async function POST(request: Request) {
     if (themeRow) theme = mapRowToRecord(themeRow) as unknown as Theme;
   }
 
-  const extraInstructions = await getPromptExtraInstructions("atelier");
+  const promptOverride = await getPromptOverrideConfig("atelier");
 
   const prompt = buildAtelierPresetPrompt({
     preset,
     context: { idea, brand, theme, tone, length, instructions },
     currentText,
     currentFormat,
-    extraInstructions,
+    systemPromptOverride: promptOverride.systemPromptOverride,
+    extraInstructions: promptOverride.extraInstructions,
   });
 
   try {
