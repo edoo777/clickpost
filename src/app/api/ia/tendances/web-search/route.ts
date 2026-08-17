@@ -21,9 +21,9 @@ import type { MusicTrendItem, ProviderResult, TrendItem } from "@/types/trend";
  * consommer un quota : un clic sur un contexte déjà en cache ne coûte jamais de recherche.
  */
 
-function buildCacheKey(input: ValidatedWebTrendSearchRequest): string {
+function buildCacheKey(workspaceId: string, input: ValidatedWebTrendSearchRequest): string {
   const platforms = [...input.platforms].sort().join(",");
-  return `websearch:${input.focus}:${platforms}:${input.niche ?? ""}:${input.country ?? ""}:${input.language ?? ""}:${input.period}`;
+  return `websearch:${workspaceId}:${input.focus}:${platforms}:${input.niche ?? ""}:${input.country ?? ""}:${input.language ?? ""}:${input.period}`;
 }
 
 async function getWorkspaceId(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>, userId: string): Promise<string | null> {
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
     themeLabels: rawParams.themeLabels ? rawParams.themeLabels.split("|") : undefined,
   });
 
-  const cacheKey = validation.valid ? buildCacheKey(validation.value) : null;
+  const cacheKey = validation.valid ? buildCacheKey(workspaceId, validation.value) : null;
   const cached = cacheKey ? getCached<ProviderResult<TrendItem> | ProviderResult<MusicTrendItem>>(cacheKey) : null;
 
   return NextResponse.json({
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   if (!validation.valid) return NextResponse.json({ status: "error", message: validation.message }, { status: 400 });
   const input = validation.value;
 
-  const cacheKey = buildCacheKey(input);
+  const cacheKey = buildCacheKey(workspaceId, input);
   const forceRefresh = Boolean((rawBody as Record<string, unknown>)?.refresh);
 
   if (!forceRefresh) {

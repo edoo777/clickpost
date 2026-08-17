@@ -10,7 +10,9 @@ export function WebSearchNoSignalState({
 }: {
   onExpandPeriod: () => void;
   onClearNiche: () => void;
-  onExploreAllPlatforms: () => void;
+  /** Omis lorsque la section recherche déjà systématiquement toutes les plateformes pertinentes
+   * (ex. MusicTrendsSection) — le bouton n'a alors rien de plus à faire. */
+  onExploreAllPlatforms?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3">
@@ -22,9 +24,11 @@ export function WebSearchNoSignalState({
         <button type="button" onClick={onClearNiche} className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted">
           Retirer le filtre de niche
         </button>
-        <button type="button" onClick={onExploreAllPlatforms} className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted">
-          Explorer toutes les plateformes
-        </button>
+        {onExploreAllPlatforms && (
+          <button type="button" onClick={onExploreAllPlatforms} className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted">
+            Explorer toutes les plateformes
+          </button>
+        )}
       </div>
     </div>
   );

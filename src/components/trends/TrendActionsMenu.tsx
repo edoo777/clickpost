@@ -43,10 +43,14 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
   }
 
   function handleSave(status: "saved" | "hidden" | "not_relevant", confirmLabel: string) {
+    if (!userId) {
+      notify("Session en cours de chargement — réessayez dans un instant.");
+      return close();
+    }
     if (!window.confirm(confirmLabel)) return close();
     saveTrend(
       { brandId: context.brandId, provider: trend.provider, externalId: trend.externalId, title: trend.title, sourceUrl: trend.url, status },
-      userId ?? ""
+      userId
     );
     notify(status === "saved" ? "Tendance enregistrée." : status === "hidden" ? "Tendance masquée." : "Marquée non pertinente.");
     close();
@@ -77,6 +81,10 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
   }
 
   function handleCreateNote() {
+    if (!userId) {
+      notify("Session en cours de chargement — réessayez dans un instant.");
+      return close();
+    }
     if (!window.confirm(`Créer une note dans la Banque d'idées à partir de « ${trend.title} » ?`)) return close();
     const now = new Date().toISOString();
     const note = {
@@ -87,7 +95,7 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
       content: trend.description ? plainTextToDocument(trend.description) : plainTextToDocument(""),
       bodyText: trend.description ?? "",
       archiveStatus: "active" as const,
-      createdBy: userId ?? "",
+      createdBy: userId,
       createdAt: now,
       updatedAt: now,
     };

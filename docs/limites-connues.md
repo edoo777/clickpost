@@ -20,6 +20,7 @@ Document tenu à jour à la clôture de F1.9 — à réviser si l'une de ces lim
 - Aucun test automatisé (unitaire/intégration/E2E) n'est configuré — la vérification repose sur `npm run lint`, `npx tsc --noEmit`, `npm run build`, et des parcours de test manuels documentés dans [tests-manuels.md](./tests-manuels.md).
 - Aucun mécanisme de synchronisation temps réel (Supabase Realtime/WebSocket) — le pull cloud→local ne s'exécute qu'une fois par session (voir [offline-first.md](./offline-first.md)), pas en continu.
 - La fusion de conflits reste au niveau de l'enregistrement entier (« dernier écrit gagne » ou choix explicite) — pas de fusion fine champ par champ automatique au-delà de ce que l'utilisateur sélectionne manuellement dans le Centre des conflits.
+- **Tendances — quotas et cache de veille Web en mémoire de processus** (`src/lib/trends/web-search-quota.ts`, `rate-limit.ts`, `cache.ts`) : les compteurs (quota de recherche, limite de débit, cache des résultats) vivent dans de simples `Map` en mémoire, réinitialisées au redémarrage et non partagées entre plusieurs instances serveur. Sur un déploiement à plusieurs instances actives simultanément, le plafond affiché (« 1 recherche Web globale / 2h / workspace ») est donc appliqué par instance, pas platform-wide — un vrai contrôle de coût nécessiterait un compteur partagé (ligne Supabase, Redis...) au lieu de ces `Map`. Non bloquant pour une bêta à faible trafic sur une seule instance.
 
 ## Comptes et données de démonstration
 

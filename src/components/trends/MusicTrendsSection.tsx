@@ -65,7 +65,6 @@ export function MusicTrendsSection({
         <WebSearchNoSignalState
           onExpandPeriod={() => onAdjustFilters({ period: "30d" })}
           onClearNiche={() => onAdjustFilters({ niche: "" })}
-          onExploreAllPlatforms={() => {}}
         />
       )}
 
