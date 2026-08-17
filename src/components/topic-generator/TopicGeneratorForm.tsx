@@ -183,7 +183,11 @@ export function TopicGeneratorForm({
   }
 
   function handleAddToBrandSettings(selection: ThemeSelectionValue) {
-    if (!canManageBrands) return;
+    // Sans marque (génération ponctuelle), il n'y a aucune marque à laquelle rattacher la
+    // thématique — `value.brandId` vaudrait "", ce qui créerait une thématique orpheline
+    // (brand_id vide) invisible et ingérable. Ce cas ne doit jamais être atteignable via l'UI
+    // (voir le rendu conditionnel ci-dessous), gardé ici en dernier recours.
+    if (!canManageBrands || isStandalone || !value.brandId) return;
     const newThemeId = addTheme(value.brandId, { label: selection.themeLabel });
     updateThemeSelection(selection.themeId, { ...selection, themeId: newThemeId, isAdhoc: false });
   }
@@ -298,7 +302,7 @@ export function TopicGeneratorForm({
                 onDuplicate={() => duplicateThemeSelection(selection.themeId)}
                 availablePlatforms={ALL_PLATFORMS}
                 onAddToBrandSettings={
-                  selection.isAdhoc && canManageBrands ? () => handleAddToBrandSettings(selection) : undefined
+                  selection.isAdhoc && canManageBrands && !isStandalone ? () => handleAddToBrandSettings(selection) : undefined
                 }
               />
             ))}
