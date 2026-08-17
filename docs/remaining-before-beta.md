@@ -1,8 +1,17 @@
 # ClickPost — Ce qui reste avant la bêta (5 à 10 utilisateurs)
 
-Liste stricte, mise à jour à la fin de la session autonome du 2026-08-17. Ne contient que ce qui
-reste réellement à faire — voir `docs/beta-readiness-audit.md` pour le détail de ce qui est déjà
-prêt.
+Liste stricte, mise à jour à la fin de la session autonome du 2026-08-17 (2e passage). Ne contient
+que ce qui reste réellement à faire — voir `docs/beta-readiness-audit.md` pour le détail de ce qui
+est déjà prêt, et `docs/autonomous-development-report.md` pour le détail de cette session.
+
+Depuis la dernière version de ce document : l'espace Admin > Prompts IA gère désormais réellement
+les 6 champs requis (identifiant, nom, fonction, prompt système, instructions supplémentaires,
+statut actif/inactif, date de modification) avec repli sécurisé vers le prompt codé en dur si la
+configuration est absente ou inactive ; le module Tendances (jamais audité jusqu'ici) a été
+audité en profondeur et 3 bugs réels corrigés (cache de veille Web non isolé par workspace, actions
+Enregistrer/Créer une note pouvant écrire un identifiant vide avant la fin du chargement de
+session, bouton « Explorer toutes les plateformes » sans effet dans la section Musique) ; les
+modules Paramètres et Performances ont été audités en profondeur, aucun bug réel trouvé.
 
 ## Configuration manuelle requise (aucune ne peut être faite par l'agent)
 
@@ -43,6 +52,9 @@ prêt.
 - Texte produit `coming_soon_other_networks` défini dans l'Admin mais pas encore affiché dans une
   page réelle.
 - Une seule marche arrière pour les prompts/textes admin (pas d'historique complet).
+- Tendances : quotas et cache de veille Web en mémoire de processus, non partagés entre plusieurs
+  instances serveur — voir `docs/limites-connues.md`. Sans impact pour une bêta à faible trafic sur
+  une seule instance.
 
 ## Hors périmètre volontaire (ne pas développer avant la bêta)
 
