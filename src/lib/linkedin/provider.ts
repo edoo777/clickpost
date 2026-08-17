@@ -1,22 +1,47 @@
 import { createPost, initializeImageUpload, uploadImageBytes } from "@/lib/linkedin/client";
-import { isLinkedInOAuthConfigured } from "@/lib/linkedin/config";
+import { isLinkedInOAuthConfigured, isLinkedInOrganizationAccessEnabled } from "@/lib/linkedin/config";
 import { getValidAccessToken } from "@/lib/linkedin/connections";
 import { downloadPublicationMedia } from "@/lib/linkedin/media";
 import { validatePlatformConstraints } from "@/lib/publishing/platform-constraints";
-import type { AutomaticPublishResult, PublishContext, PublishProvider } from "@/types/publishing-provider";
+import type {
+  AutomaticPublishResult,
+  PerformanceFetchResult,
+  PlatformCapabilities,
+  PublishContext,
+  PublishProvider,
+} from "@/types/publishing-provider";
 
 /**
  * Fournisseur LinkedIn réel — Posts API actuelle (`/rest/posts`), jamais `ugcPosts`. Couvre
  * progressivement : texte seul, texte + URL, une image, plusieurs images (officiellement pris en
  * charge par l'API Posts via `content.multiImage`). La vidéo n'est PAS encore prise en charge —
  * `publish()` échoue explicitement dans ce cas plutôt que de tenter un flux non testé ; le mode
- * manuel reste disponible pour toute publication vidéo en attendant.
+ * manuel reste disponible pour toute publication vidéo en attendant. Implémentation de référence
+ * pour toute nouvelle plateforme (voir docs/social-platform-setup.md).
  */
 export const linkedInProvider: PublishProvider = {
   platform: "linkedin",
 
   isConfigured(): boolean {
     return isLinkedInOAuthConfigured();
+  },
+
+  capabilities(): PlatformCapabilities {
+    return {
+      automaticPublish: true,
+      organizationAccounts: isLinkedInOrganizationAccessEnabled(),
+      // Aucune portée de lecture de statistiques n'est demandée par l'intégration actuelle
+      // (portées minimales — voir docs/linkedin-production-readiness.md) : jamais annoncé comme
+      // possible tant que ce n'est pas réellement le cas.
+      performanceFetch: false,
+    };
+  },
+
+  async fetchPerformance(): Promise<PerformanceFetchResult> {
+    return {
+      status: "not_supported",
+      reason: "L'intégration LinkedIn actuelle ne demande pas les portées de lecture de statistiques (Member Data Portability / Community Management API) — voir docs/linkedin-production-readiness.md.",
+    };
   },
 
   async publish(context: PublishContext): Promise<AutomaticPublishResult> {

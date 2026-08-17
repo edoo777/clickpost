@@ -54,14 +54,57 @@ export interface PublishContext {
 }
 
 /**
- * Abstraction commune à toutes les plateformes sociales. Un seul principe non négociable :
- * `publish()` ne doit JAMAIS retourner `"success"` si aucun appel réseau réel vers la plateforme
- * n'a réussi — `isConfigured()` renvoyant `false` doit bloquer tout appel à `publish()` en amont.
+ * Ce que la plateforme permet réellement — déclaré statiquement par chaque fournisseur, jamais
+ * déduit en devinant. Une capacité à `false` doit être respectée partout dans l'interface (ne
+ * jamais proposer une action que la plateforme ne permet pas), qu'un identifiant API soit
+ * configuré ou non : `isConfigured()` distingue "possible en théorie" de "branché aujourd'hui".
+ */
+export interface PlatformCapabilities {
+  /** Publication automatique via API (par opposition à la confirmation manuelle après action
+   * humaine sur la plateforme). */
+  automaticPublish: boolean;
+  /** La plateforme permet-elle de gérer plusieurs comptes/pages/organisations distincts du profil
+   * personnel (ex. Pages LinkedIn, Comptes professionnels Instagram) ? */
+  organizationAccounts: boolean;
+  /** Récupération de métriques de performance réelles par API pour un contenu déjà publié. */
+  performanceFetch: boolean;
+}
+
+export interface PlatformPerformanceMetrics {
+  impressions?: number;
+  reach?: number;
+  views?: number;
+  interactions?: number;
+  newFollowers?: number;
+  clicks?: number;
+}
+
+export type PerformanceFetchResult =
+  /** La plateforme ou le niveau d'accès actuel ne permet pas cette lecture — jamais une donnée
+   * inventée ou une estimation en son absence. */
+  | { status: "not_supported"; reason: string }
+  | { status: "error"; message: string }
+  | { status: "ok"; metrics: PlatformPerformanceMetrics; fetchedAt: string };
+
+/**
+ * Abstraction commune à toutes les plateformes sociales — Social Provider / Adapter : chaque
+ * plateforme implémente cette même interface, aucune logique métier (approbation, calendrier,
+ * rapports) ne doit connaître les particularités d'une plateforme donnée. Un seul principe non
+ * négociable : `publish()` ne doit JAMAIS retourner `"success"` si aucun appel réseau réel vers la
+ * plateforme n'a réussi — `isConfigured()` renvoyant `false` doit bloquer tout appel à `publish()`
+ * en amont. Voir docs/social-platform-setup.md pour la procédure de branchement d'une plateforme
+ * réelle et src/lib/linkedin/provider.ts pour l'implémentation de référence (seule aujourd'hui
+ * réellement branchée).
  */
 export interface PublishProvider {
   platform: SocialPlatform;
   /** Vrai uniquement si de vraies clés/identifiants API sont configurés côté serveur pour cette
    * plateforme. */
   isConfigured(): boolean;
+  /** Ce que cette plateforme permet dans l'absolu — indépendant de `isConfigured()`. */
+  capabilities(): PlatformCapabilities;
   publish(context: PublishContext): Promise<AutomaticPublishResult>;
+  /** Absent si la plateforme n'expose aucune API de mesure exploitable (voir `capabilities()`) —
+   * sinon renvoie toujours un résultat honnête, jamais une métrique approchée ou devinée. */
+  fetchPerformance?(context: { publication: Publication; account: SocialAccount }): Promise<PerformanceFetchResult>;
 }

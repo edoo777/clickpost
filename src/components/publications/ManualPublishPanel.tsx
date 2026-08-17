@@ -81,9 +81,11 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
       </div>
 
       <p className="text-xs text-muted-foreground ">
-        {automaticAvailable
-          ? "Un envoi automatique est configuré pour cette plateforme mais n'est pas encore branché ici."
-          : `Aucune intégration API n'est configurée pour ${publication.platform} — publiez ce contenu vous-même sur la plateforme, puis confirmez ci-dessous. ClickPost n'affiche jamais un envoi automatique qui n'a pas réellement eu lieu.`}
+        {readiness === "ready"
+          ? "Un envoi automatique est disponible pour cette plateforme (bouton ci-dessus) — utilisez ce panneau uniquement si vous préférez confirmer une publication déjà faite manuellement."
+          : automaticAvailable
+            ? "Un envoi automatique est configuré pour cette plateforme, mais indisponible pour ce compte actuellement (reconnexion ou permission requise) — publiez manuellement en attendant."
+            : `Aucune intégration API n'est configurée pour ${publication.platform} — publiez ce contenu vous-même sur la plateforme, puis confirmez ci-dessous. ClickPost n'affiche jamais un envoi automatique qui n'a pas réellement eu lieu.`}
       </p>
 
       {violations.length > 0 && (

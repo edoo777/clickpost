@@ -13,10 +13,27 @@ sert désormais de référence concrète pour ce travail.
 
 ## Architecture existante
 
-- **Abstraction commune** : `src/types/publishing-provider.ts` (interface `PublishProvider`) et
-  `src/lib/publishing/providers.ts` (registre par plateforme, `getPublishProvider(platform)`).
-  Aujourd'hui, chaque plateforme renvoie un fournisseur « non configuré » (`isConfigured()` vaut
-  toujours `false`) — l'interface guide systématiquement vers la publication manuelle.
+- **Abstraction commune (Social Provider / Adapter)** : `src/types/publishing-provider.ts`
+  (interface `PublishProvider`) et `src/lib/publishing/providers.ts` (registre par plateforme,
+  `getPublishProvider(platform)`). LinkedIn est la seule plateforme dont l'entrée du registre
+  pointe vers un fournisseur réel (`linkedInProvider`, voir `src/lib/linkedin/provider.ts`,
+  implémentation de référence) ; toutes les autres renvoient un fournisseur « non configuré »
+  (`isConfigured()` vaut toujours `false`) — l'interface guide systématiquement vers la
+  publication manuelle. Aucun composant, route ou planificateur ne connaît les particularités
+  d'une plateforme donnée : tous consomment cette même interface `PublishProvider`.
+- **Capacités déclarées** (`PlatformCapabilities`, `capabilities()` sur chaque fournisseur) :
+  `automaticPublish`, `organizationAccounts` (pages/comptes professionnels distincts du profil
+  personnel), `performanceFetch` (lecture de métriques réelles par API). Distinct de
+  `isConfigured()` : une capacité peut être vraie « dans l'absolu » (l'API de la plateforme le
+  permet) sans qu'aucun identifiant ne soit configuré aujourd'hui. Les valeurs déclarées dans
+  `PLATFORM_CAPABILITIES` (`src/lib/publishing/providers.ts`) reflètent la documentation publique
+  de chaque plateforme, à revérifier au moment de l'implémentation réelle.
+- **Récupération de performances** (`fetchPerformance()`, optionnelle sur `PublishProvider`) :
+  renvoie toujours `{status: "not_supported", reason}` tant qu'aucune intégration réelle de
+  lecture de métriques n'existe — y compris pour LinkedIn aujourd'hui (portées minimales
+  demandées, pas de lecture de statistiques, voir `docs/linkedin-production-readiness.md`). Ne
+  jamais renvoyer une métrique approchée ou devinée : `{status: "ok", metrics, fetchedAt}`
+  uniquement pour une lecture API réellement effectuée.
 - **Contraintes par plateforme** : `src/lib/publishing/platform-constraints.ts` — limites de
   longueur de texte, nombre de hashtags, nombre et type de médias. Valeurs publiques connues,
   volontairement indicatives (à revérifier auprès de chaque plateforme, qui les fait évoluer sans
@@ -60,9 +77,11 @@ ClickPost.
    l'implémentation de la connexion de compte réelle, hors périmètre actuel).
 3. Ajouter les variables d'environnement nécessaires côté serveur uniquement (jamais
    `NEXT_PUBLIC_*`) — voir `.env.example` pour le patron déjà utilisé (Anthropic, YouTube).
-4. Implémenter un `PublishProvider` réel dans `src/lib/publishing/providers.ts` pour cette
-   plateforme (remplacer le fournisseur « non configuré » par un appel réel à l'API), en
-   conservant la même interface — aucun autre fichier de l'application n'a besoin de changer.
+4. Implémenter un `PublishProvider` réel (voir `src/lib/linkedin/provider.ts` comme référence :
+   `isConfigured()`, `capabilities()`, `publish()`, et `fetchPerformance()` si l'API le permet
+   réellement), puis remplacer l'entrée correspondante dans `providerRegistry`
+   (`src/lib/publishing/providers.ts`) — aucun autre fichier de l'application n'a besoin de
+   changer (composants, routes API, planificateur consomment tous la même interface).
 5. Mettre à jour `AccountStatus` réel des comptes concernés uniquement après une confirmation
    OAuth effective (jamais avant).
 
