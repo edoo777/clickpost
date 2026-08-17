@@ -66,6 +66,7 @@ export async function POST(request: Request) {
   const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
+  const workspaceId = (brandRow as { workspace_id: string }).workspace_id;
 
   const { data: accountRows } = await supabase.from("accounts").select("*").eq("brand_id", brandId);
   const connectedAccounts = Array.isArray(accountRows)
@@ -86,9 +87,14 @@ export async function POST(request: Request) {
         .slice(0, 12)
     : [];
 
+  // Filtré par workspace_id ET brand (nom) — un utilisateur membre de plusieurs workspaces ne doit
+  // jamais voir les publications d'un autre workspace dont la marque porterait le même nom
+  // (`brand` est un texte libre, pas une clé étrangère ; workspace_id est la véritable frontière
+  // d'isolation ici, appliquée en plus de la RLS par appartenance).
   const { data: publicationRows, error: publicationError } = await supabase
     .from("publications")
     .select("*")
+    .eq("workspace_id", workspaceId)
     .eq("brand", brand.name)
     .order("scheduledFor", { ascending: true })
     .limit(12);
