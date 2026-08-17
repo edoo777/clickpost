@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeEqual } from "@/lib/oauth/token-encryption";
 import { processDueLinkedInPublications } from "@/lib/linkedin/scheduler";
 
 /**
@@ -13,7 +14,11 @@ function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false; // jamais autoriser un déclenchement si aucun secret n'est configuré.
   const header = request.headers.get("authorization");
-  return header === `Bearer ${secret}`;
+  if (!header) return false;
+  // Comparaison à temps constant, cohérente avec le reste du code (voir token-encryption.ts) —
+  // un `===` naïf sur un secret est un canal auxiliaire par mesure de temps, même si le risque
+  // pratique reste faible ici face à la latence réseau.
+  return safeEqual(header, `Bearer ${secret}`);
 }
 
 export async function GET(request: Request) {

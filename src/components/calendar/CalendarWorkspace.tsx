@@ -99,7 +99,19 @@ export function CalendarWorkspace({
     if (UNSCHEDULED_STATUSES.includes(post.status) && post.status !== "approved") return;
     const previousTime = post.scheduledFor.slice(11, 16);
     const time = UNSCHEDULED_STATUSES.includes(post.status) ? "09:00" : previousTime || "09:00";
-    patchPost(id, { scheduledFor: `${dateKey}T${time}:00` });
+    const nextScheduledFor = `${dateKey}T${time}:00`;
+    // Une publication LinkedIn programmée dans le passé est reprise immédiatement par le
+    // planificateur réel — jamais un simple rappel ignoré (voir la même règle dans
+    // PublicationView.handleSave). Un dépôt sur un jour déjà passé est refusé pour LinkedIn
+    // uniquement, avec une explication (contrairement aux refus silencieux ci-dessus, cette
+    // erreur n'est pas évidente pour l'utilisateur qui vient de faire le geste).
+    if (post.platform === "linkedin" && new Date(nextScheduledFor).getTime() <= Date.now()) {
+      window.alert(
+        "Cette date est déjà passée — une publication LinkedIn programmée serait publiée immédiatement au prochain passage du planificateur. Choisissez une date future."
+      );
+      return;
+    }
+    patchPost(id, { scheduledFor: nextScheduledFor });
     if (UNSCHEDULED_STATUSES.includes(post.status)) {
       changeStatus(id, "scheduled", post.owner || "Calendrier");
     }

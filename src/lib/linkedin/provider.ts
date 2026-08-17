@@ -78,7 +78,10 @@ export const linkedInProvider: PublishProvider = {
         return {
           status: "failed",
           errorMessage: initialized.error.message,
-          isPermanent: initialized.error.status >= 400 && initialized.error.status < 500,
+          // 429 exclu au même titre que pour createPost ci-dessous : une limitation de débit est
+          // transitoire, jamais une raison d'abandonner définitivement la tentative (corrige une
+          // incohérence trouvée lors d'un audit autonome, 2026-08-17).
+          isPermanent: initialized.error.status >= 400 && initialized.error.status < 500 && initialized.error.status !== 429,
           isPermissionError: initialized.error.isPermissionError,
         };
       }

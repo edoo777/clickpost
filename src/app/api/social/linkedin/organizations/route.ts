@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isLinkedInOrganizationAccessEnabled, LINKEDIN_ORGANIZATION_SCOPES } from "@/lib/linkedin/config";
 import { getValidAccessToken } from "@/lib/linkedin/connections";
 import { fetchAdministeredOrganizations } from "@/lib/linkedin/organizations";
+import { isWorkspaceAdmin } from "@/lib/linkedin/workspace-guard";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { SocialAccount } from "@/types/dashboard";
@@ -38,6 +39,16 @@ export async function GET(request: Request) {
   if (accountError || !accountRow) return errorResponse("not_found", "Compte introuvable ou inaccessible.", 404);
   const account = mapRowToRecord(accountRow) as unknown as SocialAccount;
   const workspaceId = (accountRow as { workspace_id: string }).workspace_id;
+
+  // Lister les Pages administrées déclenche un appel réseau réel portant le jeton du compte
+  // connecté — même règle que connect/connect-organization/disconnect/publish (voir
+  // workspace-guard.ts) : réservé à owner/admin du workspace, jamais tout membre (corrige une
+  // incohérence trouvée lors d'un audit autonome, 2026-08-17 — sans impact pratique tant que
+  // LINKEDIN_ORGANIZATION_ACCESS_ENABLED reste désactivé par défaut).
+  const admin = await isWorkspaceAdmin(supabase, workspaceId, user.id);
+  if (!admin) {
+    return errorResponse("forbidden", "Seul un administrateur ou propriétaire du workspace peut lister les Pages LinkedIn.", 403);
+  }
 
   if (account.status !== "connected") {
     return errorResponse("not_connected", "Ce compte LinkedIn personnel n'est pas connecté.", 409);

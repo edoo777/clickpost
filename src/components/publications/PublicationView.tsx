@@ -120,6 +120,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const [isEditing, setIsEditing] = useState(mode === "create");
   const [creationMode, setCreationMode] = useState<PublicationCreationMode>("manual");
   const [lastAiSnapshot, setLastAiSnapshot] = useState<Publication | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   function applyAiPatch(patch: Partial<Publication>) {
     setLastAiSnapshot(draft);
@@ -172,6 +173,17 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   }
 
   function handleSave() {
+    // Une publication LinkedIn "Programmée" datée dans le passé est reprise dès le prochain
+    // passage du planificateur réel (voir src/lib/linkedin/scheduler.ts) — un envoi immédiat et
+    // non intentionnel, jamais juste un rappel silencieusement ignoré. Corrige un risque réel
+    // trouvé lors d'un audit autonome (2026-08-17). N'affecte pas les autres plateformes
+    // (publication manuelle uniquement) ni les autres statuts, où une date passée peut être un
+    // enregistrement rétroactif légitime.
+    if (draft.platform === "linkedin" && draft.status === "scheduled" && new Date(draft.scheduledFor).getTime() <= Date.now()) {
+      setSaveError("Cette publication LinkedIn est programmée dans le passé — elle serait publiée immédiatement. Choisissez une date future, ou un autre statut.");
+      return;
+    }
+    setSaveError(null);
     if (mode === "create") {
       // L'id a déjà été généré à l'ouverture du formulaire (voir buildBlankPublication) — jamais
       // régénéré ici, pour rester cohérent avec le chemin de stockage des médias déjà téléversés.
@@ -428,6 +440,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
         <div className="flex items-center gap-3">
           {isEditing ? (
             <>
+              {saveError && <p className="text-xs font-medium text-red-600 dark:text-red-400">{saveError}</p>}
               <button
                 type="button"
                 onClick={handleCancel}

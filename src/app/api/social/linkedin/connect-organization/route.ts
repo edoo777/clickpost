@@ -95,8 +95,11 @@ export async function POST(request: Request) {
   try {
     await saveConnection(workspaceId, accountId, "linkedin", {
       accessToken: tokenResult.accessToken,
-      refreshToken: tokenResult.refreshed?.refreshToken ?? null,
-      expiresAt: adminAccount.tokenExpiresAt ?? now,
+      // Le jeton de rafraîchissement actuel du compte administrateur, qu'un rafraîchissement
+      // vienne ou non d'avoir lieu à l'instant — corrige une perte silencieuse du jeton dans le
+      // cas courant (voir le commentaire de AccessTokenResult dans connections.ts).
+      refreshToken: tokenResult.refreshToken,
+      expiresAt: tokenResult.refreshed?.expiresAt ?? adminAccount.tokenExpiresAt ?? now,
       scopes: adminAccount.oauthScopes ?? [],
     });
   } catch {
