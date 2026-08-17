@@ -3,9 +3,33 @@
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { applyBrandingTokens, buildDefaultBranding, cacheBrandingLocally, readCachedBranding } from "@/lib/branding-tokens";
+import { clearLocalData } from "@/lib/persistence/coordinator";
 import { configureSyncContext, ensureSyncTriggers, registerWorkspaceReloader } from "@/lib/sync/runtime";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
+
+const LAST_USER_ID_STORAGE_KEY = "clickpost-last-user-id";
+
+/**
+ * Filet de sécurité contre une fuite de données entre comptes sur un navigateur partagé (audit
+ * autonome, 2026-08-17) : si l'utilisateur authentifié résolu ici diffère du dernier utilisateur
+ * connu sur ce navigateur (autre compte, sans déconnexion explicite préalable — voir aussi
+ * handleSignOut dans Sidebar.tsx pour le cas nettoyé), efface tout IndexedDB local (snapshot de
+ * workspace + file de synchronisation en attente) AVANT que `configureSyncContext` n'arme le
+ * moteur de synchronisation, pour qu'aucune donnée ni opération en attente de l'utilisateur
+ * précédent ne puisse jamais être poussée vers Supabase sous la nouvelle identité.
+ */
+async function guardAgainstUserSwitch(userId: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  const lastUserId = window.localStorage.getItem(LAST_USER_ID_STORAGE_KEY);
+  if (lastUserId && lastUserId !== userId) {
+    await clearLocalData().catch(() => {
+      // Une erreur d'effacement ne doit jamais bloquer la connexion — au pire, l'ancien état
+      // local reste jusqu'à la prochaine tentative (aucune tentative de compensation implicite).
+    });
+  }
+  window.localStorage.setItem(LAST_USER_ID_STORAGE_KEY, userId);
+}
 
 interface UpdateResult {
   error: string | null;
@@ -93,6 +117,7 @@ export function WorkspaceSessionProvider({ children }: { children: ReactNode }) 
 
     setUserId(user.id);
     setEmail(user.email ?? "");
+    await guardAgainstUserSwitch(user.id);
 
     const cached = readCachedBranding(null);
     if (cached) applyBrandingTokens(cached);

@@ -259,4 +259,22 @@ export async function clearImportJournal(): Promise<void> {
   });
 }
 
+/** Vide entièrement la file de synchronisation (opérations en attente, états de révision,
+ * journal d'import) — appelé à la déconnexion et lors d'un changement d'utilisateur détecté
+ * localement, jamais en cours de session normale. Corrige une fuite réelle trouvée lors d'un
+ * audit autonome (2026-08-17) : sur un navigateur partagé, des opérations encore en file au
+ * moment de la déconnexion d'un utilisateur A pouvaient être poussées vers Supabase après la
+ * connexion d'un utilisateur B, taguées avec le workspace/l'identité de B. */
+export async function clearSyncQueue(): Promise<void> {
+  const db = await openQueueDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([OPERATIONS_STORE, SYNC_STATE_STORE, IMPORT_JOURNAL_STORE], "readwrite");
+    tx.objectStore(OPERATIONS_STORE).clear();
+    tx.objectStore(SYNC_STATE_STORE).clear();
+    tx.objectStore(IMPORT_JOURNAL_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error("Réinitialisation de la file de synchronisation impossible."));
+  });
+}
+
 export { isIndexedDbAvailable as isSyncQueueAvailable };

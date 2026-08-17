@@ -5,6 +5,7 @@ import {
   type WorkspaceKey,
   type WorkspaceSnapshot,
 } from "@/lib/persistence/types";
+import { clearSyncQueue } from "@/lib/sync/queue";
 
 const DEBOUNCE_MS = 800;
 const SAFETY_INTERVAL_MS = 30_000;
@@ -270,7 +271,14 @@ export async function applyImportedBackup(backup: ExportedBackup): Promise<void>
 }
 
 export async function clearLocalData(): Promise<void> {
-  if (isIndexedDbAvailable()) await indexedDbAdapter.clearWorkspace();
+  if (isIndexedDbAvailable()) {
+    await indexedDbAdapter.clearWorkspace();
+    // Efface aussi la file de synchronisation (opérations en attente, états de révision, journal
+    // d'import) — sinon des opérations encore en attente d'un utilisateur précédent pourraient
+    // être poussées vers Supabase sous l'identité/le workspace de l'utilisateur suivant sur un
+    // navigateur partagé (voir clearSyncQueue).
+    await clearSyncQueue();
+  }
   window.localStorage.removeItem(THEME_STORAGE_KEY);
   window.localStorage.removeItem(SIDEBAR_STORAGE_KEY);
 }

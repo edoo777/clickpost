@@ -17,6 +17,7 @@ import { SidebarResizeHandle } from "@/components/layout/SidebarResizeHandle";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { PRIMARY_NAV_ITEMS, isNavItemActive, type NavItem } from "@/lib/navigation";
+import { clearLocalData } from "@/lib/persistence/coordinator";
 import { useSidebarState } from "@/lib/sidebar-store";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useTeamSession } from "@/lib/team-store";
@@ -34,6 +35,11 @@ export function Sidebar() {
   async function handleSignOut() {
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
+    // Efface le workspace local et la file de synchronisation en attente — sur un navigateur
+    // partagé, la connexion suivante peut être un autre compte ; jamais laisser une opération non
+    // synchronisée de cette session être poussée plus tard sous une autre identité (voir aussi le
+    // filet de sécurité symétrique dans workspace-provider.tsx pour le cas non nettoyé).
+    await clearLocalData().catch(() => {});
     router.push("/connexion");
     router.refresh();
   }
