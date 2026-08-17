@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
 import { ManagementMenu } from "@/components/layout/ManagementMenu";
+import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, getPageTitle, isNavItemActive } from "@/lib/navigation";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
@@ -19,7 +20,7 @@ import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
  */
 export function TopBar() {
   const pathname = usePathname();
-  const { profile, workspace, email } = useWorkspaceSession();
+  const { profile, workspace, email, workspaceError, refresh } = useWorkspaceSession();
   const { selectableBrands, activeBrand, setActiveBrandId } = useBrandsSession();
   const conflictCount = useSyncStatus().conflictCount;
 
@@ -28,7 +29,16 @@ export function TopBar() {
     profile?.display_name || (profile ? `${profile.first_name} ${profile.last_name}`.trim() : "") || email || "Mon profil";
 
   return (
-    <header className="hidden h-16 shrink-0 items-center gap-4 border-b border-border bg-surface px-6 transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none lg:flex lg:ml-[var(--sidebar-w)]">
+    <>
+      {workspaceError && (
+        // Toujours monté ici (indépendant de la page affichée) : un échec de chargement du
+        // workspace (RPC de bootstrap, appartenance...) ne doit jamais laisser l'utilisateur sur
+        // un tableau de bord silencieusement vide/local sans explication ni action possible.
+        <div className="hidden px-6 pt-4 lg:block lg:ml-[var(--sidebar-w)]">
+          <WorkspaceErrorNotice error={workspaceError} onRetry={() => void refresh()} />
+        </div>
+      )}
+      <header className="hidden h-16 shrink-0 items-center gap-4 border-b border-border bg-surface px-6 transition-[margin] duration-[250ms] ease-in-out motion-reduce:transition-none lg:flex lg:ml-[var(--sidebar-w)]">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <h1 className="truncate text-base font-semibold text-foreground">{pageTitle}</h1>
         {workspace?.name && (
@@ -93,6 +103,7 @@ export function TopBar() {
           )}
         </Link>
       </div>
-    </header>
+      </header>
+    </>
   );
 }

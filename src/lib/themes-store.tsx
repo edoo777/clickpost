@@ -3,7 +3,6 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import { nextOrder } from "@/lib/themes";
-import { themes as SEED_THEMES } from "@/lib/themes-data";
 import type { Weekday } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 
@@ -30,7 +29,12 @@ interface ThemesSessionValue {
 const ThemesSessionContext = createContext<ThemesSessionValue | null>(null);
 
 export function ThemesSessionProvider({ children }: { children: ReactNode }) {
-  const [themes, setThemes] = useSyncedPersistedState("themes", SEED_THEMES, "themes");
+  // Jamais de données de démonstration présentées comme réelles par défaut — aligné sur
+  // brands-store.tsx/content-workspace-store.tsx (audit autonome, 2026-08-17) : le repli sur
+  // SEED_THEMES ("nova-cosmetics") était jusqu'ici masqué uniquement par le filtrage par
+  // brand_id réel dans tous les consommateurs actuels, un piège latent pour toute future
+  // fonctionnalité qui lirait `themes` sans ce filtrage.
+  const [themes, setThemes] = useSyncedPersistedState<"themes">("themes", [], "themes");
 
   const value = useMemo<ThemesSessionValue>(
     () => ({

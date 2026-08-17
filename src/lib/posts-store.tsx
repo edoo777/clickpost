@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import { posts as demoPosts } from "@/lib/demo-data";
 import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
 import {
   buildNewPost,
@@ -34,7 +33,10 @@ interface PostsSessionValue {
 const PostsSessionContext = createContext<PostsSessionValue | null>(null);
 
 export function PostsSessionProvider({ children }: { children: ReactNode }) {
-  const [posts, setPosts] = useSyncedPersistedState("posts", demoPosts, "posts");
+  // Jamais de données de démonstration présentées comme réelles par défaut (voir brands-store.tsx
+  // pour le même principe) — corrige un tableau de bord affichant de fausses publications/tâches
+  // d'approbation à un nouvel utilisateur, trouvé lors d'un audit autonome (2026-08-17).
+  const [posts, setPosts] = useSyncedPersistedState<"posts">("posts", [], "posts");
 
   const value = useMemo<PostsSessionValue>(
     () => ({

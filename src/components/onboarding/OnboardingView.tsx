@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconLogoMark } from "@/components/icons";
 import {
   BrandingStep,
@@ -62,6 +62,14 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
     setStep(Math.min(Math.max(workspace.onboarding_step, 1), TOTAL_STEPS));
   }
   const hasInitialized = Boolean(initializedFromId);
+  const isAlreadyOnboarded = hasInitialized && Boolean(workspace?.onboarding_completed);
+
+  // Un utilisateur déjà onboardé (favori, bouton précédent, URL tapée directement) ne doit
+  // jamais revoir l'assistant — « une seule fois, jamais redemandée aux connexions suivantes »
+  // (voir docs/tests-manuels.md). `handleComplete` reste idempotent si jamais atteint entre-temps.
+  useEffect(() => {
+    if (isAlreadyOnboarded) router.replace("/");
+  }, [isAlreadyOnboarded, router]);
 
   // Un échec de chargement du workspace (RPC ensure_default_workspace, réseau...) ne doit jamais
   // laisser un nouvel utilisateur bloqué sur un spinner infini sans message ni moyen de réessayer
@@ -76,10 +84,10 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
     );
   }
 
-  if (isLoading || !hasInitialized || !draftProfile || !draftWorkspace || !draftBranding) {
+  if (isLoading || !hasInitialized || !draftProfile || !draftWorkspace || !draftBranding || isAlreadyOnboarded) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <p className="text-sm text-muted-foreground">{isAlreadyOnboarded ? "Redirection…" : "Chargement…"}</p>
       </div>
     );
   }

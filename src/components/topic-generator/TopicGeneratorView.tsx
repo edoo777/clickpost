@@ -636,14 +636,19 @@ export function TopicGeneratorView() {
     return selectedTopics.length;
   }
 
+  // Le message ne promet jamais « Banque d'idées » : l'onglet de ce nom n'affiche aujourd'hui que
+  // les notes libres (NotesView), pas ces idées — elles restent réelles et enregistrées (addIdea,
+  // synchronisées), mais uniquement retrouvables en rouvrant ce lot de génération tant qu'aucune
+  // liste dédiée ne les affiche ailleurs. Un message inexact ici se lirait comme une perte de
+  // données pour l'utilisateur qui irait chercher dans cet onglet et n'y trouverait rien.
   function handleSaveSelected(batch: TopicBatch) {
     const count = saveSelectedForBatch(batch);
-    if (count > 0) setSuccessMessage(`${count} idée(s) enregistrée(s) dans la Banque d'idées.`);
+    if (count > 0) setSuccessMessage(`${count} idée(s) enregistrée(s) — retrouvez-les en rouvrant ce lot.`);
   }
 
   function handleSaveAllSelected() {
     const total = activeGroupBatches.reduce((sum, batch) => sum + saveSelectedForBatch(batch), 0);
-    if (total > 0) setSuccessMessage(`${total} idée(s) enregistrée(s) dans la Banque d'idées.`);
+    if (total > 0) setSuccessMessage(`${total} idée(s) enregistrée(s) — retrouvez-les en rouvrant chaque lot.`);
   }
 
   function handleArchiveBatch(batchId: string) {
