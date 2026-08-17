@@ -14,9 +14,14 @@ const EMPTY_CONFIG: PromptOverrideConfig = { systemPromptOverride: "", extraInst
 
 /**
  * Lecture depuis une route IA, avec la session normale de l'utilisateur appelant (jamais
- * service_role — la RLS autorise déjà la lecture à tout utilisateur authentifié, voir la
- * migration). Ne bloque jamais une génération : une erreur, une absence de ligne, ou un statut
- * inactif renvoient une configuration vide — fallback sécurisé vers le prompt codé en dur.
+ * service_role). Passe par la fonction SECURITY DEFINER `get_active_prompt_override` (voir la
+ * migration `20260817030000_prompt_overrides_restrict_select.sql`) plutôt qu'une lecture directe
+ * de la table : `prompt_overrides` n'a plus aucune politique de lecture cliente — un utilisateur
+ * authentifié ne peut obtenir, via cette fonction, que les deux champs nécessaires à l'injection
+ * dans SON propre prompt pour une clé active, jamais le reste de la table (nom, statut,
+ * historique, identifiant de l'administrateur). Ne bloque jamais une génération : une erreur, une
+ * absence de ligne, ou un statut inactif renvoient une configuration vide — fallback sécurisé
+ * vers le prompt codé en dur.
  *
  * IMPORTANT : ce fichier importe next/headers (via createSupabaseServerClient) — jamais depuis un
  * composant "use client" (voir prompt-override-types.ts pour les types/constantes sûrs côté
@@ -25,15 +30,12 @@ const EMPTY_CONFIG: PromptOverrideConfig = { systemPromptOverride: "", extraInst
 export async function getPromptOverrideConfig(key: PromptOverrideKey): Promise<PromptOverrideConfig> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data } = await supabase
-      .from("prompt_overrides")
-      .select("is_active, system_prompt_override, extra_instructions")
-      .eq("key", key)
-      .maybeSingle();
-    if (!data || data.is_active === false) return EMPTY_CONFIG;
+    const { data } = await supabase.rpc("get_active_prompt_override", { p_key: key }).maybeSingle();
+    const row = data as { system_prompt_override?: string; extra_instructions?: string } | null;
+    if (!row) return EMPTY_CONFIG;
     return {
-      systemPromptOverride: ((data.system_prompt_override as string | undefined) ?? "").trim(),
-      extraInstructions: ((data.extra_instructions as string | undefined) ?? "").trim(),
+      systemPromptOverride: (row.system_prompt_override ?? "").trim(),
+      extraInstructions: (row.extra_instructions ?? "").trim(),
     };
   } catch {
     return EMPTY_CONFIG;
