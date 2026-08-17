@@ -1,17 +1,16 @@
 # ClickPost — Ce qui reste avant la bêta (5 à 10 utilisateurs)
 
-Liste stricte, mise à jour à la fin de la session autonome du 2026-08-17 (3e passage — configuration
-Admin + audit de sécurité approfondi). Ne contient que ce qui reste réellement à faire — voir
-`docs/beta-readiness-audit.md` pour le détail de ce qui est déjà prêt, et
-`docs/autonomous-development-report.md` pour le détail complet de cette session.
+Liste stricte, mise à jour à la fin de la session autonome du 2026-08-17 (4e passage — parcours
+utilisateur complet, LinkedIn approfondi, RLS systématique, premiers tests automatisés). Ne contient
+que ce qui reste réellement à faire — voir `docs/beta-readiness-audit.md` pour le détail de ce qui
+est déjà prêt, et `docs/autonomous-development-report.md` pour le détail complet de cette session.
 
-Depuis la dernière version de ce document : `ANTHROPIC_MODEL` et `ADMIN_EMAILS` sont désormais
-configurés (espace Admin et IA réellement testables) ; un bug de sécurité critique a été trouvé et
-corrigé — le contournement de l'approbation qui permettait de publier réellement sur LinkedIn du
-contenu jamais approuvé ; une fuite de données entre comptes sur navigateur partagé a été corrigée ;
-plusieurs modules jamais audités (authentification, onboarding, tableau de bord, marques,
-thématiques, boîte à idées, générateur, Assistant IA, Atelier, publications, calendrier) ont été
-passés en revue en profondeur.
+Depuis la dernière version de ce document : un audit RLS systématique de toutes les tables a été
+effectué (une fuite de configuration corrigée) ; un audit LinkedIn approfondi (OAuth, jetons,
+publication) a trouvé et corrigé 5 bugs, dont un risque réel de publication automatique non désirée
+sur une date passée ; le contexte envoyé à l'IA pour la génération de contenu inclut désormais tous
+les champs du profil de marque (8 champs auparavant collectés mais jamais utilisés) ; une première
+suite de tests automatisés (`vitest`, `npm test`) a été mise en place.
 
 ## Configuration manuelle requise (aucune ne peut être faite par l'agent)
 
@@ -58,6 +57,12 @@ passés en revue en profondeur.
   générées par le Générateur de sujets (qui restent réelles, juste retrouvables uniquement en
   rouvrant le lot de génération). Le message trompeur a été corrigé cette session ; reste à décider
   si une vraie liste d'idées doit réapparaître dans cet onglet.
+- **Désynchronisation Idée ↔ Publication après transformation** (nouveau) : une fois une idée
+  transformée en publication, l'Atelier (document de l'idée) et la fiche Publication peuvent
+  ensuite être modifiés indépendamment, sans aucun lien visible ni resynchronisation — un testeur
+  éditant les deux verra deux versions différentes du « même » contenu sans avertissement. Décision
+  à prendre : verrouiller l'Atelier une fois la publication créée (source de vérité unique), ou
+  ajouter un lien/indicateur visible de désynchronisation. Non modifié cette session.
 - **Documents de schéma périmés** (`docs/modele-donnees.md`, `docs/migrations.md`) — à régénérer
   uniquement si un tiers doit s'appuyer dessus.
 
@@ -82,6 +87,22 @@ passés en revue en profondeur.
   faible, aucun bug actuel démontré.
 - Assertions non-null et `Map` non bornées dans les fournisseurs/quotas Tendances — sévérité
   faible, fuite lente sur un processus long-vivant uniquement.
+- `workflow_stages` (table Supabase) : deux politiques RLS s'excluent mutuellement pour les lignes
+  `brand_id` sans `workspace_id` — ces lignes seraient invisibles pour tout le monde (échec fermé,
+  sans risque de fuite). Table non encore utilisée par aucune route/composant réel — à corriger
+  avant de la brancher, pas avant.
+- Champ « Nom de l'agence » (Paramètres) clarifié cette session (note explicite qu'il est distinct
+  du nom réel de l'espace de travail) plutôt que reconstruit — aucun champ de renommage réel du
+  workspace n'existe après l'onboarding. À ajouter si un vrai besoin de renommage émerge en bêta.
+- Page LinkedIn (accès organisation) : jeton de rafraîchissement désormais correctement transmis à
+  la création (corrigé cette session), mais le flux complet reste non testé en conditions réelles —
+  aucun accès organisation LinkedIn n'a encore été approuvé pour cette application. Sans impact tant
+  que `LINKEDIN_ORGANIZATION_ACCESS_ENABLED=false` (valeur par défaut).
+- 2 alertes de sécurité `npm audit` restantes (postcss, sharp) — corrigibles uniquement via
+  `npm audit fix --force`, qui installerait `next@16.3.1` (hors de la plage actuellement fixée,
+  `16.2.11`). Décision volontairement non prise cette session (mise à jour de version du framework
+  = décision structurante) ; les autres alertes (`brace-expansion`, `js-yaml`) ont été corrigées
+  sans risque.
 
 ## Hors périmètre volontaire (ne pas développer avant la bêta)
 

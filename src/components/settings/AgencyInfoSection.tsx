@@ -39,6 +39,10 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Nom de l&apos;agence
           <input disabled={!editable} value={info.name} onChange={(event) => set("name", event.target.value)} className={INPUT_CLASS} />
+          <span className="text-xs font-normal text-muted-foreground">
+            Utilisé uniquement dans vos informations d&apos;agence (ex. futurs rapports client) — distinct du nom de
+            l&apos;espace de travail affiché dans la barre latérale et la barre supérieure.
+          </span>
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
