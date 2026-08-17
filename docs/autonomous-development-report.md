@@ -1,191 +1,149 @@
-# ClickPost — Rapport de session autonome (2026-08-17, 3e passage)
+# ClickPost — Rapport de session autonome (2026-08-17, 4e passage)
 
-Session de 3 heures en autonomie complète : configuration de l'environnement (`ADMIN_EMAILS`),
-vérification réelle de l'espace Admin avec un compte administrateur fonctionnel, puis audit de
-sécurité et de robustesse en profondeur sur des modules jamais vérifiés dans l'historique du
-projet. Fait suite aux sessions précédentes (voir `docs/beta-readiness-audit.md`,
-`docs/overnight-beta-report.md`) qui avaient livré l'Admin MVP, la landing page, le module Rapports
-et une première vague de corrections (Tendances).
+Session de 4 heures en autonomie complète, objectif : faire passer ClickPost de « techniquement
+fonctionnel » à « prêt pour une bêta privée ». Audit du parcours utilisateur complet, revue
+approfondie de l'intégration LinkedIn, audit systématique des politiques RLS sur toutes les tables,
+vérification Admin, revue de la landing page, mise en place des premiers tests automatisés. Fait
+suite aux 3 sessions précédentes (voir `docs/beta-readiness-audit.md`, les rapports antérieurs dans
+l'historique git) qui avaient livré l'Admin MVP, la landing page, le module Rapports, corrigé le
+contournement de l'approbation LinkedIn et la fuite IndexedDB inter-comptes.
 
 ## 1. Ce qui était déjà fonctionnel
 
-Confirmé par cette session, sans modification : authentification (connexion/inscription/mot de
-passe oublié, gestion propre des liens expirés) ; `ensure_default_workspace()` réellement protégée
-contre la double création (verrou consultatif Postgres) ; middleware de protection des routes
-cohérent ; espace Admin (accès, protection multi-couches, textes produit, fonctionnalités) ; modules
-Paramètres, Performances, Tendances, Rapports (déjà audités lors d'une session précédente) ;
-isolation par workspace de la quasi-totalité des lectures Supabase (RLS `is_workspace_member`) ;
-messages simulé/réel honnêtes sur les fonctions IA réellement branchées (Copilote, Atelier
-« Génération complète » et « Réécriture de sélection », Générateur de sujets).
+Confirmé sans modification cette session : authentification, onboarding, espace Admin (accès et
+fonctionnement réels, revérifié en direct), protection multi-couches des routes, isolation par
+workspace de la quasi-totalité du schéma Supabase, moteur de synchronisation offline-first,
+chiffrement des jetons OAuth (AES-256-GCM), protection CSRF du flux OAuth LinkedIn (état signé,
+revérification de l'identité au callback), verrou anti-contournement de l'approbation LinkedIn posé
+lors de la session précédente (retesté, toujours actif).
 
-## 2. Configuration effectuée
+## 2. Ce qui a été développé pendant cette session
 
-- **`ADMIN_EMAILS=adminclickpost@gmail.com`** ajouté à `.env.local`, toutes les autres variables
-  conservées.
-- **Compte administrateur créé et vérifié réellement fonctionnel** : `adminclickpost@gmail.com`
-  (id `bd3fd222-4259-41bc-9643-d911d11d3dde`), créé via l'API Admin Supabase (`service_role`, jamais
-  exposée), e-mail pré-confirmé. Mot de passe généré aléatoirement — **communiqué séparément, à
-  changer dès la première connexion** (ou utiliser « Mot de passe oublié »).
-- Testé avec une vraie session (jamais seulement par lecture de code) : les 5 pages Admin
-  répondent 200 et affichent de vraies données (utilisateurs, workspaces, feature flags) ; une
-  écriture réelle sur un prompt IA a été faite puis vérifiée persistée en base, puis restaurée à son
-  état initial ; un compte non-admin temporaire a confirmé le blocage (redirections 307 sur les
-  pages, 403 sur l'API) ; le compte non-admin a été supprimé après test.
+- **Suite de tests automatisés** (`vitest`, aucun outil de test n'existait avant) : 21 tests
+  couvrant la reconnaissance de l'administrateur (`isPlatformAdminEmail`), le branchement réel des
+  prompts admin dans la génération IA (`buildCopilotPrompt` — préfixe, suffixe, jamais de
+  remplacement des règles de sécurité codées en dur, repli sécurisé si absent), et la validation
+  des requêtes du Copilote. `npm test` pour les exécuter.
+- **Fonction Postgres dédiée** (`get_active_prompt_override`) remplaçant une politique RLS trop
+  permissive sur `prompt_overrides`.
+- Contexte de marque envoyé à l'IA étendu à 8 champs auparavant collectés mais jamais utilisés.
 
-## 3. Bugs trouvés et corrigés
+## 3. Bugs trouvés
 
-### 3.1 CRITIQUE — Contournement de l'approbation LinkedIn (publication réelle sans validation humaine)
+1. **HIGH — Programmation LinkedIn dans le passé déclenche une publication réelle immédiate.**
+2. **HIGH — `token_expires_at` jamais mis à jour après un rafraîchissement silencieux** (état de
+   connexion malhonnête affiché, rafraîchissements redondants).
+3. **HIGH — Jeton de rafraîchissement perdu à la création d'une Page LinkedIn** (organisation).
+4. **MEDIUM — 8 champs du profil de marque jamais transmis à l'IA** malgré la barre de complétude.
+5. **MEDIUM — Rate limit (429) mal classé comme échec permanent** lors de l'upload d'image LinkedIn.
+6. **LOW/MEDIUM — Route de liste des Pages LinkedIn sans vérification de rôle** (owner/admin).
+7. **LOW — Comparaison non protégée contre les attaques temporelles** pour `CRON_SECRET`.
+8. **MEDIUM — « Nom de l'agence » ressemble à un renommage du workspace mais n'en est pas un.**
 
-Cinq surfaces indépendantes (Kanban, tableau, formulaire, calendrier, bouton « Publier via
-LinkedIn ») permettaient de faire passer une publication au statut « Programmée » sans être passée
-par l'approbation — et le planificateur LinkedIn réel publie automatiquement tout ce qui est
-« Programmée » à l'échéance. Corrigé à la fois :
-- **En base de données** (verrou réel, indépendant de tout bug client futur) : nouveau trigger
-  Postgres sur `publications` qui refuse toute transition vers « scheduled »/« publishing »/
-  « published » sauf depuis un statut déjà approuvé. Testé avec 13 scénarios (tous les chemins
-  légitimes + toutes les tentatives de contournement) dans une transaction annulée — 13/13 réussis.
-- **Côté application** : garde-fous ajoutés aux 5 surfaces ; la route de publication manuelle exige
-  désormais le statut approuvé, un rôle owner/admin du workspace, et réclame la publication par une
-  mise à jour conditionnelle (même principe que le planificateur) pour empêcher une double
-  publication en cas de double clic ou deux onglets.
+## 4. Failles de sécurité trouvées/corrigées
 
-### 3.2 CRITIQUE — Fuite de données entre comptes sur navigateur partagé
+- **`prompt_overrides` lisible entièrement par tout compte authentifié** via PostgREST — exposait
+  la configuration interne des prompts IA (jamais une fuite de données client entre workspaces,
+  cette table est globale à la plateforme, mais une exposition non voulue à n'importe quel inscrit).
+  **Corrigé** : politique de lecture supprimée, remplacée par une fonction dédiée ne renvoyant que
+  les 2 champs nécessaires pour une clé active.
+- **`CRON_SECRET` comparé avec `===`** au lieu d'une comparaison à temps constant — incohérent avec
+  le reste du code. **Corrigé.**
+- **Route de liste des Pages LinkedIn sans contrôle de rôle** — tout membre du workspace (pas
+  seulement owner/admin) pouvait déclencher un appel réseau réel portant le jeton du compte
+  connecté. **Corrigé** (sans impact pratique aujourd'hui, fonctionnalité désactivée par défaut).
+- Audit RLS systématique des **25 tables** du schéma (migrations lues intégralement, politiques
+  live comparées au schéma, fonctions `SECURITY DEFINER` vérifiées une à une) — un seul problème
+  réel trouvé (ci-dessus), un second inerte et sans risque (`workflow_stages`, table non encore
+  utilisée par aucune route).
+- Vérifié à nouveau : le verrou anti-contournement d'approbation LinkedIn (posé lors de la session
+  précédente) reste actif et s'applique même aux écritures `service_role`.
 
-Le stockage local (IndexedDB) n'était jamais nettoyé à la déconnexion et n'était rattaché à aucune
-identité. Sur un navigateur partagé, des opérations encore en attente de synchronisation au moment
-de la déconnexion d'un utilisateur pouvaient être poussées vers Supabase après la connexion d'un
-autre utilisateur, sous sa propre identité. Corrigé : nettoyage complet (workspace + file de
-synchronisation) à la déconnexion explicite, et filet de sécurité supplémentaire qui détecte un
-changement d'identité au chargement et nettoie avant d'armer la synchronisation.
+## 5. État du parcours utilisateur complet
 
-### 3.3 MEDIUM — Fuite cross-workspace dans le contexte du Copilote
+Inscription → connexion → workspace → marque → thématiques → génération d'idées → sauvegarde →
+Atelier → Publications → calendrier → programmation → publication → performances → rapports : audité
+de bout en bout sur 3 passes parallèles cette session, en plus des passes précédentes. Fonctionnel à
+chaque étape testée statiquement et via des sessions HTTP réelles (compte admin + compte non-admin
+temporaire). Points restants documentés dans `docs/remaining-before-beta.md` (désynchronisation
+Idée↔Publication après transformation, onglet Banque d'idées, identité d'équipe simulée).
 
-Le contexte « publications » envoyé à Claude par le Copilote était filtré par nom de marque (texte
-libre) plutôt que par workspace — un utilisateur membre de deux workspaces ayant chacun une marque
-du même nom pouvait voir le contexte de l'autre workspace mélangé dans une réponse IA. Corrigé par
-un filtre supplémentaire sur `workspace_id`.
+## 6. État LinkedIn
 
-### 3.4 HIGH — Thématique orpheline créée en mode « génération sans marque »
+OAuth, callback, chiffrement des jetons, protection CSRF, connexion/déconnexion : solides, vérifiés
+par lecture de code approfondie. 5 bugs réels trouvés et corrigés (voir section 3). Le flux complet
+(y compris l'accès Page/organisation) n'a **jamais été testé avec un identifiant LinkedIn réel en
+conditions live** — reste un test navigateur humain obligatoire prioritaire.
 
-Le bouton « Ajouter cette thématique aux paramètres de la marque » restait actif en mode « Continuer
-sans marque », créant une thématique réelle en base avec un `brand_id` vide — invisible et
-ingérable pour toujours. Corrigé : le bouton est masqué et l'action refusée en mode sans marque.
+## 7. État Admin
 
-### 3.5 HIGH — Données de démonstration affichées comme réelles au tableau de bord
+Revérifié fonctionnel en direct (accès, protection, les 5 pages, écriture/lecture réelles). Les
+prompts admin sont maintenant couverts par des tests automatisés garantissant qu'une modification
+atteint réellement la génération IA (pas seulement visuelle).
 
-`accounts-store`, `posts-store` et `themes-store` retombaient par défaut sur des données de
-démonstration (faux comptes connectés, fausses publications, thématiques d'exemple) plutôt que sur
-un tableau vide, contrairement à `brands-store` et aux autres magasins déjà corrigés lors d'une
-session antérieure — un nouvel utilisateur voyait de faux comptes connectés, une fausse tâche
-d'approbation en attente et de fausses entrées d'activité récente. Corrigé : les trois retombent
-désormais sur `[]`, alignés sur le reste de l'application. Le widget « Comptes sociaux connectés »
-n'avait aucun état vide (masqué jusqu'ici par les fausses données) — ajouté.
+## 8. État landing page
 
-### 3.6 MEDIUM — Message trompeur après génération de sujets
+Revérifiée : rend correctement (200, aucune erreur), aucune promesse de fonctionnalité inexistante
+détectée (pas de mention Instagram/TikTok/autre réseau réel). Aucune régression depuis la session
+précédente qui l'avait complétée.
 
-Le message de succès promettait que les idées enregistrées se trouvaient « dans la Banque d'idées »,
-alors que cet onglet n'affiche aujourd'hui que des notes libres — les idées restent réellement
-enregistrées, mais un testeur allant vérifier dans cet onglet n'y trouverait rien et pourrait croire
-à une perte de données. Message corrigé pour ne plus promettre un emplacement inexact.
+## 9. État Supabase/RLS
 
-### 3.7 MEDIUM — Erreur de chargement du workspace jamais affichée dans le tableau de bord
+Audit systématique complet des migrations et des politiques live — voir section 4. Verdict : sain,
+un problème réel corrigé, un problème inerte documenté. Aucune fuite de données inter-workspaces
+trouvée sur les tables réellement utilisées.
 
-Si `ensure_default_workspace()` échouait, l'utilisateur restait sur un tableau de bord
-silencieusement vide (fonctionnant sur les seules données locales), sans bannière ni bouton
-« Réessayer », contrairement à toutes les autres pages dépendant du workspace. Corrigé : bannière
-d'erreur désormais toujours montée dans la barre supérieure du tableau de bord.
+## 10. Tests exécutés et résultats
 
-### 3.8 MEDIUM — `/onboarding` rejouable après complétion
+- `npx tsc --noEmit`, `npm run lint`, `npm run build`, `npm test` (vitest) — exécutés plusieurs fois
+  au fil des changements, 0 erreur à chaque fois (1 avertissement préexistant non lié, module
+  Rapports ; 21/21 tests automatisés passent).
+- Migrations Supabase : dry-run puis application de 2 nouvelles migrations, `db advisors` relancé
+  (une seule nouvelle alerte, attendue et documentée comme intentionnelle).
+- 25 routes testées avec une session HTTP réelle (compte admin) après l'ensemble des changements —
+  toutes répondent selon leur statut d'authentification attendu, aucune régression.
+- `npm audit` : 5 alertes trouvées, 3 corrigées sans risque, 2 documentées comme nécessitant une
+  décision de mise à jour de Next.js (hors périmètre de cette session).
 
-Un utilisateur ayant déjà terminé l'onboarding pouvait y revenir (favori, bouton précédent, URL
-tapée) et revoir l'assistant. Corrigé : redirection automatique vers « / » si
-`workspace.onboarding_completed` est vrai.
+## 11. Commits locaux créés (rien poussé)
 
-## 4. Tests effectués
+1. `8c416c7` — restriction RLS prompt_overrides, complétude du contexte de marque, suite de tests
+2. `781fc06` — bugs de cycle de vie des jetons LinkedIn, risque de programmation dans le passé
+3. `73fac6a` — clarification du champ « Nom de l'agence », mise à jour de la documentation
 
-- `npx tsc --noEmit`, `npm run lint`, `npm run build` — exécutés à plusieurs reprises au fil des
-  changements, 0 erreur à chaque fois (1 avertissement préexistant non lié, module Rapports).
-- Migrations Supabase : `db push --dry-run` puis `db push` pour les 4 migrations en attente (dont
-  la nouvelle protection LinkedIn), `migration list` confirmant la synchronisation locale/distante,
-  `db advisors --linked --type security` confirmant qu'aucune nouvelle alerte n'a été introduite
-  (les 6 alertes WARN existantes restent toutes déjà documentées et acceptées).
-- Vérification du trigger de sécurité : 13 scénarios (6 légitimes, 7 tentatives de contournement)
-  exécutés dans une transaction Postgres annulée — aucune donnée réelle touchée, 13/13 réussis.
-- Tests HTTP en conditions réelles avec deux sessions authentifiées (admin + non-admin temporaire) :
-  toutes les routes principales, toutes les routes Admin, tous les endpoints IA (Copilote,
-  Générateur, Atelier, Rapports, Tendances) — vérification de l'authentification, de la validation,
-  et de l'absence d'erreur serveur, sans déclencher d'appel Claude réel payant.
-- Trois audits de code en parallèle (lecture seule) couvrant : authentification/onboarding/tableau
-  de bord ; marques/thématiques/boîte à idées/générateur ; Assistant IA/Atelier/publications/
-  calendrier — au total plus de 15 constats, dont 2 critiques, traités dans ce rapport.
+## 12. Ce qui reste bloqué
 
-## 5. Résultats des tests
+Rien de bloquant techniquement. Les seuls éléments non résolus sont soit des décisions produit
+explicitement laissées ouvertes (identité d'équipe, onglet Banque d'idées), soit des tests
+nécessitant un identifiant LinkedIn réel ou un navigateur humain.
 
-- TypeScript, ESLint, build : succès à chaque exécution.
-- Sécurité base de données : 0 nouvelle alerte, protection LinkedIn vérifiée à 100 % (13/13).
-- Toutes les routes testées (dashboard, Admin, API Admin, API IA) répondent correctement selon
-  leur statut d'authentification/autorisation attendu — jamais un accès non autorisé, jamais un
-  crash serveur (500) non intentionnel après correction du trigger.
+## 13. Ce qui nécessite réellement votre intervention
 
-## 6. Blocages rencontrés
-
-- Un processus `next dev` orphelin d'une session précédente occupait le port 3000 et renvoyait des
-  erreurs 500 sur toutes les routes — identifié et arrêté (faussait les premières vérifications).
-- `rm -rf .next` exécuté une fois pendant qu'un serveur de développement tournait encore a corrompu
-  le cache Turbopack — diagnostiqué comme un artefact de méthode, pas un bug ClickPost, corrigé par
-  un nettoyage complet et redémarrage.
-- Aucun blocage bloquant le travail : chaque problème rencontré a été diagnostiqué et résolu dans la
-  session.
-
-## 7. Ce qui nécessite encore une intervention humaine
-
-1. **Tests navigateur humains** — voir la liste complète dans `docs/remaining-before-beta.md`,
-   en particulier le nouveau parcours d'approbation LinkedIn de bout en bout.
-2. **Décision produit sur l'identité d'équipe** (sélecteur « Connecté en tant que ») — voir
-   `docs/remaining-before-beta.md`, non modifié volontairement cette session.
-3. **Changer le mot de passe du compte administrateur** généré automatiquement (communiqué
-   séparément), ou utiliser « Mot de passe oublié » pour en définir un nouveau.
-4. Décider si l'approbation doit aussi être appliquée par une politique RLS (actuellement vérifiée
-   côté client uniquement pour le passage à « approved » — voir dette technique).
-
-## 8. Fonctionnalités restant avant bêta
-
-Voir `docs/remaining-before-beta.md` (entièrement remis à jour cette session) pour la liste
-exhaustive : configuration manuelle restante, tests navigateur obligatoires, décisions produit
-ouvertes, dette technique mineure, hors périmètre volontaire.
-
-## 9. Fichiers modifiés cette session
-
-- `.env.local` (ADMIN_EMAILS, non commité — ignoré par git)
-- `supabase/migrations/20260817020000_publications_status_transition_guard.sql`,
-  `20260817020100_publications_status_transition_guard_fix.sql`
-- `src/app/api/social/linkedin/publish/route.ts`, `src/app/api/ia/copilot/route.ts`
-- `src/components/publications/{PublicationsKanban,PublicationsTable,PublicationForm,LinkedInPublishAction}.tsx`
-- `src/components/calendar/CalendarWorkspace.tsx`
-- `src/lib/persistence/coordinator.ts`, `src/lib/sync/queue.ts`, `src/lib/supabase/workspace-provider.tsx`
-- `src/components/layout/{Sidebar,TopBar}.tsx`
-- `src/lib/{accounts-store,posts-store,themes-store}.tsx`
-- `src/components/dashboard/ConnectedAccounts.tsx`
-- `src/components/topic-generator/{TopicGeneratorForm,TopicGeneratorView}.tsx`
-- `src/components/onboarding/OnboardingView.tsx`
-- `docs/remaining-before-beta.md`, `docs/autonomous-development-report.md`
-
-## 10. Commits créés (locaux uniquement, rien poussé)
-
-1. `fix: close LinkedIn approval bypass — content could be published live without approval`
-2. `fix: clear local IndexedDB data on sign-out and on detected user switch`
-3. `fix: scope Copilot's publications context by workspace_id, not brand name`
-4. `fix: prevent orphaned theme creation in standalone (no-brand) generator mode`
-5. `fix: stop showing demo data as real; surface workspace errors; guard onboarding replay`
-
-## 11. Recommandations pour la prochaine session
-
-1. Exécuter le parcours de test navigateur d'approbation LinkedIn en priorité absolue — c'est la
-   correction la plus critique de cette session, jamais vérifiée par un humain en conditions
-   réelles.
-2. Trancher la décision produit sur l'identité d'équipe avant d'inviter plusieurs testeurs dans le
+1. Tests navigateur humains (liste complète et à jour dans `docs/remaining-before-beta.md`).
+2. Décision sur le sélecteur d'identité d'équipe fictif avant d'inviter plusieurs testeurs dans un
    même workspace.
-3. Envisager une politique RLS dédiée pour le passage au statut « approved » (actuellement seule
-   protection client-side), une fois la décision d'identité d'équipe prise.
-4. URL locale : `http://localhost:3000` (serveur de développement laissé actif). Espace Admin :
-   `http://localhost:3000/admin`.
+3. Décision sur la mise à jour de Next.js (2 alertes de sécurité restantes, hors plage actuelle).
+4. Test réel du flux LinkedIn (OAuth, publication, éventuellement accès Page) avec un compte
+   LinkedIn de test.
+
+## 14. Liste exacte des fonctionnalités restantes avant bêta
+
+Voir `docs/remaining-before-beta.md`, entièrement remis à jour cette session.
+
+## 15. Cinq prochaines priorités
+
+1. Tests navigateur humains, en particulier le parcours LinkedIn complet (OAuth → publication).
+2. Décision sur l'identité d'équipe.
+3. Décision sur la mise à jour Next.js.
+4. Étendre la suite de tests automatisés si le temps le permet (RLS via transactions annulées,
+   composants critiques).
+5. Préparer la configuration de déploiement Vercel (jamais encore effectué).
+
+## 16. URL locale
+
+`http://localhost:3000` (serveur de développement laissé actif).
+
+## 17. URL Admin
+
+`http://localhost:3000/admin` (connexion : `adminclickpost@gmail.com`, mot de passe communiqué en
+fin de session précédente — inchangé).
