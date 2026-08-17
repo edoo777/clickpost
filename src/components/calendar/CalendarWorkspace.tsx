@@ -91,6 +91,12 @@ export function CalendarWorkspace({
   function reschedule(id: string, dateKey: string) {
     const post = publications.find((candidate) => candidate.id === id);
     if (!post) return;
+    // « Programmée » déclenche une publication LinkedIn réelle et automatique dès l'échéance (voir
+    // le planificateur) : seule une publication déjà approuvée peut passer à « Programmée » par un
+    // dépôt sur le calendrier — jamais depuis idée/brouillon/en revue/etc. Un dépôt refusé n'a
+    // aucun effet (la carte reste dans le panneau « Non planifiées »). Verrouillé aussi côté base
+    // de données (voir la migration publications_status_transition_guard).
+    if (UNSCHEDULED_STATUSES.includes(post.status) && post.status !== "approved") return;
     const previousTime = post.scheduledFor.slice(11, 16);
     const time = UNSCHEDULED_STATUSES.includes(post.status) ? "09:00" : previousTime || "09:00";
     patchPost(id, { scheduledFor: `${dateKey}T${time}:00` });

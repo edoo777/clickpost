@@ -97,6 +97,13 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
     // La publication réelle (marquer comme publiée) exige aussi une confirmation explicite via le
     // panneau « Publication manuelle » de la fiche — jamais un simple glisser-déposer.
     if (status === "published" && dragged.status !== "published") return;
+    // « Programmée » déclenche une publication LinkedIn réelle et automatique dès l'échéance (voir
+    // le planificateur) : n'est atteignable que depuis une publication déjà approuvée, jamais par
+    // un glisser-déposer direct depuis un statut antérieur à l'approbation. Un dépôt refusé revient
+    // silencieusement à sa place, comme pour les deux règles ci-dessus. Appliqué en dernier
+    // recours par un verrou côté base de données (voir la migration
+    // publications_status_transition_guard), jamais uniquement ici.
+    if (status === "scheduled" && !["approved", "scheduled", "failed"].includes(dragged.status)) return;
     const scheduledFor = computeReorderedScheduledFor(columnPosts(status), target, id);
     if (dragged.status !== status) {
       changeStatus(id, status, currentUserName);

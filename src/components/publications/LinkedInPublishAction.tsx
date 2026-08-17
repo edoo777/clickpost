@@ -26,6 +26,11 @@ export function LinkedInPublishAction({ publication, account, onPublished, onAtt
   if (!account || account.status !== "connected") return null;
   if (publication.status === "published") return null;
   if ((publication.publishAttempts ?? []).some((attempt) => attempt.status === "success")) return null;
+  // Une publication réelle ne peut être déclenchée que sur un contenu déjà approuvé — jamais
+  // depuis idée/brouillon/en revue/etc. "failed" reste autorisé (nouvelle tentative manuelle après
+  // un échec, voir ManualPublishPanel pour le même principe). Vérifié aussi côté serveur
+  // (/api/social/linkedin/publish) et, en dernier recours, par un verrou en base de données.
+  if (!["approved", "scheduled", "failed"].includes(publication.status)) return null;
 
   async function handlePublish() {
     if (isPublishing) return; // empêche les doubles clics et les doubles envois.

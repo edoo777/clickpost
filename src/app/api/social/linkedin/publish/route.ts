@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isWorkspaceAdmin } from "@/lib/linkedin/workspace-guard";
 import { linkedInProvider } from "@/lib/linkedin/provider";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -10,16 +11,26 @@ function errorResponse(code: string, message: string, status: number) {
   return NextResponse.json({ status: "error", code, message }, { status });
 }
 
+const PUBLISHABLE_STATUSES = ["approved", "scheduled", "failed"];
+
 /**
  * Déclenchement d'une publication LinkedIn réelle — jamais appelée automatiquement (aucun
  * planificateur en tâche de fond n'existe encore dans ce projet, voir docs/linkedin-test-
  * integration.md) : uniquement sur action explicite (bouton « Publier via LinkedIn ») pour ce
  * premier test, ou plus tard par un vrai job de programmation qui appellerait cette même logique.
  *
- * Idempotence : refuse de publier une publication déjà marquée "published" ou déjà porteuse
- * d'une tentative "success" dans son historique — empêche une double publication même si la
- * requête est rejouée (double clic, nouvelle tentative après une coupure réseau côté client alors
- * que la précédente avait déjà réussi côté serveur).
+ * Approbation obligatoire : n'accepte que "approved"/"scheduled"/"failed" (jamais idée/brouillon/
+ * en revue/etc. — corrige un contournement réel de l'approbation trouvé lors d'un audit
+ * autonome, 2026-08-17). Rôle requis : owner/admin du workspace, comme les autres actions
+ * LinkedIn structurantes (connexion/déconnexion, voir workspace-guard.ts). Verrouillé en dernier
+ * recours côté base de données (voir la migration publications_status_transition_guard),
+ * jamais uniquement ici.
+ *
+ * Idempotence et course : réclame la publication par une mise à jour conditionnelle
+ * (`status = 'publishing' WHERE id = X AND status = <statut lu>`, même principe que le
+ * planificateur réel — voir src/lib/linkedin/scheduler.ts) avant tout appel réseau. Si aucune
+ * ligne n'est modifiée, une autre requête (double clic, deux onglets) a déjà réclamé cette
+ * publication entre-temps — refusée sans nouvelle tentative.
  */
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -44,6 +55,26 @@ export async function POST(request: Request) {
   }
   if (publication.status === "published" || (publication.publishAttempts ?? []).some((attempt) => attempt.status === "success")) {
     return errorResponse("already_published", "Cette publication a déjà été publiée avec succès — aucune nouvelle tentative envoyée.", 409);
+  }
+  if (!PUBLISHABLE_STATUSES.includes(publication.status)) {
+    return errorResponse("not_approved", "Cette publication doit être approuvée avant de pouvoir être publiée.", 409);
+  }
+
+  const admin = await isWorkspaceAdmin(supabase, workspaceId, user.id);
+  if (!admin) {
+    return errorResponse("forbidden", "Seul un administrateur ou propriétaire du workspace peut publier réellement sur LinkedIn.", 403);
+  }
+
+  const { data: claimedRow, error: claimError } = await supabase
+    .from("publications")
+    .update({ status: "publishing", updated_at: new Date().toISOString() })
+    .eq("id", publicationId)
+    .eq("status", publication.status)
+    .select()
+    .maybeSingle();
+  if (claimError) return errorResponse("update_failed", "Impossible de réserver cette publication pour l'envoi.", 500);
+  if (!claimedRow) {
+    return errorResponse("already_claimed", "Cette publication est déjà en cours d'envoi (autre onglet ou autre membre).", 409);
   }
 
   const { data: accountRow, error: accountError } = await supabase.from("accounts").select("*").eq("id", publication.accountId).single();
@@ -71,6 +102,8 @@ export async function POST(request: Request) {
   };
 
   const updatedAttempts = [...(publication.publishAttempts ?? []), attempt];
+  // En cas d'échec, revient au statut d'avant la réclamation ("scheduled"/"approved"/"failed")
+  // plutôt que de rester bloquée en "publishing" — jamais un verrou permanent après un échec.
   const nextStatus = result.status === "success" ? "published" : publication.status;
 
   const { error: updateError } = await supabase

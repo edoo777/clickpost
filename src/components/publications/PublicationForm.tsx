@@ -343,12 +343,17 @@ export function PublicationForm({ publication, editable, onChange }: Publication
               const lockedApproved = status === "approved" && publication.status !== "approved";
               const lockedPublished = status === "published" && publication.status !== "published";
               const lockedPublishing = status === "publishing";
+              // « Programmée » déclenche une publication LinkedIn réelle et automatique dès
+              // l'échéance : n'est atteignable que depuis une publication déjà approuvée (jamais
+              // un simple changement manuel de statut) — verrouillé aussi côté base de données.
+              const lockedScheduled = status === "scheduled" && !["approved", "scheduled", "failed"].includes(publication.status);
               return (
-                <option key={status} value={status} disabled={lockedApproved || lockedPublished || lockedPublishing}>
+                <option key={status} value={status} disabled={lockedApproved || lockedPublished || lockedPublishing || lockedScheduled}>
                   {STATUS_LABEL[status]}
                   {lockedApproved ? " (via Actions d'approbation)" : ""}
                   {lockedPublished ? " (via Publication manuelle)" : ""}
                   {lockedPublishing ? " (posé par le planificateur uniquement)" : ""}
+                  {lockedScheduled ? " (nécessite une approbation préalable)" : ""}
                 </option>
               );
             })}
