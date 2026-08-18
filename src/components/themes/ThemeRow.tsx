@@ -1,5 +1,7 @@
+"use client";
+
 import { IconArrowDown, IconArrowUp } from "@/components/icons";
-import { WEEKDAYS, WEEKDAY_LABEL } from "@/lib/editorial-constants";
+import { WEEKDAYS, useWeekdayLabel } from "@/lib/editorial-constants";
 import type { Weekday } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 
@@ -37,6 +39,7 @@ export function ThemeRow({
   onMoveDown,
   onRemove,
 }: ThemeRowProps) {
+  const WEEKDAY_LABEL = useWeekdayLabel();
   function handleRemove() {
     if (window.confirm(`Supprimer définitivement la thématique « ${theme.label || "sans titre"} » ?`)) {
       onRemove();

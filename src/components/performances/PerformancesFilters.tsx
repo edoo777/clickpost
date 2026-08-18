@@ -1,7 +1,7 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 
 export type PeriodPreset = "7" | "30" | "90" | "custom";
@@ -29,6 +29,7 @@ interface PerformancesFiltersProps {
 
 export function PerformancesFilters({ value, accounts, onChange }: PerformancesFiltersProps) {
   const { brands } = useBrandsSession();
+  const PLATFORM_LABEL = usePlatformLabel();
   const accountsForBrand = value.brand === "all" ? accounts : accounts.filter((account) => account.brand === value.brand);
 
   return (

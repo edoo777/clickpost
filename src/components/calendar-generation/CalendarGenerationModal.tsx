@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { generateIdeasFromCalendar, type CalendarGeneratedIdeaPreview } from "@/lib/calendar-generation";
-import { FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { BrandProfile } from "@/types/brand";
 import type { EditorialWeekPlan } from "@/types/editorial-calendar";
 import type { Idea } from "@/types/idea";
@@ -44,6 +44,9 @@ interface CalendarGenerationModalProps {
 export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onConfirm }: CalendarGenerationModalProps) {
   const [startDate, setStartDate] = useState(todayInputValue());
   const [weekCount, setWeekCount] = useState(2);
+  const FORMAT_LABEL = useFormatLabel();
+  const WEEKDAY_LABEL = useWeekdayLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
 
   const previews = useMemo(
     () => generateIdeasFromCalendar({ weekPlan, startDate: parseDateInput(startDate), weekCount, themes, brand }),

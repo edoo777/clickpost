@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FORMAT_LABEL } from "@/lib/editorial-constants";
+import { useFormatLabel } from "@/lib/editorial-constants";
 import type { ContentVersion } from "@/types/content-version";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -94,6 +94,7 @@ export function ContentVersionsPanel({
   onDelete,
 }: ContentVersionsPanelProps) {
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const FORMAT_LABEL = useFormatLabel();
   const sorted = [...versions].sort((a, b) => b.versionNumber - a.versionNumber);
 
   function toggleCompare(id: string) {

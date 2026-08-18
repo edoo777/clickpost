@@ -1,6 +1,8 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
 import { platformColors } from "@/lib/platform-colors";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 
 interface PlatformPerformanceChartProps {
@@ -8,6 +10,7 @@ interface PlatformPerformanceChartProps {
 }
 
 export function PlatformPerformanceChart({ data }: PlatformPerformanceChartProps) {
+  const PLATFORM_LABEL = usePlatformLabel();
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (

@@ -12,8 +12,8 @@ import {
 import { runPublicationQuickAction } from "@/lib/banque-quick-action";
 import { useBrandsSession } from "@/lib/brands-store";
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import { getThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -59,6 +59,8 @@ interface ClaudeGenerationPanelProps {
 export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUndo }: ClaudeGenerationPanelProps) {
   const { brands, activeBrand } = useBrandsSession();
   const { themes } = useThemesSession();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
 
   const [brandId, setBrandId] = useState(activeBrand?.id ?? "");
   const [standaloneNiche, setStandaloneNiche] = useState("");

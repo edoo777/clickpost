@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
-import { IDEA_STATUS_LABEL } from "@/lib/idea-status";
+import { useIdeaStatusLabel } from "@/lib/idea-status";
 import { notePreview, searchNotes, sortNotes, type NoteSortKey } from "@/lib/notes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { IdeaNote } from "@/types/idea-note";
@@ -25,6 +25,7 @@ export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreat
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<NoteSortKey>("updatedAt");
   const [showArchived, setShowArchived] = useState(false);
+  const IDEA_STATUS_LABEL = useIdeaStatusLabel();
 
   const visibleNotes = useMemo(() => {
     const byArchive = notes.filter((note) => (showArchived ? note.archiveStatus === "archived" : note.archiveStatus === "active"));

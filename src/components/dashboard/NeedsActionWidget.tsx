@@ -6,7 +6,7 @@ import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/compone
 import { DEFAULT_APPROVAL_FILTERS, getApprovalQueue } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
 const MAX_ITEMS = 4;
@@ -19,6 +19,7 @@ export function NeedsActionWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Needs
   const t = useTranslations();
   const { posts } = usePostsSession();
   const { brands } = useBrandsSession();
+  const STATUS_LABEL = useStatusLabel();
   const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
   const queue = getApprovalQueue(posts, DEFAULT_APPROVAL_FILTERS)
     .filter((publication) => !brandName || publication.brand === brandName)

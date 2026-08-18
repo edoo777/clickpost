@@ -4,9 +4,9 @@ import Link from "next/link";
 import { platformIcons } from "@/components/icons";
 import { getNextActor } from "@/lib/approval";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
-import { PROMOTION_TASK_LABEL, isTaskDueToday, isTaskOverdue } from "@/lib/promotion";
+import { isTaskDueToday, isTaskOverdue, usePromotionTaskLabel } from "@/lib/promotion";
 import { useTeamSession } from "@/lib/team-store";
 import type { Publication } from "@/types/publication";
 import type { PromotionTask } from "@/types/promotion";
@@ -37,6 +37,8 @@ export function MyTasksWidget() {
   const t = useTranslations();
   const { posts } = usePostsSession();
   const { members, currentUserId } = useTeamSession();
+  const STATUS_LABEL = useStatusLabel();
+  const PROMOTION_TASK_LABEL = usePromotionTaskLabel();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const publicationItems: TaskItem[] = posts

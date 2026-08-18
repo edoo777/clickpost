@@ -9,12 +9,12 @@ import {
   type ThemeSelectionValue,
 } from "@/components/topic-generator/ThemeSelectionPanel";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
+import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
 import type { GenerationTone } from "@/lib/assisted-generation";
 import { TONE_LABEL } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
@@ -101,6 +101,9 @@ export function TopicGeneratorForm({
   const { accounts } = useAccountsSession();
   const { addTheme } = useThemesSession();
   const [adhocLabel, setAdhocLabel] = useState("");
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
+  const FORMAT_LABEL = useFormatLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
 
   const isStandalone = !value.brandId;
   const selectedBrand = brands.find((candidate) => candidate.id === value.brandId);

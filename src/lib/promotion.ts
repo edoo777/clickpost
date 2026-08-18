@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { PromotionTask, PromotionTaskStatus, PromotionTaskType } from "@/types/promotion";
 import type { Publication } from "@/types/publication";
 
@@ -40,6 +42,42 @@ export const PROMOTION_STATUS_STYLE: Record<PromotionTaskStatus, string> = {
   done: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
   skipped: "bg-zinc-100 text-zinc-400 dark:bg-zinc-800/60 dark:text-zinc-500",
 };
+
+const PROMOTION_TASK_LABEL_KEY: Record<PromotionTaskType, TranslationKey> = {
+  repost_story: "status.promotionTask.repost_story",
+  share_community: "status.promotionTask.share_community",
+  reply_comments: "status.promotionTask.reply_comments",
+  partner_mention: "status.promotionTask.partner_mention",
+  team_share_request: "status.promotionTask.team_share_request",
+  recycle_format: "status.promotionTask.recycle_format",
+  follow_up: "status.promotionTask.follow_up",
+  paid_boost: "status.promotionTask.paid_boost",
+};
+
+const PROMOTION_STATUS_LABEL_KEY: Record<PromotionTaskStatus, TranslationKey> = {
+  todo: "status.promotion.todo",
+  in_progress: "status.promotion.in_progress",
+  done: "status.promotion.done",
+  skipped: "status.promotion.skipped",
+};
+
+/** Version traduite de `PROMOTION_TASK_LABEL`, réservée aux composants React. */
+export function usePromotionTaskLabel(): Record<PromotionTaskType, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(PROMOTION_TASK_LABEL_KEY) as [PromotionTaskType, TranslationKey][];
+    return Object.fromEntries(entries.map(([type, key]) => [type, t(key)])) as Record<PromotionTaskType, string>;
+  }, [t]);
+}
+
+/** Version traduite de `PROMOTION_STATUS_LABEL` — voir le commentaire de `usePromotionTaskLabel`. */
+export function usePromotionStatusLabel(): Record<PromotionTaskStatus, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(PROMOTION_STATUS_LABEL_KEY) as [PromotionTaskStatus, TranslationKey][];
+    return Object.fromEntries(entries.map(([status, key]) => [status, t(key)])) as Record<PromotionTaskStatus, string>;
+  }, [t]);
+}
 
 /** Générée une seule fois, à la première publication réelle d'un contenu (voir
  * PublicationView.handleMarkPublished) — jamais régénérée ni dupliquée si déjà présente. */

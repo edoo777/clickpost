@@ -5,10 +5,10 @@ import { useState } from "react";
 import { AssistantGenerationStep } from "@/components/assistant-ia/AssistantGenerationStep";
 import { useBrandsSession } from "@/lib/brands-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
-import { FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
+import { useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
 import { useTranslations } from "@/lib/i18n/locale-provider";
 import { getActiveDays } from "@/lib/idea-scheduling";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 
@@ -28,6 +28,9 @@ export function AssistantPreparationView() {
   const [step, setStep] = useState<WizardStep>("brand");
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
   const [createdCount, setCreatedCount] = useState(0);
+  const WEEKDAY_LABEL = useWeekdayLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
 
   const brand = brands.find((candidate) => candidate.id === selectedBrandId);
   const calendar = selectedBrandId

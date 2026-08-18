@@ -1,4 +1,6 @@
-import { PLATFORM_LABEL } from "@/lib/post-status";
+"use client";
+
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { Report, ReportStatus, ReportType } from "@/types/report";
 
@@ -16,15 +18,16 @@ const REPORT_TYPE_LABEL: Record<ReportType, string> = {
   executive: "Rapport exécutif",
 };
 
-function formatPlatforms(platform: string): string {
+function formatPlatforms(platform: string, platformLabel: Record<SocialPlatform, string>): string {
   if (platform === "all" || platform === "") return "Toutes plateformes";
   return platform
     .split(",")
-    .map((value) => PLATFORM_LABEL[value as SocialPlatform] ?? value)
+    .map((value) => platformLabel[value as SocialPlatform] ?? value)
     .join(", ");
 }
 
 export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOpen: (report: Report) => void }) {
+  const PLATFORM_LABEL = usePlatformLabel();
   const sorted = [...reports].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
   return (
@@ -41,7 +44,7 @@ export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOp
                   {report.periodStart} → {report.periodEnd}
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {REPORT_TYPE_LABEL[report.reportType]} · {formatPlatforms(report.platform)} · {REPORT_STATUS_LABEL[report.status]}
+                  {REPORT_TYPE_LABEL[report.reportType]} · {formatPlatforms(report.platform, PLATFORM_LABEL)} · {REPORT_STATUS_LABEL[report.status]}
                 </span>
                 {report.document?.narrative.executiveSummary.narrative && (
                   <span className="mt-1 truncate text-xs text-muted-foreground">

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { LinkedInConnectionPanel } from "@/components/accounts/LinkedInConnectionPanel";
 import { platformIcons } from "@/components/icons";
-import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
+import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
 import { platformColors } from "@/lib/platform-colors";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialAccount } from "@/types/dashboard";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -39,6 +39,8 @@ export function AccountDetailPanel({
   const color = platformColors[account.platform];
   const Icon = platformIcons[account.platform];
   const isDeactivated = account.status === "disconnected";
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

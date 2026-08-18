@@ -3,8 +3,8 @@
 import type { ReactNode } from "react";
 import { platformIcons } from "@/components/icons";
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { Brand, ContentExample } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -108,6 +108,8 @@ function PlatformField({
     if (!editable) return;
     onChange(value.includes(platform) ? value.filter((p) => p !== platform) : [...value, platform]);
   }
+
+  const PLATFORM_LABEL = usePlatformLabel();
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -230,6 +232,8 @@ function ContentExamplesField({
     onChange([...value, { id: crypto.randomUUID(), platform: "instagram", title: "", excerpt: "" }]);
   }
 
+  const PLATFORM_LABEL = usePlatformLabel();
+
   return (
     <div className="col-span-1 flex flex-col gap-3 md:col-span-2">
       {value.map((example) => {
@@ -303,6 +307,8 @@ interface BrandProfileFormProps {
 }
 
 export function BrandProfileForm({ profile, editable, onChange, section }: BrandProfileFormProps) {
+  const FORMAT_LABEL = useFormatLabel();
+
   function set<K extends keyof Brand>(key: K, value: Brand[K]) {
     onChange({ ...profile, [key]: value });
   }

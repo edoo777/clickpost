@@ -2,8 +2,8 @@
 
 import { useRef, useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
 import type { SavedViewSort } from "@/types/saved-view";
@@ -78,6 +78,9 @@ export function PublicationsTable({
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
+  const PLATFORM_LABEL = usePlatformLabel();
+  const STATUS_LABEL = useStatusLabel();
+  const FORMAT_LABEL = useFormatLabel();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isColumnsOpen, setIsColumnsOpen] = useState(false);
   const resizeRef = useRef<{ key: string; startX: number; startWidth: number } | null>(null);

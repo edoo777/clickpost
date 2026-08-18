@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { IDEA_STATUS_LABEL, IDEA_STATUS_ORDER, PRIORITY_LABEL } from "@/lib/idea-status";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { IDEA_STATUS_ORDER, useIdeaStatusLabel, usePriorityLabel } from "@/lib/idea-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -29,6 +29,10 @@ export function NotePropertiesPanel({ note, onChange }: NotePropertiesPanelProps
   const [isExpanded, setIsExpanded] = useState(false);
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
+  const IDEA_STATUS_LABEL = useIdeaStatusLabel();
+  const PRIORITY_LABEL = usePriorityLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
 
   const brand = brands.find((candidate) => candidate.id === note.brandId);
   const themesForBrand = brand ? getActiveThemesForBrand(themes, brand.id) : [];

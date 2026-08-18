@@ -1,6 +1,8 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { FORMAT_LABEL } from "@/lib/editorial-constants";
+import { useFormatLabel } from "@/lib/editorial-constants";
 import { platformColors } from "@/lib/platform-colors";
 import type { Publication } from "@/types/publication";
 
@@ -12,6 +14,7 @@ interface PublicationPreviewProps {
 
 export function PublicationPreview({ publication }: PublicationPreviewProps) {
   const { accounts } = useAccountsSession();
+  const FORMAT_LABEL = useFormatLabel();
   const color = platformColors[publication.platform];
   const Icon = platformIcons[publication.platform];
   const account = accounts.find((candidate) => candidate.id === publication.accountId);

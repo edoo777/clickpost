@@ -1,6 +1,8 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import { LANGUAGE_OPTIONS } from "@/lib/settings-data";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -26,6 +28,8 @@ interface ContentPreferencesSectionProps {
 }
 
 export function ContentPreferencesSection({ content, editable, onChange }: ContentPreferencesSectionProps) {
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
   function set<K extends keyof ContentPreferences>(key: K, value: ContentPreferences[K]) {
     onChange({ ...content, [key]: value });
   }

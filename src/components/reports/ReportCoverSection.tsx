@@ -1,4 +1,6 @@
-import { PLATFORM_LABEL } from "@/lib/post-status";
+"use client";
+
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ReportCoverMeta, ReportType } from "@/types/report";
 
@@ -11,6 +13,7 @@ const REPORT_TYPE_LABEL: Record<ReportType, string> = {
 /** Page de couverture — jamais générée par Claude, uniquement des données réelles (marque,
  * workspace, profil de la personne qui génère). Toujours la première section affichée. */
 export function ReportCoverSection({ cover }: { cover: ReportCoverMeta }) {
+  const PLATFORM_LABEL = usePlatformLabel();
   const platformsLabel =
     cover.platforms.length === 0
       ? "Toutes les plateformes"

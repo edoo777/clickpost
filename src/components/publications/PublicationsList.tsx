@@ -1,5 +1,7 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -15,6 +17,7 @@ interface PublicationsListProps {
 }
 
 export function PublicationsList({ publications, onOpen }: PublicationsListProps) {
+  const STATUS_LABEL = useStatusLabel();
   return (
     <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-surface  ">
       {publications.map((post) => {

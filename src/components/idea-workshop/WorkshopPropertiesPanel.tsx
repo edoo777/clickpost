@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { TONE_LABEL, type GenerationTone } from "@/lib/assisted-generation";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { IDEA_STATUS_LABEL, IDEA_STATUS_ORDER, IDEA_STATUS_STYLE, PRIORITY_LABEL } from "@/lib/idea-status";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { IDEA_STATUS_ORDER, IDEA_STATUS_STYLE, useIdeaStatusLabel, usePriorityLabel } from "@/lib/idea-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { Campaign } from "@/types/campaign";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -139,6 +139,10 @@ interface WorkshopPropertiesPanelProps {
  */
 export function WorkshopPropertiesPanel({ idea, brandLabel, themeLabel, campaigns, onFieldChange, onStatusChange }: WorkshopPropertiesPanelProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const IDEA_STATUS_LABEL = useIdeaStatusLabel();
+  const PRIORITY_LABEL = usePriorityLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
   const relevantCampaigns = campaigns.filter((campaign) => campaign.brandId === idea.brandId);
 
   return (

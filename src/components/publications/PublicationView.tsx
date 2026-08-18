@@ -22,7 +22,7 @@ import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { buildIdeaFromSeed, useDevelopIdea } from "@/lib/develop-idea";
 import { mapPublicationStatusToIdeaStatus } from "@/lib/idea-publication-sync";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { buildDefaultPromotionTasks, updateTaskInList } from "@/lib/promotion";
 import { useSettingsSession } from "@/lib/settings-store";
@@ -98,6 +98,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const { members, currentUserId } = useTeamSession();
   const { settings } = useSettingsSession();
   const { workspace, isAdmin } = useWorkspaceSession();
+  const STATUS_LABEL = useStatusLabel();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const from = searchParams.get("from");

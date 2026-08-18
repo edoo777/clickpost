@@ -1,8 +1,11 @@
-import { PLATFORM_LABEL } from "@/lib/post-status";
+"use client";
+
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ReportPublicationSummary } from "@/types/report";
 
 function PublicationList({ title, publications }: { title: string; publications: ReportPublicationSummary[] }) {
+  const PLATFORM_LABEL = usePlatformLabel();
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>

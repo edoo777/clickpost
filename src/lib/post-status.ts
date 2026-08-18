@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { PublicationStatus } from "@/types/publication";
 
@@ -50,3 +52,54 @@ export const PLATFORM_LABEL: Record<SocialPlatform, string> = {
   pinterest: "Pinterest",
   other: "Autre",
 };
+
+const STATUS_LABEL_KEY: Record<PublicationStatus, TranslationKey> = {
+  idea: "status.publication.idea",
+  to_develop: "status.publication.to_develop",
+  content_generated: "status.publication.content_generated",
+  draft: "status.publication.draft",
+  in_production: "status.publication.in_production",
+  in_review: "status.publication.in_review",
+  needs_changes: "status.publication.needs_changes",
+  pending_client: "status.publication.pending_client",
+  approved: "status.publication.approved",
+  ready_to_schedule: "status.publication.ready_to_schedule",
+  scheduled: "status.publication.scheduled",
+  publishing: "status.publication.publishing",
+  published: "status.publication.published",
+  failed: "status.publication.failed",
+  rejected: "status.publication.rejected",
+  archived: "status.publication.archived",
+};
+
+const PLATFORM_LABEL_KEY: Record<SocialPlatform, TranslationKey> = {
+  instagram: "platform.instagram",
+  facebook: "platform.facebook",
+  linkedin: "platform.linkedin",
+  tiktok: "platform.tiktok",
+  x: "platform.x",
+  youtube: "platform.youtube",
+  threads: "platform.threads",
+  pinterest: "platform.pinterest",
+  other: "platform.other",
+};
+
+/** Version traduite de `STATUS_LABEL`, réservée aux composants React (utilise `useTranslations`).
+ * `STATUS_LABEL` (français statique) reste nécessaire tel quel pour le code non-composant qui
+ * construit des prompts IA ou du texte de rapport (jamais un hook dans une fonction pure). */
+export function useStatusLabel(): Record<PublicationStatus, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(STATUS_LABEL_KEY) as [PublicationStatus, TranslationKey][];
+    return Object.fromEntries(entries.map(([status, key]) => [status, t(key)])) as Record<PublicationStatus, string>;
+  }, [t]);
+}
+
+/** Version traduite de `PLATFORM_LABEL` — voir le commentaire de `useStatusLabel`. */
+export function usePlatformLabel(): Record<SocialPlatform, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(PLATFORM_LABEL_KEY) as [SocialPlatform, TranslationKey][];
+    return Object.fromEntries(entries.map(([platform, key]) => [platform, t(key)])) as Record<SocialPlatform, string>;
+  }, [t]);
+}

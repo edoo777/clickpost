@@ -1,4 +1,6 @@
-import { FORMAT_LABEL } from "@/lib/editorial-constants";
+"use client";
+
+import { useFormatLabel } from "@/lib/editorial-constants";
 import type { ContentFormat } from "@/types/editorial-calendar";
 
 interface FormatPerformanceChartProps {
@@ -6,6 +8,7 @@ interface FormatPerformanceChartProps {
 }
 
 export function FormatPerformanceChart({ data }: FormatPerformanceChartProps) {
+  const FORMAT_LABEL = useFormatLabel();
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (

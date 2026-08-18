@@ -8,8 +8,8 @@ import {
   sumDistribution,
   type ContentType,
 } from "@/lib/content-types";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 
@@ -85,6 +85,8 @@ export function ThemeSelectionPanel({
   availablePlatforms,
   onAddToBrandSettings,
 }: ThemeSelectionPanelProps) {
+  const FORMAT_LABEL = useFormatLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
   const total = resolvedDistributionTotal(value);
   const totalMismatch = value.distributionMode === "custom" && total !== value.requestedCount;
 

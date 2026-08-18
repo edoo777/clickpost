@@ -1,6 +1,8 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { CONTENT_FORMATS, FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat, EditorialDayPlan } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
@@ -23,6 +25,10 @@ interface DayCardProps {
 }
 
 export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
+  const WEEKDAY_LABEL = useWeekdayLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const FORMAT_LABEL = useFormatLabel();
+
   function toggleEnabled() {
     if (!editable) return;
     onChange({ ...plan, enabled: !plan.enabled });

@@ -4,7 +4,7 @@ import { platformIcons } from "@/components/icons";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
 const MAX_UPCOMING = 5;
@@ -24,6 +24,7 @@ export function UpcomingPosts({ filters = DEFAULT_DASHBOARD_FILTERS }: UpcomingP
   const t = useTranslations();
   const { posts } = usePostsSession();
   const { brands } = useBrandsSession();
+  const STATUS_LABEL = useStatusLabel();
   const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
   const now = new Date();
   const upcoming = posts

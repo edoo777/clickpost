@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { AccountStatus } from "@/types/dashboard";
 
 export const ACCOUNT_STATUS_LABEL: Record<AccountStatus, string> = {
@@ -29,3 +31,22 @@ export const ACCOUNT_STATUS_DOT: Record<AccountStatus, string> = {
   profile_only: "bg-violet-500",
   insufficient_permission: "bg-orange-500",
 };
+
+const ACCOUNT_STATUS_LABEL_KEY: Record<AccountStatus, TranslationKey> = {
+  connected: "status.account.connected",
+  disconnected: "status.account.disconnected",
+  expired: "status.account.expired",
+  error: "status.account.error",
+  syncing: "status.account.syncing",
+  profile_only: "status.account.profile_only",
+  insufficient_permission: "status.account.insufficient_permission",
+};
+
+/** Version traduite de `ACCOUNT_STATUS_LABEL`, réservée aux composants React. */
+export function useAccountStatusLabel(): Record<AccountStatus, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(ACCOUNT_STATUS_LABEL_KEY) as [AccountStatus, TranslationKey][];
+    return Object.fromEntries(entries.map(([status, key]) => [status, t(key)])) as Record<AccountStatus, string>;
+  }, [t]);
+}

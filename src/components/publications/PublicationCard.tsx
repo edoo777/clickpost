@@ -1,6 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { platformIcons } from "@/components/icons";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -16,6 +18,7 @@ interface PublicationCardProps {
 }
 
 export function PublicationCard({ publication, onClick }: PublicationCardProps) {
+  const STATUS_LABEL = useStatusLabel();
   const Icon = platformIcons[publication.platform];
 
   return (

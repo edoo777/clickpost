@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
+import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
 import { validatePlatformConstraints } from "@/lib/publishing/platform-constraints";
 import { computePublishReadiness, isAutomaticPublishingAvailable, PUBLISH_READINESS_LABEL } from "@/lib/publishing/providers";
 import { getPublicationMediaSignedUrl } from "@/lib/supabase/publication-media-storage";
@@ -24,6 +24,7 @@ interface ManualPublishPanelProps {
  * jamais qu'une publication a été envoyée sans cette confirmation.
  */
 export function ManualPublishPanel({ publication, account, onMarkPublished, onMarkFailed }: ManualPublishPanelProps) {
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
   const [copied, setCopied] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [isReportingFailure, setIsReportingFailure] = useState(false);

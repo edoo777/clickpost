@@ -1,7 +1,9 @@
+"use client";
+
 import type { DragEvent } from "react";
 import { platformIcons } from "@/components/icons";
 import { HolidayBadge } from "@/components/calendar/HolidayBadge";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
@@ -33,6 +35,7 @@ export function DayView({
   holidays,
   onSelectHoliday,
 }: DayViewProps) {
+  const STATUS_LABEL = useStatusLabel();
   const dayPosts = posts
     .filter((post) => post.scheduledFor.slice(0, 10) === date)
     .sort((a, b) => new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime());

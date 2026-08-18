@@ -1,4 +1,6 @@
-import { STATUS_LABEL } from "@/lib/post-status";
+"use client";
+
+import { useStatusLabel } from "@/lib/post-status";
 import type { PublicationStatus } from "@/types/publication";
 import type { ApprovalWorkflowSettings } from "@/types/settings";
 import type { TeamMember } from "@/types/team";
@@ -16,6 +18,7 @@ interface WorkflowSectionProps {
 }
 
 export function WorkflowSection({ workflow, members, editable, onChange }: WorkflowSectionProps) {
+  const STATUS_LABEL = useStatusLabel();
   function set<K extends keyof ApprovalWorkflowSettings>(key: K, value: ApprovalWorkflowSettings[K]) {
     onChange({ ...workflow, [key]: value });
   }

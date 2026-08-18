@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 
@@ -49,6 +49,7 @@ export function AddAccountPanel({ onClose, onSave, fixedBrand }: AddAccountPanel
   const [profileUrl, setProfileUrl] = useState("");
   const [language, setLanguage] = useState("");
   const [audienceOrMarket, setAudienceOrMarket] = useState("");
+  const PLATFORM_LABEL = usePlatformLabel();
 
   const selectedBrand = fixedBrand ?? brands.find((candidate) => candidate.id === brandId);
 

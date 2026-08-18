@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ProfileRow, UsageType, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
@@ -173,6 +173,7 @@ export function IndustryStep({ workspace, onWorkspaceChange }: StepProps) {
 
 export function PlatformsStep({ workspace, onWorkspaceChange }: StepProps) {
   const t = useTranslations();
+  const PLATFORM_LABEL = usePlatformLabel();
   function toggle(platform: SocialPlatform) {
     const next = workspace.social_platforms.includes(platform)
       ? workspace.social_platforms.filter((p) => p !== platform)
@@ -261,6 +262,7 @@ export function BrandingStep({ branding, onBrandingChange }: BrandingStepProps) 
 
 export function ConfirmationStep({ profile, workspace }: StepProps) {
   const t = useTranslations();
+  const PLATFORM_LABEL = usePlatformLabel();
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-foreground">

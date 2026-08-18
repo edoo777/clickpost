@@ -1,6 +1,6 @@
 "use client";
 
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import { TREND_REGIONS } from "@/lib/trends/regions";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -64,6 +64,7 @@ export function TrendsFilterBar({
   activeBrand: Brand | null;
   brandThemes: Theme[];
 }) {
+  const PLATFORM_LABEL = usePlatformLabel();
   function patch(partial: Partial<TrendFilters>) {
     onChange({ ...filters, ...partial });
   }

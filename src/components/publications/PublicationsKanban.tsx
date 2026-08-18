@@ -4,7 +4,7 @@ import { useState, type DragEvent } from "react";
 import { platformIcons } from "@/components/icons";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
 import type { Publication, PublicationStatus } from "@/types/publication";
@@ -65,6 +65,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
   const { accounts } = useAccountsSession();
   const { members, currentUserId } = useTeamSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
+  const STATUS_LABEL = useStatusLabel();
   const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const [quickCreateColumn, setQuickCreateColumn] = useState<PublicationStatus | null>(null);
   const [quickCreateTitle, setQuickCreateTitle] = useState("");

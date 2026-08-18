@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { IdeaStatus } from "@/types/idea";
 import type { ContentPriority } from "@/types/publication";
 
@@ -72,6 +74,50 @@ export const IDEA_ACTIVE_STATUSES: IdeaStatus[] = IDEA_STATUS_ORDER.filter(
 
 export function getIdeaStatusLabel(status: IdeaStatus): string {
   return IDEA_STATUS_LABEL[status];
+}
+
+const IDEA_STATUS_LABEL_KEY: Record<IdeaStatus, TranslationKey> = {
+  idea: "status.idea.idea",
+  to_develop: "status.idea.to_develop",
+  reflecting: "status.idea.reflecting",
+  plan_ready: "status.idea.plan_ready",
+  drafting: "status.idea.drafting",
+  content_generated: "status.idea.content_generated",
+  draft: "status.idea.draft",
+  in_review: "status.idea.in_review",
+  approved: "status.idea.approved",
+  ready_to_schedule: "status.idea.ready_to_schedule",
+  scheduled: "status.idea.scheduled",
+  published: "status.idea.published",
+  blocked: "status.idea.blocked",
+  needs_changes: "status.idea.needs_changes",
+  failed: "status.idea.failed",
+  archived: "status.idea.archived",
+};
+
+const PRIORITY_LABEL_KEY: Record<ContentPriority, TranslationKey> = {
+  low: "status.priority.low",
+  medium: "status.priority.medium",
+  high: "status.priority.high",
+};
+
+/** Version traduite de `IDEA_STATUS_LABEL`, réservée aux composants React. `IDEA_STATUS_LABEL`
+ * (français statique) reste utile tel quel pour tout code non-composant. */
+export function useIdeaStatusLabel(): Record<IdeaStatus, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(IDEA_STATUS_LABEL_KEY) as [IdeaStatus, TranslationKey][];
+    return Object.fromEntries(entries.map(([status, key]) => [status, t(key)])) as Record<IdeaStatus, string>;
+  }, [t]);
+}
+
+/** Version traduite de `PRIORITY_LABEL` — voir le commentaire de `useIdeaStatusLabel`. */
+export function usePriorityLabel(): Record<ContentPriority, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(PRIORITY_LABEL_KEY) as [ContentPriority, TranslationKey][];
+    return Object.fromEntries(entries.map(([priority, key]) => [priority, t(key)])) as Record<ContentPriority, string>;
+  }, [t]);
 }
 
 export function isIdeaTerminalStatus(status: IdeaStatus): boolean {

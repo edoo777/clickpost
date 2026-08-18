@@ -1,5 +1,7 @@
+"use client";
+
 import { platformIcons } from "@/components/icons";
-import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_STYLE } from "@/lib/account-status";
+import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
 import type { SocialAccount } from "@/types/dashboard";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -17,6 +19,7 @@ interface AccountCardProps {
 
 export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCardProps) {
   const Icon = platformIcons[account.platform];
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
 
   return (
     <button

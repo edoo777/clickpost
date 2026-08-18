@@ -1,9 +1,9 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { usePlatformLabel, useStatusLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { PublicationStatus } from "@/types/publication";
@@ -56,6 +56,9 @@ interface DashboardFiltersProps {
 export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
   const t = useTranslations();
   const { brands } = useBrandsSession();
+  const FORMAT_LABEL = useFormatLabel();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const STATUS_LABEL = useStatusLabel();
   const isDefault =
     value.brandId === "all" &&
     value.platform === "all" &&

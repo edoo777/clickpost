@@ -4,7 +4,7 @@ import Link from "next/link";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE } from "@/lib/idea-status";
+import { IDEA_STATUS_STYLE, useIdeaStatusLabel } from "@/lib/idea-status";
 
 const MAX_ITEMS = 5;
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short" });
@@ -16,6 +16,7 @@ interface RecentIdeasWidgetProps {
 export function RecentIdeasWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: RecentIdeasWidgetProps) {
   const t = useTranslations();
   const { ideas } = useContentWorkspace();
+  const IDEA_STATUS_LABEL = useIdeaStatusLabel();
 
   const recent = ideas
     .filter((idea) => idea.status !== "archived")

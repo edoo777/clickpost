@@ -8,7 +8,7 @@ import { TrendCard } from "@/components/trends/TrendCard";
 import type { TrendFilters } from "@/components/trends/TrendsFilterBar";
 import { WebSearchNoSignalState } from "@/components/trends/WebSearchNoSignalState";
 import { WebSearchTrigger } from "@/components/trends/WebSearchTrigger";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import { CACHE_TTL_NEWS_MS } from "@/lib/trends/cache";
 import type { PlatformNewsResponse } from "@/lib/trends/client";
 import { applyClientFilters, newsItemToDisplayable } from "@/lib/trends/display-mappers";
@@ -44,6 +44,7 @@ export function PlatformNewsSection({
   const platforms = filters.platform === "all" ? TARGET_PLATFORMS : TARGET_PLATFORMS.filter((platform) => platform === filters.platform);
   // undefined = jamais recherché ; [] = recherché, aucun signal fiable ; sinon résultats affichés.
   const [webResultsByPlatform, setWebResultsByPlatform] = useState<Partial<Record<SocialPlatform, DisplayableTrend[]>>>({});
+  const PLATFORM_LABEL = usePlatformLabel();
 
   return (
     <section className="flex flex-col gap-4">

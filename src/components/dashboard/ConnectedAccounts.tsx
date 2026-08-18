@@ -1,13 +1,14 @@
 "use client";
 
 import { platformIcons } from "@/components/icons";
-import { ACCOUNT_STATUS_DOT, ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
+import { ACCOUNT_STATUS_DOT, useAccountStatusLabel } from "@/lib/account-status";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
 
 export function ConnectedAccounts() {
   const t = useTranslations();
   const { accounts } = useAccountsSession();
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">

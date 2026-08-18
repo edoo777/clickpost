@@ -5,14 +5,14 @@ import { platformIcons } from "@/components/icons";
 import { useBrandsSession } from "@/lib/brands-store";
 import {
   DEFAULT_PROMOTION_TASK_FILTERS,
-  PROMOTION_STATUS_LABEL,
   PROMOTION_STATUS_STYLE,
-  PROMOTION_TASK_LABEL,
   PROMOTION_TASK_ORDER,
   getAllPromotionTasks,
   isTaskDueToday,
   isTaskOverdue,
   updateTaskInList,
+  usePromotionStatusLabel,
+  usePromotionTaskLabel,
   type PromotionTaskFilters,
 } from "@/lib/promotion";
 import { usePostsSession } from "@/lib/posts-store";
@@ -38,6 +38,8 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
   const { updatePost } = usePostsSession();
   const { brands } = useBrandsSession();
   const { members } = useTeamSession();
+  const PROMOTION_STATUS_LABEL = usePromotionStatusLabel();
+  const PROMOTION_TASK_LABEL = usePromotionTaskLabel();
   const [filters, setFilters] = useState<PromotionTaskFilters>(DEFAULT_PROMOTION_TASK_FILTERS);
 
   const rows = getAllPromotionTasks(publications, filters);

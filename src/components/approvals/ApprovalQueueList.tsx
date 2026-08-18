@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { platformIcons } from "@/components/icons";
 import { getNextActor } from "@/lib/approval";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
+import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -16,6 +18,8 @@ interface ApprovalQueueListProps {
 }
 
 export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
+  const STATUS_LABEL = useStatusLabel();
+
   if (publications.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">

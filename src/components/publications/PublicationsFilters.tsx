@@ -1,7 +1,7 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
-import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { useStatusLabel, usePlatformLabel } from "@/lib/post-status";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { PublicationStatus } from "@/types/publication";
@@ -54,6 +54,8 @@ interface PublicationsFiltersProps {
 export function PublicationsFilters({ value, onChange }: PublicationsFiltersProps) {
   const { brands } = useBrandsSession();
   const { members } = useTeamSession();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const STATUS_LABEL = useStatusLabel();
   const isDefault = JSON.stringify(value) === JSON.stringify(DEFAULT_PUBLICATIONS_FILTERS);
 
   return (

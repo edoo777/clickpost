@@ -1,7 +1,7 @@
 "use client";
 
 import { PERIOD_PRESET_LABEL, type ReportPeriodPreset } from "@/lib/reports/period-presets";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ReportType } from "@/types/report";
@@ -33,6 +33,7 @@ interface ReportsFiltersProps {
 }
 
 export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps) {
+  const PLATFORM_LABEL = usePlatformLabel();
   function togglePlatform(platform: SocialPlatform) {
     const isSelected = value.platforms.includes(platform);
     onChange({

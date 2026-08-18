@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { MediaUploader } from "@/components/publications/MediaUploader";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
-import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
+import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { usePlatformLabel, useStatusLabel } from "@/lib/post-status";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -120,6 +120,9 @@ export function PublicationForm({ publication, editable, onChange }: Publication
   const { members } = useTeamSession();
   const { brands } = useBrandsSession();
   const { workspace } = useWorkspaceSession();
+  const PLATFORM_LABEL = usePlatformLabel();
+  const STATUS_LABEL = useStatusLabel();
+  const FORMAT_LABEL = useFormatLabel();
 
   const resolvedBrandId = brands.find((brand) => brand.name === publication.brand)?.id;
 

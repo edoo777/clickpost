@@ -1,8 +1,8 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
-import { ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
-import { PLATFORM_LABEL } from "@/lib/post-status";
+import { useAccountStatusLabel } from "@/lib/account-status";
+import { usePlatformLabel } from "@/lib/post-status";
 import type { AccountStatus, SocialPlatform } from "@/types/dashboard";
 
 const ALL_PLATFORMS: SocialPlatform[] = [
@@ -41,6 +41,8 @@ interface AccountsFiltersProps {
 export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
   const { brands } = useBrandsSession();
   const isDefault = value.brand === "all" && value.platform === "all" && value.status === "all";
+  const PLATFORM_LABEL = usePlatformLabel();
+  const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
 
   return (
     <div className="flex flex-wrap items-center gap-3">

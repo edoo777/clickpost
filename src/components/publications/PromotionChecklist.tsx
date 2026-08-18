@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import {
-  PROMOTION_STATUS_LABEL,
   PROMOTION_STATUS_STYLE,
-  PROMOTION_TASK_LABEL,
   PROMOTION_TASK_OPTIONAL,
   PROMOTION_TASK_ORDER,
   getPromotionProgress,
   isTaskDueToday,
   isTaskOverdue,
+  usePromotionStatusLabel,
+  usePromotionTaskLabel,
 } from "@/lib/promotion";
 import type { TeamMember } from "@/types/team";
 import type { PromotionTask, PromotionTaskStatus } from "@/types/promotion";
@@ -30,6 +30,8 @@ interface PromotionChecklistProps {
  * échéance, statut, notes) ; la progression est calculée, jamais stockée séparément.
  */
 export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionChecklistProps) {
+  const PROMOTION_STATUS_LABEL = usePromotionStatusLabel();
+  const PROMOTION_TASK_LABEL = usePromotionTaskLabel();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const progress = getPromotionProgress(tasks);
   const orderedTasks = PROMOTION_TASK_ORDER.map((type) => tasks.find((task) => task.type === type)).filter(
