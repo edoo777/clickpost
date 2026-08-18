@@ -6,6 +6,7 @@ import { buildCopilotPrompt } from "@/lib/ai/copilot-prompt";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { validateCopilotRequest } from "@/lib/ai/validate-copilot-request";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import type { Brand } from "@/types/brand";
@@ -108,9 +109,11 @@ export async function POST(request: Request) {
     : [];
 
   const promptOverride = await getPromptOverrideConfig("copilot");
+  const language = await getUserLocale(supabase, user.id);
 
   const prompt = buildCopilotPrompt({
     brand,
+    language,
     connectedAccounts,
     themes: themes.filter((theme) => theme.active),
     ideas: ideas.map((idea) => ({

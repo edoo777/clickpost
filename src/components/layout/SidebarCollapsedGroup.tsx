@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 
 interface SidebarCollapsedGroupProps {
   label: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   isActive: boolean;
-  subItems: { label: string; href: string }[];
+  subItems: { labelKey: TranslationKey; href: string }[];
   onNavigate: () => void;
 }
 
@@ -17,6 +18,7 @@ interface SidebarCollapsedGroupProps {
  * la sidebar réduite étant trop étroite pour afficher un sous-menu en ligne.
  */
 export function SidebarCollapsedGroup({ label, icon: Icon, isActive, subItems, onNavigate }: SidebarCollapsedGroupProps) {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +85,7 @@ export function SidebarCollapsedGroup({ label, icon: Icon, isActive, subItems, o
               }}
               className="block rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </div>

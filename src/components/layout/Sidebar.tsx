@@ -10,12 +10,14 @@ import {
   IconMenu,
   IconSidebarCollapse,
 } from "@/components/icons";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { ManagementMenu } from "@/components/layout/ManagementMenu";
 import { SaveStatusIndicator } from "@/components/layout/SaveStatusIndicator";
 import { SidebarCollapsedGroup } from "@/components/layout/SidebarCollapsedGroup";
 import { SidebarResizeHandle } from "@/components/layout/SidebarResizeHandle";
 import { ThemeQuickToggle } from "@/components/theme/ThemeQuickToggle";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { PRIMARY_NAV_ITEMS, isNavItemActive, type NavItem } from "@/lib/navigation";
 import { clearLocalData } from "@/lib/persistence/coordinator";
 import { useSidebarState } from "@/lib/sidebar-store";
@@ -28,6 +30,7 @@ const TOOLTIP_CLASS =
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations();
   const { members, currentUserId, setCurrentUserId } = useTeamSession();
   const { isCollapsed, toggleCollapsed, width } = useSidebarState();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -67,11 +70,11 @@ export function Sidebar() {
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                 </Link>
                 <div className={`hidden ${isCollapsed ? "lg:block" : ""}`}>
                   <SidebarCollapsedGroup
-                    label={item.label}
+                    label={t(item.labelKey)}
                     icon={item.icon}
                     isActive={isActive}
                     subItems={subItems}
@@ -88,7 +91,7 @@ export function Sidebar() {
               href={item.href}
               onClick={() => setIsMobileOpen(false)}
               aria-current={isActive ? "page" : undefined}
-              aria-label={item.label}
+              aria-label={t(item.labelKey)}
               className={`group relative flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
                 isCollapsed ? "lg:justify-center" : ""
               } ${
@@ -98,8 +101,8 @@ export function Sidebar() {
               }`}
             >
               <item.icon className="h-4 w-4 shrink-0" />
-              <span className={`truncate ${isCollapsed ? "lg:hidden" : ""}`}>{item.label}</span>
-              {isCollapsed && <span className={TOOLTIP_CLASS}>{item.label}</span>}
+              <span className={`truncate ${isCollapsed ? "lg:hidden" : ""}`}>{t(item.labelKey)}</span>
+              {isCollapsed && <span className={TOOLTIP_CLASS}>{t(item.labelKey)}</span>}
             </Link>
           );
         })}
@@ -126,7 +129,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setIsMobileOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t("nav.openMenu")}
             className="rounded-lg p-2 text-zinc-600 hover:bg-muted dark:text-zinc-400"
           >
             <IconMenu className="h-5 w-5" />
@@ -169,7 +172,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => setIsMobileOpen(false)}
-                aria-label="Fermer le menu"
+                aria-label={t("nav.closeMenu")}
                 className="rounded-lg p-1.5 text-white/50 hover:bg-white/[.08] hover:text-white lg:hidden"
               >
                 <IconClose className="h-4 w-4" />
@@ -183,7 +186,7 @@ export function Sidebar() {
               onClick={toggleCollapsed}
               aria-expanded={!isCollapsed}
               aria-controls="clickpost-sidebar-nav"
-              aria-label={isCollapsed ? "Déployer la barre latérale" : "Réduire la barre latérale"}
+              aria-label={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
               className={`group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white/50 transition-all hover:bg-white/[.08] hover:text-white ${
                 isCollapsed ? "justify-center" : ""
               }`}
@@ -193,10 +196,10 @@ export function Sidebar() {
                   isCollapsed ? "rotate-180" : ""
                 }`}
               />
-              <span className={isCollapsed ? "lg:hidden" : ""}>{isCollapsed ? "Déployer" : "Réduire"}</span>
+              <span className={isCollapsed ? "lg:hidden" : ""}>{isCollapsed ? t("nav.expand") : t("nav.collapse")}</span>
               <span className={`ml-auto text-[10px] text-white/25 ${isCollapsed ? "lg:hidden" : ""}`}>Ctrl+B</span>
               <span className={TOOLTIP_CLASS}>
-                {isCollapsed ? "Déployer la barre latérale" : "Réduire la barre latérale"} · Ctrl+B
+                {isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")} · Ctrl+B
               </span>
             </button>
           </div>
@@ -205,12 +208,12 @@ export function Sidebar() {
             <Link
               href="/publications/new"
               onClick={() => setIsMobileOpen(false)}
-              aria-label="Créer une publication"
+              aria-label={t("nav.createPublication")}
               className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:opacity-90`}
             >
               <span className="text-base leading-none">+</span>
-              <span className={isCollapsed ? "lg:hidden" : ""}>Créer une publication</span>
-              {isCollapsed && <span className={TOOLTIP_CLASS}>Créer une publication</span>}
+              <span className={isCollapsed ? "lg:hidden" : ""}>{t("nav.createPublication")}</span>
+              {isCollapsed && <span className={TOOLTIP_CLASS}>{t("nav.createPublication")}</span>}
             </Link>
           </div>
 
@@ -234,13 +237,20 @@ export function Sidebar() {
             (déjà accessible via la barre supérieure et l'avatar de profil). */}
         <div className={`sidebar-bottom-zone shrink-0 border-t border-white/[.06] ${isCollapsed ? "lg:border-t-0" : ""}`}>
           <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
-            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">Thème</label>
+            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">{t("nav.theme")}</label>
             <ThemeSelect surface="dark" />
           </div>
 
           <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
             <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
-              Connecté en tant que
+              {t("common.languageSwitcherLabel")}
+            </label>
+            <LanguageSwitcher compact />
+          </div>
+
+          <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
+            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
+              {t("nav.connectedAs")}
             </label>
             <select
               value={currentUserId}
@@ -262,7 +272,7 @@ export function Sidebar() {
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/[.06] hover:text-white"
             >
               <IconLogout className="h-4 w-4 shrink-0" />
-              Déconnexion
+              {t("common.signOut")}
             </button>
           </div>
         </div>

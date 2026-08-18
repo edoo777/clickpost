@@ -2,7 +2,20 @@ import type { ContentExample } from "@/types/brand";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { Idea } from "@/types/idea";
+import type { Locale } from "@/lib/i18n/locale";
 import type { Theme } from "@/types/theme";
+
+/**
+ * Ligne d'instruction de langue, partagée par tous les constructeurs de prompt IA (Copilote,
+ * Atelier, Générateur, Rapports) — la langue attendue est celle de l'interface de l'utilisateur
+ * (`profiles.ui_locale`, voir src/lib/i18n/), jamais devinée à partir du contenu. Toujours une
+ * règle explicite et non ambiguë, jamais une simple suggestion.
+ */
+export function buildLanguageInstruction(locale: Locale): string {
+  return locale === "en"
+    ? "Respond exclusively in English — every piece of generated content, without exception, regardless of the language used elsewhere in this prompt."
+    : "Réponds exclusivement en français — tout le contenu généré, sans exception, quelle que soit la langue utilisée ailleurs dans ce prompt.";
+}
 
 /**
  * Sous-ensemble des champs de marque utilisés par les prompts IA — satisfait structurellement

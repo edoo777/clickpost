@@ -1,4 +1,5 @@
-import { buildBrandContextLines, type BrandContextSource } from "@/lib/ai/prompt-context";
+import { buildBrandContextLines, buildLanguageInstruction, type BrandContextSource } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
 import type { ReportKpiSnapshot, ReportType } from "@/types/report";
 
 export interface RapportsGeneratePrompt {
@@ -130,13 +131,15 @@ export function buildRapportsGeneratePrompt(params: {
   snapshot: ReportKpiSnapshot;
   brand: BrandContextSource;
   reportType: ReportType;
+  /** Langue attendue de la réponse (`profiles.ui_locale`) — voir buildLanguageInstruction. */
+  language: Locale;
   /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
    * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
    * strict : jamais un remplacement des règles existantes. */
   systemPromptOverride?: string;
   extraInstructions?: string;
 }): RapportsGeneratePrompt {
-  const { snapshot, brand, reportType, systemPromptOverride, extraInstructions } = params;
+  const { snapshot, brand, reportType, language, systemPromptOverride, extraInstructions } = params;
 
   const toneInstruction =
     reportType === "client"
@@ -150,6 +153,7 @@ export function buildRapportsGeneratePrompt(params: {
     "Tu es un analyste stratégique senior qui rédige un rapport de performance de contenu social professionnel pour une agence ou un créateur de contenu.",
     ...buildBrandContextLines(brand),
     toneInstruction,
+    buildLanguageInstruction(language),
     extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${extraInstructions}` : null,
     "",
     "STYLE DE RÉDACTION OBLIGATOIRE pour chaque texte narratif (executiveSummary.narrative, workDoneNarrative, performanceOverviewNarrative, performanceByPlatformNarrative, contentPerformanceNarrative, aiAnalysis.narrative) : toujours enchaîner CONSTAT → INTERPRÉTATION → RECOMMANDATION, jamais une simple restitution de chiffres. Exemple attendu :",

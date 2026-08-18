@@ -1,8 +1,10 @@
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { FORMAT_LABEL } from "@/lib/editorial-constants";
 import { PLATFORM_LABEL } from "@/lib/post-status";
+import { buildLanguageInstruction } from "@/lib/ai/prompt-context";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
+import type { Locale } from "@/lib/i18n/locale";
 
 export interface GenerateurPromptTheme {
   themeId: string;
@@ -32,6 +34,8 @@ export interface GenerateurPromptInput {
    * envoyés pour être recopiés, uniquement pour que Claude évite de générer un doublon ou une
    * simple paraphrase d'un sujet déjà traité. */
   existingTitles?: string[];
+  /** Langue attendue de la réponse (`profiles.ui_locale`) — voir buildLanguageInstruction. */
+  language: Locale;
   /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
    * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
    * strict : jamais un remplacement des règles existantes. */
@@ -89,6 +93,7 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     "qui ne diffèrent que par un mot. Chaque sujet doit pouvoir se distinguer clairement des autres",
     "par son idée, pas seulement par sa formulation.",
     "",
+    buildLanguageInstruction(input.language),
     input.extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${input.extraInstructions}` : null,
     "Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après, exactement de cette forme :",
     '{"groups":[{"themeId":"...","ideas":[{"title":"...","angle":"...","description":"...","niche":"...","theme":"...","contentType":"advice","format":"...","objective":"...","platform":"..."}]}]}',

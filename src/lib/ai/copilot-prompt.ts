@@ -1,9 +1,10 @@
 import type { BrandProfile } from "@/types/brand";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { SocialAccount } from "@/types/dashboard";
+import type { Locale } from "@/lib/i18n/locale";
 import type { Theme } from "@/types/theme";
 import type { CopilotHistoryItem } from "@/lib/ai/validate-copilot-request";
-import { buildBrandContextLines } from "@/lib/ai/prompt-context";
+import { buildBrandContextLines, buildLanguageInstruction } from "@/lib/ai/prompt-context";
 
 export interface CopilotPromptInput {
   brand: BrandProfile;
@@ -13,6 +14,8 @@ export interface CopilotPromptInput {
   publications: { theme: string; scheduledFor: string; platform: string; status: string }[];
   message: string;
   history?: CopilotHistoryItem[];
+  /** Langue attendue de la réponse (`profiles.ui_locale`) — voir buildLanguageInstruction. */
+  language: Locale;
   /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
    * systemPromptOverride est prépendu, extraInstructions est ajouté après les règles de base :
    * jamais un remplacement des règles existantes. Vides par défaut. */
@@ -61,6 +64,7 @@ export function buildCopilotPrompt(input: CopilotPromptInput) {
     "Réponds toujours de manière structurée, actionnable et tournée vers le travail réel en ClickPost.",
     "Suggère des actions concrètes quand c'est pertinent : enregistrer une idée, ouvrir l'Atelier, préparer un planning, transformer un contenu existant, ou améliorer un hook.",
     "Ne réponds jamais de façon générique. Si le contexte reste insuffisant, demande des précisions sur la marque, les réseaux ou les objectifs.",
+    buildLanguageInstruction(input.language),
     input.extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${input.extraInstructions}` : null,
   ].filter((line): line is string => Boolean(line));
 

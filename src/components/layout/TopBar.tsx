@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { ManagementMenu } from "@/components/layout/ManagementMenu";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useBrandsSession } from "@/lib/brands-store";
-import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, getPageTitle, isNavItemActive } from "@/lib/navigation";
+import { useTranslations } from "@/lib/i18n/locale-provider";
+import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, getPageTitleKey, isNavItemActive } from "@/lib/navigation";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
@@ -20,11 +22,13 @@ import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
  */
 export function TopBar() {
   const pathname = usePathname();
+  const t = useTranslations();
   const { profile, workspace, email, workspaceError, refresh } = useWorkspaceSession();
   const { selectableBrands, activeBrand, setActiveBrandId } = useBrandsSession();
   const conflictCount = useSyncStatus().conflictCount;
 
-  const pageTitle = getPageTitle(pathname ?? "/");
+  const pageTitleKey = getPageTitleKey(pathname ?? "/");
+  const pageTitle = pageTitleKey ? t(pageTitleKey) : "ClickPost";
   const displayedUserName =
     profile?.display_name || (profile ? `${profile.first_name} ${profile.last_name}`.trim() : "") || email || "Mon profil";
 
@@ -79,7 +83,7 @@ export function TopBar() {
                 }`}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                {t(item.labelKey)}
                 {item.href === CONFLICTS_NAV_HREF && <ConflictBadge count={conflictCount} />}
               </Link>
             );
@@ -89,6 +93,8 @@ export function TopBar() {
         <div className="2xl:hidden">
           <ManagementMenu />
         </div>
+
+        <LanguageSwitcher compact />
 
         <Link
           href="/profil"

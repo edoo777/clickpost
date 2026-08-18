@@ -5,6 +5,7 @@ import { buildGenerateurPrompt, type GenerateurPromptTheme } from "@/lib/ai/gene
 import { parseTopicsResponse } from "@/lib/ai/parse-topics-response";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { validateTopicsRequest } from "@/lib/ai/validate-topics-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -111,6 +112,7 @@ export async function POST(request: Request) {
   }));
 
   const promptOverride = await getPromptOverrideConfig("generateur");
+  const language = await getUserLocale(supabase, user.id);
 
   const prompt = buildGenerateurPrompt({
     niche: promptNiche,
@@ -128,6 +130,7 @@ export async function POST(request: Request) {
     positioning: brandPositioning,
     description: brandDescription,
     existingTitles,
+    language,
     systemPromptOverride: promptOverride.systemPromptOverride,
     extraInstructions: promptOverride.extraInstructions,
   });

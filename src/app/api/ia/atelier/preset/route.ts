@@ -6,6 +6,7 @@ import { buildAtelierPresetPrompt } from "@/lib/ai/atelier-preset-prompt";
 import { validateAtelierPresetRequest } from "@/lib/ai/validate-atelier-preset-request";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import { PROMPT_PRESETS } from "@/lib/prompt-presets";
@@ -99,12 +100,14 @@ export async function POST(request: Request) {
   }
 
   const promptOverride = await getPromptOverrideConfig("atelier");
+  const language = await getUserLocale(supabase, user.id);
 
   const prompt = buildAtelierPresetPrompt({
     preset,
     context: { idea, brand, theme, tone, length, instructions },
     currentText,
     currentFormat,
+    language,
     systemPromptOverride: promptOverride.systemPromptOverride,
     extraInstructions: promptOverride.extraInstructions,
   });

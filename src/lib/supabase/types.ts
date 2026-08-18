@@ -17,6 +17,9 @@ export interface ProfileRow {
   bio: string;
   notifications: Record<string, boolean>;
   display_density: "comfortable" | "compact";
+  /** Langue de l'interface ET langue attendue des générations IA — distincte de `language`
+   * (préférence texte libre existante, non liée à l'interface). Voir src/lib/i18n/. */
+  ui_locale: "fr" | "en";
   active_workspace_id: string | null;
   created_at: string;
   updated_at: string;

@@ -32,6 +32,7 @@ const BASE_INPUT: CopilotPromptInput = {
   ideas: [],
   publications: [],
   message: "Propose-moi une idée de publication.",
+  language: "fr",
 };
 
 describe("buildCopilotPrompt — admin prompt overrides (espace Admin > Prompts IA)", () => {
@@ -80,6 +81,20 @@ describe("buildCopilotPrompt — admin prompt overrides (espace Admin > Prompts 
     const prompt = buildCopilotPrompt({ ...BASE_INPUT, systemPromptOverride: "", extraInstructions: "" });
     expect(prompt.system).not.toContain("Note de l'administrateur");
     expect(prompt.system).not.toContain("Instructions complémentaires");
+  });
+});
+
+describe("buildCopilotPrompt — expected response language (profiles.ui_locale)", () => {
+  it("instructs French output for the fr locale", () => {
+    const prompt = buildCopilotPrompt({ ...BASE_INPUT, language: "fr" });
+    expect(prompt.system).toContain("Réponds exclusivement en français");
+    expect(prompt.system).not.toContain("Respond exclusively in English");
+  });
+
+  it("instructs English output for the en locale", () => {
+    const prompt = buildCopilotPrompt({ ...BASE_INPUT, language: "en" });
+    expect(prompt.system).toContain("Respond exclusively in English");
+    expect(prompt.system).not.toContain("Réponds exclusivement en français");
   });
 });
 

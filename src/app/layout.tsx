@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import Script from "next/script";
+import { LocaleProfileSync } from "@/components/i18n/LocaleProfileSync";
+import { DEFAULT_LOCALE, isSupportedLocale, LOCALE_COOKIE_NAME } from "@/lib/i18n/locale";
+import { LocaleProvider } from "@/lib/i18n/locale-provider";
 import { ThemeProvider } from "@/lib/theme-store";
 import { WorkspaceSessionProvider } from "@/lib/supabase/workspace-provider";
 import "./globals.css";
@@ -56,14 +60,22 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Lu côté serveur pour que le tout premier rendu HTML soit déjà dans la bonne langue — jamais
+  // un flash de contenu français pour un visiteur anglophone revenant avec son cookie déjà posé
+  // (voir locale-provider.tsx pour la persistance et LocaleProfileSync pour la resynchronisation
+  // avec `profiles.ui_locale` une fois authentifié).
+  const cookieStore = await cookies();
+  const rawLocale = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+  const initialLocale = isSupportedLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+
   return (
     <html
-      lang="en"
+      lang={initialLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -72,7 +84,12 @@ export default function RootLayout({
           {THEME_INIT_SCRIPT}
         </Script>
         <ThemeProvider>
-          <WorkspaceSessionProvider>{children}</WorkspaceSessionProvider>
+          <LocaleProvider initialLocale={initialLocale}>
+            <WorkspaceSessionProvider>
+              <LocaleProfileSync />
+              {children}
+            </WorkspaceSessionProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

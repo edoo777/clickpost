@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { IconChevronDown, IconSettingsGear } from "@/components/icons";
 import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { CONFLICTS_NAV_HREF, MANAGEMENT_NAV_ITEMS, isNavItemActive } from "@/lib/navigation";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
@@ -23,6 +24,7 @@ interface ManagementMenuProps {
  */
 export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: ManagementMenuProps) {
   const pathname = usePathname();
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAnyActive = MANAGEMENT_NAV_ITEMS.some((item) => isNavItemActive(pathname, item.href));
@@ -55,7 +57,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        aria-label={conflictCount > 0 ? `Gestion — ${conflictCount} conflit${conflictCount > 1 ? "s" : ""} à résoudre` : "Gestion"}
+        aria-label={conflictCount > 0 ? `${t("nav.management")} — ${conflictCount} ${t("nav.conflictsToResolve")}` : t("nav.management")}
         className={
           triggerClassName ??
           `relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
@@ -71,7 +73,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
         </span>
         {!iconOnly && (
           <>
-            <span>Gestion</span>
+            <span>{t("nav.management")}</span>
             <ConflictBadge count={conflictCount} />
             <IconChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
           </>
@@ -81,7 +83,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
       {isOpen && (
         <div
           role="menu"
-          aria-label="Gestion"
+          aria-label={t("nav.management")}
           className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-xl"
         >
           {MANAGEMENT_NAV_ITEMS.map((item) => {
@@ -102,7 +104,7 @@ export function ManagementMenu({ onNavigate, triggerClassName, iconOnly }: Manag
                 }`}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                {t(item.labelKey)}
                 {item.href === CONFLICTS_NAV_HREF && <ConflictBadge count={conflictCount} className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white" />}
               </Link>
             );

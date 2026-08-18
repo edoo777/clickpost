@@ -1,7 +1,8 @@
 import type { PromptPreset } from "@/lib/prompt-presets";
 import type { AIGenerationContext } from "@/lib/assisted-generation";
 import type { ContentFormat } from "@/types/editorial-calendar";
-import { buildBrandContextLines, buildIdeaContextLines } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
+import { buildBrandContextLines, buildIdeaContextLines, buildLanguageInstruction } from "@/lib/ai/prompt-context";
 
 export interface AtelierPresetPrompt {
   system: string;
@@ -24,13 +25,15 @@ export function buildAtelierPresetPrompt(params: {
   context: AIGenerationContext;
   currentText?: string;
   currentFormat?: ContentFormat;
+  /** Langue attendue de la réponse (`profiles.ui_locale`) — voir buildLanguageInstruction. */
+  language: Locale;
   /** Compléments configurables depuis l'espace Admin (voir src/lib/admin/prompt-overrides.ts) —
    * systemPromptOverride est prépendu, extraInstructions est ajouté avant la règle de format JSON
    * strict : jamais un remplacement des règles existantes. */
   systemPromptOverride?: string;
   extraInstructions?: string;
 }): AtelierPresetPrompt {
-  const { preset, context, currentText, currentFormat, systemPromptOverride, extraInstructions } = params;
+  const { preset, context, currentText, currentFormat, language, systemPromptOverride, extraInstructions } = params;
   const responseKind: AtelierPresetPrompt["responseKind"] =
     preset.action === "hooks" || preset.action === "angles"
       ? "text_list"
@@ -45,6 +48,7 @@ export function buildAtelierPresetPrompt(params: {
     ...buildBrandContextLines(context.brand),
     "Respecte le ton demandé et ne propose pas de contenu qui viole les interdits de la marque.",
     `Action à exécuter : ${preset.instruction}`,
+    buildLanguageInstruction(language),
     extraInstructions ? `Instructions complémentaires (configurées par l'administrateur ClickPost) : ${extraInstructions}` : null,
     responseSchema(preset),
   ];
