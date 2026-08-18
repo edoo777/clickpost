@@ -227,9 +227,11 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Zone centrale : jamais de défilement — la hauteur nécessaire est réduite au minimum
-            (voir zones haut/bas) pour que tous les boutons tiennent sans scroll ni flèches. */}
-        <nav id="clickpost-sidebar-nav" className="flex-1 px-3">
+        {/* Zone centrale : seule zone qui défile. `min-h-0` est indispensable ici — sans lui, un
+            enfant flex-1 garde `min-height: auto` et ne peut jamais devenir plus petit que son
+            contenu, ce qui pousse la zone du bas (thème/langue/compte) hors de l'écran sur les
+            hauteurs réduites (ex. 1366×768) au lieu de la laisser toujours visible. */}
+        <nav id="clickpost-sidebar-nav" className="min-h-0 flex-1 overflow-y-auto px-3">
           <div className="flex flex-col gap-1 pb-2">{renderNavGroup(PRIMARY_NAV_ITEMS)}</div>
         </nav>
 

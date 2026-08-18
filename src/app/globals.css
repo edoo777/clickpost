@@ -133,10 +133,10 @@ body {
   background: var(--muted-foreground);
 }
 
-/* Écrans à hauteur réduite (ex. ordinateur portable 1366×768) : la navigation centrale de la
-   sidebar ne défile jamais (voir Sidebar.tsx) — sur ces hauteurs, resserre encore les
-   espacements verticaux des zones haut/bas pour que tous les boutons principaux restent
-   visibles sans scroll ni chevauchement. */
+/* Écrans à hauteur réduite (ex. ordinateur portable 1366×768) : la zone centrale de la sidebar
+   défile déjà indépendamment si nécessaire (voir Sidebar.tsx, #clickpost-sidebar-nav) — ce
+   resserrement des zones haut/bas est un confort supplémentaire pour limiter la quantité de
+   défilement requise, pas une condition de correction du chevauchement. */
 @media (max-height: 720px) {
   .sidebar-shell .sidebar-top-zone > div,
   .sidebar-shell .sidebar-bottom-zone > div {
