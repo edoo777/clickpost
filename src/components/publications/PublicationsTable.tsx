@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
@@ -36,21 +37,6 @@ interface ColumnDef {
   sortProperty?: string;
 }
 
-const COLUMNS: ColumnDef[] = [
-  { key: "excerpt", label: "Titre", defaultWidth: 200, sortProperty: "excerpt" },
-  { key: "text", label: "Contenu ou extrait", defaultWidth: 220 },
-  { key: "brand", label: "Marque", defaultWidth: 140, sortProperty: "brand" },
-  { key: "platform", label: "Réseau", defaultWidth: 120, sortProperty: "platform" },
-  { key: "date", label: "Date", defaultWidth: 130, sortProperty: "scheduledFor" },
-  { key: "time", label: "Heure", defaultWidth: 90 },
-  { key: "status", label: "Statut", defaultWidth: 160, sortProperty: "status" },
-  { key: "format", label: "Format", defaultWidth: 130, sortProperty: "format" },
-  { key: "theme", label: "Thématique", defaultWidth: 150, sortProperty: "theme" },
-  { key: "objective", label: "Objectif", defaultWidth: 180 },
-  { key: "owner", label: "Responsable", defaultWidth: 150, sortProperty: "owner" },
-  { key: "media", label: "Média", defaultWidth: 90 },
-];
-
 const CELL_CLASS = "w-full min-w-0 rounded border border-transparent bg-transparent px-1.5 py-1 text-sm text-zinc-700 hover:border-border focus:border-violet-400 focus:bg-white focus:outline-none dark:text-zinc-300 dark:focus:bg-zinc-900";
 
 interface PublicationsTableProps {
@@ -74,6 +60,7 @@ export function PublicationsTable({
   onChangeSorting,
   onOpen,
 }: PublicationsTableProps) {
+  const t = useTranslations();
   const { patchPost, duplicatePost, changeStatus } = usePostsSession();
   const { brands } = useBrandsSession();
   const { members, currentUserId } = useTeamSession();
@@ -81,6 +68,22 @@ export function PublicationsTable({
   const PLATFORM_LABEL = usePlatformLabel();
   const STATUS_LABEL = useStatusLabel();
   const FORMAT_LABEL = useFormatLabel();
+
+  const COLUMNS: ColumnDef[] = [
+    { key: "excerpt", label: t("publications.table.columns.title"), defaultWidth: 200, sortProperty: "excerpt" },
+    { key: "text", label: t("publications.table.columns.content"), defaultWidth: 220 },
+    { key: "brand", label: t("publications.form.brand"), defaultWidth: 140, sortProperty: "brand" },
+    { key: "platform", label: t("publications.form.network"), defaultWidth: 120, sortProperty: "platform" },
+    { key: "date", label: t("publications.table.columns.date"), defaultWidth: 130, sortProperty: "scheduledFor" },
+    { key: "time", label: t("publications.table.columns.time"), defaultWidth: 90 },
+    { key: "status", label: t("publications.promotion.status"), defaultWidth: 160, sortProperty: "status" },
+    { key: "format", label: t("publications.form.format"), defaultWidth: 130, sortProperty: "format" },
+    { key: "theme", label: t("publications.form.theme"), defaultWidth: 150, sortProperty: "theme" },
+    { key: "objective", label: t("publications.form.objective"), defaultWidth: 180 },
+    { key: "owner", label: t("publications.promotion.owner"), defaultWidth: 150, sortProperty: "owner" },
+    { key: "media", label: t("publications.table.columns.media"), defaultWidth: 90 },
+  ];
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isColumnsOpen, setIsColumnsOpen] = useState(false);
   const resizeRef = useRef<{ key: string; startX: number; startWidth: number } | null>(null);
@@ -188,7 +191,7 @@ export function PublicationsTable({
             className={CELL_CLASS}
             value={post.excerpt}
             onChange={(event) => patchPost(post.id, { excerpt: event.target.value })}
-            placeholder="Sans titre"
+            placeholder={t("publications.card.untitled")}
           />
         );
       case "text":
@@ -197,7 +200,7 @@ export function PublicationsTable({
             className={CELL_CLASS}
             value={post.text}
             onChange={(event) => patchPost(post.id, { text: event.target.value })}
-            placeholder={post.excerpt || "Vide"}
+            placeholder={post.excerpt || t("publications.table.empty")}
           />
         );
       case "brand":
@@ -313,7 +316,7 @@ export function PublicationsTable({
             value={post.owner}
             onChange={(event) => patchPost(post.id, { owner: event.target.value })}
           >
-            <option value="">Non assigné</option>
+            <option value="">{t("publications.card.unassigned")}</option>
             {currentIsExternal && <option value={post.owner}>{post.owner}</option>}
             {options.map((member) => (
               <option key={member.id} value={member.name}>
@@ -326,7 +329,7 @@ export function PublicationsTable({
       case "media":
         return (
           <span className="block px-1.5 py-1 text-sm text-muted-foreground ">
-            {post.media.length > 0 ? `${post.media.length} média${post.media.length > 1 ? "s" : ""}` : "—"}
+            {post.media.length > 0 ? t("publications.table.mediaCount", { count: post.media.length, plural: post.media.length > 1 ? "s" : "" }) : "—"}
           </span>
         );
       default:
@@ -354,7 +357,7 @@ export function PublicationsTable({
           {hasSelection && (
             <>
               <span className="text-xs font-medium text-muted-foreground ">
-                {selected.size} sélectionnée{selected.size > 1 ? "s" : ""}
+                {t("publications.table.selectedCount", { count: selected.size, plural: selected.size > 1 ? "s" : "" })}
               </span>
               <div className="group relative">
                 <button
@@ -368,7 +371,7 @@ export function PublicationsTable({
                       : "cursor-not-allowed border-border text-zinc-300 dark:border-white/[.08] dark:text-zinc-600"
                   }`}
                 >
-                  Ouvrir
+                  {t("publications.table.open")}
                 </button>
                 {!canOpenSelection && (
                   <span
@@ -376,7 +379,7 @@ export function PublicationsTable({
                     role="tooltip"
                     className="pointer-events-none absolute left-0 top-full z-50 mt-1 w-max max-w-[220px] rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-xs font-medium text-foreground opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
                   >
-                    Sélectionnez une seule publication pour l&apos;ouvrir.
+                    {t("publications.table.selectOneHint")}
                   </span>
                 )}
               </div>
@@ -385,21 +388,21 @@ export function PublicationsTable({
                 onClick={bulkArchive}
                 className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Archiver
+                {t("publications.table.archive")}
               </button>
               <button
                 type="button"
                 onClick={bulkDuplicate}
                 className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Dupliquer
+                {t("publications.table.duplicate")}
               </button>
               <button
                 type="button"
                 onClick={() => setSelected(new Set())}
                 className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted "
               >
-                Annuler la sélection
+                {t("publications.table.cancelSelection")}
               </button>
             </>
           )}
@@ -410,7 +413,7 @@ export function PublicationsTable({
             onClick={() => setIsColumnsOpen((prev) => !prev)}
             className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-muted  dark:text-zinc-400"
           >
-            Colonnes
+            {t("publications.table.columnsButton")}
           </button>
           {isColumnsOpen && (
             <div className="absolute right-0 top-full z-50 mt-1 w-64 rounded-xl border border-border bg-surface-elevated p-2 shadow-xl">
@@ -422,7 +425,7 @@ export function PublicationsTable({
                       type="checkbox"
                       checked={isVisible}
                       onChange={() => toggleColumn(column.key)}
-                      aria-label={`Afficher la colonne ${column.label}`}
+                      aria-label={t("publications.table.showColumn", { label: column.label })}
                     />
                     <span className="flex-1 text-sm text-foreground ">{column.label}</span>
                     {isVisible && (
@@ -430,7 +433,7 @@ export function PublicationsTable({
                         <button
                           type="button"
                           onClick={() => moveColumn(column.key, -1)}
-                          aria-label={`Déplacer ${column.label} vers la gauche`}
+                          aria-label={t("publications.table.moveColumnLeft", { label: column.label })}
                           className="rounded px-1 text-xs text-muted-foreground hover:bg-white dark:hover:bg-zinc-800"
                         >
                           ←
@@ -438,7 +441,7 @@ export function PublicationsTable({
                         <button
                           type="button"
                           onClick={() => moveColumn(column.key, 1)}
-                          aria-label={`Déplacer ${column.label} vers la droite`}
+                          aria-label={t("publications.table.moveColumnRight", { label: column.label })}
                           className="rounded px-1 text-xs text-muted-foreground hover:bg-white dark:hover:bg-zinc-800"
                         >
                           →
@@ -469,7 +472,7 @@ export function PublicationsTable({
                   type="checkbox"
                   checked={selected.size > 0 && selected.size === publications.length}
                   onChange={toggleSelectAll}
-                  aria-label="Sélectionner toutes les publications"
+                  aria-label={t("publications.table.selectAll")}
                 />
               </th>
               {orderedColumns.map((column) => {
@@ -503,7 +506,7 @@ export function PublicationsTable({
                     type="checkbox"
                     checked={selected.has(post.id)}
                     onChange={() => toggleSelect(post.id)}
-                    aria-label={`Sélectionner ${post.excerpt || "cette publication"}`}
+                    aria-label={t("publications.table.selectOne", { name: post.excerpt || t("publications.kanban.thisPublication") })}
                   />
                 </td>
                 {orderedColumns.map((column) => (
@@ -515,10 +518,10 @@ export function PublicationsTable({
                   <button
                     type="button"
                     onClick={() => onOpen(post.id)}
-                    aria-label="Ouvrir la publication"
+                    aria-label={t("publications.table.openPublication")}
                     className="rounded-lg px-2 py-1 text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
                   >
-                    Ouvrir
+                    {t("publications.table.open")}
                   </button>
                 </td>
               </tr>

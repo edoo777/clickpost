@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { validatePlatformConstraints } from "@/lib/publishing/platform-constraints";
 import { computePublishReadiness, isAutomaticPublishingAvailable, PUBLISH_READINESS_LABEL } from "@/lib/publishing/providers";
 import { getPublicationMediaSignedUrl } from "@/lib/supabase/publication-media-storage";
@@ -24,6 +25,7 @@ interface ManualPublishPanelProps {
  * jamais qu'une publication a été envoyée sans cette confirmation.
  */
 export function ManualPublishPanel({ publication, account, onMarkPublished, onMarkFailed }: ManualPublishPanelProps) {
+  const t = useTranslations();
   const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
   const [copied, setCopied] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -59,16 +61,16 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
   }
 
   const checklistItems = [
-    { key: "text", label: "Texte copié" },
-    ...(publication.media.length > 0 ? [{ key: "media", label: "Médias téléchargés" }] : []),
-    { key: "posted", label: `Publication effectuée manuellement sur ${publication.platform}` },
+    { key: "text", label: t("publications.manualPublish.textCopied") },
+    ...(publication.media.length > 0 ? [{ key: "media", label: t("publications.manualPublish.mediaDownloaded") }] : []),
+    { key: "posted", label: t("publications.manualPublish.postedManually", { platform: publication.platform }) },
   ];
   const allChecked = checklistItems.every((item) => checklist[item.key]);
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Publication manuelle</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("publications.manualPublish.title")}</h2>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground ">
             {PUBLISH_READINESS_LABEL[readiness]}
@@ -83,10 +85,10 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
 
       <p className="text-xs text-muted-foreground ">
         {readiness === "ready"
-          ? "Un envoi automatique est disponible pour cette plateforme (bouton ci-dessus) — utilisez ce panneau uniquement si vous préférez confirmer une publication déjà faite manuellement."
+          ? t("publications.manualPublish.readyNotice")
           : automaticAvailable
-            ? "Un envoi automatique est configuré pour cette plateforme, mais indisponible pour ce compte actuellement (reconnexion ou permission requise) — publiez manuellement en attendant."
-            : `Aucune intégration API n'est configurée pour ${publication.platform} — publiez ce contenu vous-même sur la plateforme, puis confirmez ci-dessous. ClickPost n'affiche jamais un envoi automatique qui n'a pas réellement eu lieu.`}
+            ? t("publications.manualPublish.unavailableNotice")
+            : t("publications.manualPublish.noIntegrationNotice", { platform: publication.platform })}
       </p>
 
       {violations.length > 0 && (
@@ -105,7 +107,7 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
           onClick={handleCopyText}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          {copied ? "Texte copié ✓" : "Copier le texte"}
+          {copied ? t("publications.manualPublish.textCopiedConfirm") : t("publications.manualPublish.copyText")}
         </button>
         {publication.media.map((media) => (
           <button
@@ -115,7 +117,7 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
             onClick={() => handleDownloadMedia(media.id, media.storagePath, media.label)}
             className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            {downloadingId === media.id ? "Préparation…" : `Télécharger ${media.label || media.type}`}
+            {downloadingId === media.id ? t("publications.manualPublish.preparing") : t("publications.manualPublish.download", { label: media.label || media.type })}
           </button>
         ))}
       </div>
@@ -137,7 +139,7 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
       {isReportingFailure ? (
         <div className="flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Motif de l&apos;échec
+            {t("publications.manualPublish.failureReasonLabel")}
             <textarea
               rows={2}
               value={failureReason}
@@ -151,7 +153,7 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
               onClick={() => setIsReportingFailure(false)}
               className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400"
             >
-              Annuler
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -163,7 +165,7 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
               }}
               className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Confirmer l&apos;échec
+              {t("publications.manualPublish.confirmFailure")}
             </button>
           </div>
         </div>
@@ -175,14 +177,14 @@ export function ManualPublishPanel({ publication, account, onMarkPublished, onMa
             onClick={onMarkPublished}
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Marquer comme publiée manuellement
+            {t("publications.manualPublish.markPublished")}
           </button>
           <button
             type="button"
             onClick={() => setIsReportingFailure(true)}
             className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50  dark:hover:bg-red-500/10"
           >
-            Signaler un échec
+            {t("publications.manualPublish.reportFailure")}
           </button>
         </div>
       )}

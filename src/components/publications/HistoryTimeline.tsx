@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { PublicationHistoryEntry } from "@/types/publication";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -12,11 +15,12 @@ interface HistoryTimelineProps {
 }
 
 export function HistoryTimeline({ history }: HistoryTimelineProps) {
+  const t = useTranslations();
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Historique</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("publications.history.title")}</h2>
       {history.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucune action enregistrée pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground ">{t("publications.history.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {[...history].reverse().map((entry) => (

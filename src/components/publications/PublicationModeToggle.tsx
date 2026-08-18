@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
+
 export type PublicationCreationMode = "manual" | "claude";
 
 /**
@@ -13,6 +17,7 @@ export function PublicationModeToggle({
   mode: PublicationCreationMode;
   onChange: (mode: PublicationCreationMode) => void;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex w-fit items-center gap-1 rounded-lg border border-border p-1">
       <button
@@ -23,7 +28,7 @@ export function PublicationModeToggle({
           mode === "manual" ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20" : "text-muted-foreground"
         }`}
       >
-        Manuel
+        {t("publications.modeToggle.manual")}
       </button>
       <button
         type="button"
@@ -33,7 +38,7 @@ export function PublicationModeToggle({
           mode === "claude" ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/20" : "text-muted-foreground"
         }`}
       >
-        Avec Claude
+        {t("publications.modeToggle.withClaude")}
       </button>
     </div>
   );

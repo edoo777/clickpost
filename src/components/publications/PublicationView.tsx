@@ -10,6 +10,7 @@ import { CollaborationPanel } from "@/components/publications/CollaborationPanel
 import { HistoryTimeline } from "@/components/publications/HistoryTimeline";
 import { LinkedInPublishAction } from "@/components/publications/LinkedInPublishAction";
 import { buildLinkedInPostUrl } from "@/lib/linkedin/post-url";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { ManualPublishPanel } from "@/components/publications/ManualPublishPanel";
 import { PromotionChecklist } from "@/components/publications/PromotionChecklist";
 import { PublicationForm } from "@/components/publications/PublicationForm";
@@ -88,6 +89,7 @@ interface PublicationViewProps {
 }
 
 export function PublicationView({ mode, id }: PublicationViewProps) {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { posts, addPosts, updatePost } = usePostsSession();
@@ -102,7 +104,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
 
   const from = searchParams.get("from");
-  const backLabel = from === "calendrier" ? "← Retour au calendrier" : "← Retour à la liste";
+  const backLabel = from === "calendrier" ? t("publications.view.backToCalendar") : t("publications.view.backToList");
   const returnSuffix = from ? `?from=${from}` : "";
 
   function goBackToList() {
@@ -147,7 +149,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
           {backLabel}
         </button>
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-          Publication introuvable.
+          {t("publications.view.notFound")}
         </p>
       </div>
     );
@@ -183,7 +185,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     // (publication manuelle uniquement) ni les autres statuts, où une date passée peut être un
     // enregistrement rétroactif légitime.
     if (draft.platform === "linkedin" && draft.status === "scheduled" && new Date(draft.scheduledFor).getTime() <= Date.now()) {
-      setSaveError("Cette publication LinkedIn est programmée dans le passé — elle serait publiée immédiatement. Choisissez une date future, ou un autre statut.");
+      setSaveError(t("publications.view.scheduledInPastError"));
       return;
     }
     setSaveError(null);
@@ -202,7 +204,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     );
     const historyEntry: PublicationHistoryEntry = {
       id: crypto.randomUUID(),
-      action: revertedToReview ? "Repassée en révision (modifiée après approbation)" : "Modifiée",
+      action: revertedToReview ? t("publications.view.historyRevertedToReview") : t("publications.view.historyModified"),
       actorName: currentUserName,
       createdAt: new Date().toISOString(),
     };
@@ -227,7 +229,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       ],
       history: [
         ...existing.history,
-        { id: crypto.randomUUID(), action: "Commentaire ajouté", actorName: currentUserName, createdAt: now },
+        { id: crypto.randomUUID(), action: t("publications.view.historyCommentAdded"), actorName: currentUserName, createdAt: now },
       ],
     };
     updatePost(updated.id, updated);
@@ -276,7 +278,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
         : buildDefaultPromotionTasks(existing.owner),
       history: [
         ...existing.history,
-        { id: crypto.randomUUID(), action: "Publiée manuellement", actorName: currentUserName, createdAt: now },
+        { id: crypto.randomUUID(), action: t("publications.view.historyPublishedManually"), actorName: currentUserName, createdAt: now },
       ],
     };
     updatePost(updated.id, updated);
@@ -303,7 +305,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       ],
       history: [
         ...existing.history,
-        { id: crypto.randomUUID(), action: "Publication signalée en échec", actorName: currentUserName, createdAt: now, note: errorMessage },
+        { id: crypto.randomUUID(), action: t("publications.view.historyMarkedFailed"), actorName: currentUserName, createdAt: now, note: errorMessage },
       ],
     };
     updatePost(updated.id, updated);
@@ -323,7 +325,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
         : buildDefaultPromotionTasks(existing.owner),
       history: [
         ...existing.history,
-        { id: crypto.randomUUID(), action: `Publiée par API LinkedIn (${externalPostId})`, actorName: currentUserName, createdAt: now },
+        { id: crypto.randomUUID(), action: t("publications.view.historyPublishedViaLinkedIn", { id: externalPostId }), actorName: currentUserName, createdAt: now },
       ],
     };
     updatePost(updated.id, updated);
@@ -339,7 +341,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       publishAttempts: [...(existing.publishAttempts ?? []), attempt],
       history: [
         ...existing.history,
-        { id: crypto.randomUUID(), action: "Tentative de publication LinkedIn échouée", actorName: currentUserName, createdAt: now, note: attempt.errorMessage },
+        { id: crypto.randomUUID(), action: t("publications.view.historyLinkedInAttemptFailed"), actorName: currentUserName, createdAt: now, note: attempt.errorMessage },
       ],
     };
     updatePost(updated.id, updated);
@@ -370,7 +372,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     const copy: Publication = {
       ...existing,
       id: crypto.randomUUID(),
-      excerpt: `${existing.excerpt} (copie)`,
+      excerpt: t("publications.view.duplicateSuffix", { title: existing.excerpt }),
       status: "draft",
       // Une copie n'a jamais été publiée : elle ne doit hériter ni des tentatives de publication
       // ni de la checklist de promotion de l'originale.
@@ -399,7 +401,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     const brandId = brands.find((candidate) => candidate.name === existing.brand)?.id ?? "";
     const idea = buildIdeaFromSeed({
       brandId,
-      title: `${existing.excerpt || "Publication"} (adapté)`,
+      title: t("publications.view.repurposedTitle", { title: existing.excerpt || t("publications.view.publicationFallback") }),
       description: existing.objective || undefined,
       platform: choice.platform,
       format: choice.format,
@@ -428,7 +430,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
           </span>
           <div className="flex flex-col gap-1">
             <h1 className="text-xl font-semibold tracking-tight text-foreground ">
-              {displayed.excerpt || (mode === "create" ? "Nouvelle publication" : "Publication")}
+              {displayed.excerpt || (mode === "create" ? t("publications.view.newPublicationTitle") : t("publications.view.publicationFallback"))}
             </h1>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground ">{displayed.brand}</span>
@@ -444,7 +446,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                   rel="noreferrer"
                   className="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  Voir sur LinkedIn ↗
+                  {t("publications.view.viewOnLinkedIn")}
                 </a>
               )}
             </div>
@@ -460,14 +462,14 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                 onClick={handleCancel}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Annuler
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
               >
-                Enregistrer
+                {t("common.save")}
               </button>
             </>
           ) : (
@@ -477,7 +479,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                   href="/performances"
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Analyser
+                  {t("publications.view.analyze")}
                 </Link>
               )}
               {canRepurpose && (
@@ -486,7 +488,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                   onClick={() => setIsRepurposeOpen(true)}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Réutiliser ce contenu
+                  {t("publications.repurpose.title")}
                 </button>
               )}
               <button
@@ -494,14 +496,14 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
                 onClick={handleDuplicate}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Dupliquer
+                {t("publications.table.duplicate")}
               </button>
               <button
                 type="button"
                 onClick={handleEditClick}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Modifier
+                {t("common.edit")}
               </button>
             </>
           )}
@@ -510,8 +512,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
       {isEditing && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Les modifications restent en mémoire pour cette session uniquement — elles seront perdues
-          au rechargement de la page.
+          {t("calendar.editorial.view.sessionOnlyWarning")}
         </p>
       )}
 
@@ -569,7 +570,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
       </div>
       {isRepurposeOpen && existing && (
         <RepurposeContentModal
-          sourceTitle={existing.excerpt || "Publication"}
+          sourceTitle={existing.excerpt || t("publications.view.publicationFallback")}
           sourcePlatform={existing.platform}
           sourceFormat={existing.format}
           onCancel={() => setIsRepurposeOpen(false)}

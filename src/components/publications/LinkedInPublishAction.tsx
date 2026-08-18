@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SocialAccount } from "@/types/dashboard";
 import type { PublishAttempt } from "@/types/publishing-provider";
 import type { Publication } from "@/types/publication";
@@ -19,6 +20,7 @@ interface LinkedInPublishActionProps {
  * identifiant externe confirmé par /api/social/linkedin/publish.
  */
 export function LinkedInPublishAction({ publication, account, onPublished, onAttemptFailed }: LinkedInPublishActionProps) {
+  const t = useTranslations();
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +49,7 @@ export function LinkedInPublishAction({ publication, account, onPublished, onAtt
         | { status: "error"; message: string; attempt?: PublishAttempt; isPermissionError?: boolean }
         | null;
       if (!body) {
-        setError("Réponse invalide du serveur.");
+        setError(t("publications.linkedinPublish.invalidResponse"));
         return;
       }
       if (body.status === "ok") {
@@ -57,7 +59,7 @@ export function LinkedInPublishAction({ publication, account, onPublished, onAtt
       setError(body.message);
       if (body.attempt) onAttemptFailed(body.attempt, Boolean(body.isPermissionError));
     } catch {
-      setError("Publication impossible (réseau).");
+      setError(t("publications.linkedinPublish.networkError"));
     } finally {
       setIsPublishing(false);
     }
@@ -67,7 +69,7 @@ export function LinkedInPublishAction({ publication, account, onPublished, onAtt
     <div className="flex flex-col gap-2 rounded-lg bg-blue-50 p-3 dark:bg-blue-500/10">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
-          Compte LinkedIn connecté — publication réelle par API disponible
+          {t("publications.linkedinPublish.connectedNotice")}
         </span>
         <button
           type="button"
@@ -75,7 +77,7 @@ export function LinkedInPublishAction({ publication, account, onPublished, onAtt
           disabled={isPublishing}
           className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isPublishing ? "Publication en cours…" : "Publier via LinkedIn"}
+          {isPublishing ? t("publications.linkedinPublish.publishing") : t("publications.linkedinPublish.publishButton")}
         </button>
       </div>
       {error && <p className="text-xs font-medium text-red-600 dark:text-red-400">{error}</p>}

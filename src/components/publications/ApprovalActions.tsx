@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Publication } from "@/types/publication";
 
 type PendingAction = "changes" | "reject" | null;
@@ -17,6 +18,7 @@ interface ApprovalActionsProps {
 }
 
 export function ApprovalActions({ publication, canAct, onApprove, onRequestChanges, onReject }: ApprovalActionsProps) {
+  const t = useTranslations();
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [note, setNote] = useState("");
 
@@ -27,11 +29,11 @@ export function ApprovalActions({ publication, canAct, onApprove, onRequestChang
   if (!canAct) {
     return (
       <section className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5  ">
-        <h2 className="text-sm font-semibold text-foreground ">Actions d&apos;approbation</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("publications.approval.title")}</h2>
         <p className="text-sm text-muted-foreground ">
-          Seul{publication.approver ? ` ${publication.approver}` : " l'approbateur désigné"} ou un
-          administrateur du workspace peut approuver, demander des modifications ou refuser cette
-          publication.
+          {t("publications.approval.onlyApproverNotice", {
+            approver: publication.approver || t("publications.approval.designatedApprover"),
+          })}
         </p>
       </section>
     );
@@ -52,14 +54,14 @@ export function ApprovalActions({ publication, canAct, onApprove, onRequestChang
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Actions d&apos;approbation</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("publications.approval.title")}</h2>
 
       {pendingAction ? (
         <div className="flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {pendingAction === "changes"
-              ? "Modifications demandées (justification requise)"
-              : "Motif du refus (obligatoire)"}
+              ? t("publications.approval.changesLabel")
+              : t("publications.approval.rejectLabel")}
             <textarea
               rows={3}
               value={note}
@@ -73,7 +75,7 @@ export function ApprovalActions({ publication, canAct, onApprove, onRequestChang
               onClick={cancel}
               className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Annuler
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -81,7 +83,7 @@ export function ApprovalActions({ publication, canAct, onApprove, onRequestChang
               onClick={submit}
               className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
             >
-              Confirmer
+              {t("common.confirm")}
             </button>
           </div>
         </div>
@@ -92,21 +94,21 @@ export function ApprovalActions({ publication, canAct, onApprove, onRequestChang
             onClick={onApprove}
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
           >
-            Approuver
+            {t("publications.approval.approve")}
           </button>
           <button
             type="button"
             onClick={() => setPendingAction("changes")}
             className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            Demander des modifications
+            {t("publications.approval.requestChanges")}
           </button>
           <button
             type="button"
             onClick={() => setPendingAction("reject")}
             className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50  dark:hover:bg-red-500/10"
           >
-            Refuser
+            {t("publications.approval.reject")}
           </button>
         </div>
       )}

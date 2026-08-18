@@ -3,6 +3,7 @@
 import { platformIcons } from "@/components/icons";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { platformColors } from "@/lib/platform-colors";
 import type { Publication } from "@/types/publication";
 
@@ -14,6 +15,7 @@ interface PublicationPreviewProps {
 
 export function PublicationPreview({ publication }: PublicationPreviewProps) {
   const { accounts } = useAccountsSession();
+  const t = useTranslations();
   const FORMAT_LABEL = useFormatLabel();
   const color = platformColors[publication.platform];
   const Icon = platformIcons[publication.platform];
@@ -24,7 +26,7 @@ export function PublicationPreview({ publication }: PublicationPreviewProps) {
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Aperçu de la publication</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("publications.preview.title")}</h2>
         <span className="text-xs text-muted-foreground ">{FORMAT_LABEL[publication.format]}</span>
       </div>
 
@@ -45,9 +47,9 @@ export function PublicationPreview({ publication }: PublicationPreviewProps) {
                 key={media.id}
                 className={`flex flex-col items-center justify-center gap-1 rounded-lg bg-white/60 px-2 text-center text-xs font-medium text-muted-foreground dark:bg-black/20  ${mediaAspect}`}
               >
-                <span>{media.type === "video" ? "Vidéo" : "Image"}</span>
+                <span>{media.type === "video" ? t("publications.preview.video") : t("publications.preview.image")}</span>
                 <span className="truncate text-[10px] text-muted-foreground ">
-                  {media.label || "sans nom"}
+                  {media.label || t("publications.preview.noName")}
                 </span>
               </div>
             ))}
@@ -55,7 +57,7 @@ export function PublicationPreview({ publication }: PublicationPreviewProps) {
         )}
 
         <p className="whitespace-pre-line text-sm text-zinc-800 dark:text-zinc-100">
-          {publication.text || "Aucun texte rédigé pour l'instant."}
+          {publication.text || t("publications.preview.noText")}
         </p>
 
         {hashtags.length > 0 && (
@@ -71,7 +73,7 @@ export function PublicationPreview({ publication }: PublicationPreviewProps) {
 
       {publication.firstComment && (
         <p className="text-xs text-muted-foreground ">
-          Premier commentaire : <span className="italic">{publication.firstComment}</span>
+          {t("publications.preview.firstComment")} <span className="italic">{publication.firstComment}</span>
         </p>
       )}
     </section>

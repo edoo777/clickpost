@@ -4,6 +4,7 @@ import { useState, type DragEvent } from "react";
 import { platformIcons } from "@/components/icons";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
@@ -60,6 +61,7 @@ interface PublicationsKanbanProps {
 }
 
 export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanProps) {
+  const t = useTranslations();
   const { patchPost, changeStatus, createPost } = usePostsSession();
   const { brands } = useBrandsSession();
   const { accounts } = useAccountsSession();
@@ -182,14 +184,14 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                         <Icon className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
                       </span>
                       <label className="sr-only" htmlFor={`status-${post.id}`}>
-                        Changer le statut de {post.excerpt || "cette publication"}
+                        {t("publications.kanban.changeStatusLabel", { name: post.excerpt || t("publications.kanban.thisPublication") })}
                       </label>
                       <select
                         id={`status-${post.id}`}
                         value={post.status}
                         onChange={(event) => changeStatus(post.id, event.target.value as PublicationStatus, currentUserName)}
                         className="rounded-md border border-border bg-transparent px-1 py-0.5 text-[11px] text-muted-foreground "
-                        aria-label={`Déplacer ${post.excerpt || "cette publication"} vers un autre statut (alternative au glisser-déposer)`}
+                        aria-label={t("publications.kanban.moveStatusAriaLabel", { name: post.excerpt || t("publications.kanban.thisPublication") })}
                       >
                         {COLUMN_STATUSES.map((option) => (
                           <option
@@ -207,7 +209,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                     </div>
                     <button type="button" onClick={() => onOpen(post.id)} className="flex flex-col gap-1 text-left hover:underline">
                       <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                        {post.excerpt || "Sans titre"}
+                        {post.excerpt || t("publications.card.untitled")}
                       </span>
                       <span className="text-xs text-muted-foreground ">
                         {post.brand} · {dateFormatter.format(new Date(post.scheduledFor))}
@@ -218,7 +220,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
               })}
               {posts.length === 0 && (
                 <p className="rounded-lg border border-dashed border-border px-2 py-4 text-center text-xs text-muted-foreground  ">
-                  Aucune publication
+                  {t("publications.kanban.emptyColumn")}
                 </p>
               )}
             </div>
@@ -244,7 +246,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                     if (event.key === "Enter") submitQuickCreate(status);
                     if (event.key === "Escape") setQuickCreateColumn(null);
                   }}
-                  placeholder="Titre de la publication"
+                  placeholder={t("publications.kanban.titlePlaceholder")}
                   className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-zinc-700   dark:text-zinc-300"
                 />
                 <div className="flex gap-1.5">
@@ -253,14 +255,14 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                     onClick={() => submitQuickCreate(status)}
                     className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-1 text-xs font-semibold text-white"
                   >
-                    Créer
+                    {t("publications.kanban.create")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setQuickCreateColumn(null)}
                     className="rounded-lg border border-border px-2 py-1 text-xs text-muted-foreground "
                   >
-                    Annuler
+                    {t("common.cancel")}
                   </button>
                 </div>
               </div>
@@ -273,7 +275,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
                 }}
                 className="rounded-lg border border-dashed border-zinc-400 px-2 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
               >
-                + Créer ici
+                {t("publications.kanban.createHere")}
               </button>
             )}
           </div>

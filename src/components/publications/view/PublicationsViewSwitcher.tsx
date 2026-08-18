@@ -1,15 +1,7 @@
 "use client";
 
 import type { PublicationsViewType } from "@/components/publications/view/publications-view-storage";
-
-const VIEWS: { id: PublicationsViewType; label: string }[] = [
-  { id: "table", label: "Tableau" },
-  { id: "kanban", label: "Kanban" },
-  { id: "calendar", label: "Calendrier" },
-  { id: "cards", label: "Cartes" },
-  { id: "list", label: "Liste" },
-  { id: "promotion", label: "Promotion" },
-];
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface PublicationsViewSwitcherProps {
   value: PublicationsViewType;
@@ -17,6 +9,15 @@ interface PublicationsViewSwitcherProps {
 }
 
 export function PublicationsViewSwitcher({ value, onChange }: PublicationsViewSwitcherProps) {
+  const t = useTranslations();
+  const VIEWS: { id: PublicationsViewType; label: string }[] = [
+    { id: "table", label: t("publications.viewSwitcher.table") },
+    { id: "kanban", label: t("publications.viewSwitcher.kanban") },
+    { id: "calendar", label: t("publications.viewSwitcher.calendar") },
+    { id: "cards", label: t("publications.viewSwitcher.cards") },
+    { id: "list", label: t("publications.viewSwitcher.list") },
+    { id: "promotion", label: t("publications.viewSwitcher.promotion") },
+  ];
   return (
     <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border p-1 ">
       {VIEWS.map((view) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useStatusLabel, usePlatformLabel } from "@/lib/post-status";
 import { useTeamSession } from "@/lib/team-store";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -52,6 +53,7 @@ interface PublicationsFiltersProps {
 }
 
 export function PublicationsFilters({ value, onChange }: PublicationsFiltersProps) {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const { members } = useTeamSession();
   const PLATFORM_LABEL = usePlatformLabel();
@@ -64,7 +66,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         type="search"
         value={value.search}
         onChange={(event) => onChange({ ...value, search: event.target.value })}
-        placeholder="Rechercher une publication…"
+        placeholder={t("publications.filters.searchPlaceholder")}
         className={`${FIELD_CLASS} w-full sm:w-64`}
       />
 
@@ -73,7 +75,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         onChange={(event) => onChange({ ...value, brand: event.target.value })}
         className={FIELD_CLASS}
       >
-        <option value="all">Toutes les marques</option>
+        <option value="all">{t("dashboard.allBrands")}</option>
         {brands.map((brand) => (
           <option key={brand.id} value={brand.name}>
             {brand.name}
@@ -86,7 +88,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les réseaux</option>
+        <option value="all">{t("dashboard.allNetworks")}</option>
         {ALL_PLATFORMS.map((platform) => (
           <option key={platform} value={platform}>
             {PLATFORM_LABEL[platform]}
@@ -99,7 +101,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         onChange={(event) => onChange({ ...value, status: event.target.value as PublicationStatus | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les statuts</option>
+        <option value="all">{t("dashboard.allStatuses")}</option>
         {ALL_STATUSES.map((status) => (
           <option key={status} value={status}>
             {STATUS_LABEL[status]}
@@ -112,7 +114,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         onChange={(event) => onChange({ ...value, owner: event.target.value })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les responsables</option>
+        <option value="all">{t("publications.promotion.allOwners")}</option>
         {members.map((member) => (
           <option key={member.id} value={member.name}>
             {member.name}
@@ -124,14 +126,14 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
         type="date"
         value={value.dateFrom}
         onChange={(event) => onChange({ ...value, dateFrom: event.target.value })}
-        aria-label="Du"
+        aria-label={t("publications.filters.dateFrom")}
         className={FIELD_CLASS}
       />
       <input
         type="date"
         value={value.dateTo}
         onChange={(event) => onChange({ ...value, dateTo: event.target.value })}
-        aria-label="Au"
+        aria-label={t("publications.filters.dateTo")}
         className={FIELD_CLASS}
       />
 
@@ -141,7 +143,7 @@ export function PublicationsFilters({ value, onChange }: PublicationsFiltersProp
           onClick={() => onChange(DEFAULT_PUBLICATIONS_FILTERS)}
           className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
         >
-          Réinitialiser
+          {t("dashboard.resetFilters")}
         </button>
       )}
     </div>

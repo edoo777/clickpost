@@ -13,6 +13,7 @@ import { runPublicationQuickAction } from "@/lib/banque-quick-action";
 import { useBrandsSession } from "@/lib/brands-store";
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import { getThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
@@ -38,9 +39,9 @@ const LENGTHS: GenerationLength[] = ["short", "medium", "long"];
 const FIELD_CLASS = "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 dark:bg-zinc-900";
 const LABEL_CLASS = "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300";
 
-function confirmIfFilled(currentValue: string, fieldLabel: string): boolean {
+function confirmIfFilled(t: ReturnType<typeof useTranslations>, currentValue: string, fieldLabel: string): boolean {
   if (!currentValue.trim()) return true;
-  return window.confirm(`Le champ « ${fieldLabel} » contient déjà du texte. Le remplacer ?`);
+  return window.confirm(t("publications.claudeGeneration.confirmReplaceField", { field: fieldLabel }));
 }
 
 interface ClaudeGenerationPanelProps {
@@ -57,6 +58,7 @@ interface ClaudeGenerationPanelProps {
  * action « Appliquer » précise, avec confirmation si le champ ciblé contient déjà du texte.
  */
 export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUndo }: ClaudeGenerationPanelProps) {
+  const t = useTranslations();
   const { brands, activeBrand } = useBrandsSession();
   const { themes } = useThemesSession();
   const PLATFORM_LABEL = usePlatformLabel();
@@ -124,28 +126,28 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
   function applyTitle() {
     if (!proposal) return;
     const title = proposal.titles[selectedTitleIndex];
-    if (!title || !confirmIfFilled(publication.excerpt, "Titre / extrait")) return;
+    if (!title || !confirmIfFilled(t, publication.excerpt, t("publications.form.titleExcerpt"))) return;
     onApplyPatch({ excerpt: title });
   }
   function applyText() {
     if (!proposal) return;
-    if (!confirmIfFilled(publication.text, "Texte de la publication")) return;
+    if (!confirmIfFilled(t, publication.text, t("publications.form.text"))) return;
     onApplyPatch({ text: proposal.text });
   }
   function applyCta() {
     if (!proposal) return;
-    if (!confirmIfFilled(publication.cta, "Appel à l'action")) return;
+    if (!confirmIfFilled(t, publication.cta, t("publications.form.cta"))) return;
     onApplyPatch({ cta: proposal.cta });
   }
   function applyHashtags() {
     if (!proposal) return;
-    if (publication.hashtags.length > 0 && !window.confirm("Les hashtags actuels contiennent déjà du contenu. Les remplacer ?")) return;
+    if (publication.hashtags.length > 0 && !window.confirm(t("publications.claudeGeneration.confirmReplaceHashtags"))) return;
     onApplyPatch({ hashtags: proposal.hashtags });
   }
   function applyAll() {
     if (!proposal) return;
     const alreadyFilled = Boolean(publication.excerpt.trim() || publication.text.trim() || publication.cta.trim()) || publication.hashtags.length > 0;
-    if (alreadyFilled && !window.confirm("Certains champs contiennent déjà du contenu. Tout remplacer par la proposition ?")) return;
+    if (alreadyFilled && !window.confirm(t("publications.claudeGeneration.confirmReplaceAll"))) return;
     onApplyPatch({
       excerpt: proposal.titles[selectedTitleIndex] ?? publication.excerpt,
       theme: proposal.theme || publication.theme,
@@ -160,7 +162,7 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
     if (quickActionBusy) return; // empêche les doubles clics / appels concurrents.
     const definition = getPublicationQuickAction(action);
     if ((definition.targetField === "text" || (definition.targetField === "cta" && action === "publication_improve_cta")) && !publication.text.trim()) {
-      setQuickActionError("Rédigez d'abord un texte avant d'utiliser cette action.");
+      setQuickActionError(t("publications.claudeGeneration.needTextFirst"));
       return;
     }
     setQuickActionBusy(action);
@@ -186,10 +188,10 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
     const result = outcome.items[0];
     if (!result) return;
     if (definition.targetField === "text") {
-      if (!confirmIfFilled(publication.text, "Texte de la publication")) return;
+      if (!confirmIfFilled(t, publication.text, t("publications.form.text"))) return;
       onApplyPatch({ text: result });
     } else if (definition.targetField === "cta") {
-      if (!confirmIfFilled(publication.cta, "Appel à l'action")) return;
+      if (!confirmIfFilled(t, publication.cta, t("publications.form.cta"))) return;
       onApplyPatch({ cta: result });
     }
   }
@@ -198,7 +200,7 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
     if (!quickActionChoices) return;
     const definition = getPublicationQuickAction(quickActionChoices.action);
     if (definition.targetField === "title") {
-      if (!confirmIfFilled(publication.excerpt, "Titre / extrait")) return;
+      if (!confirmIfFilled(t, publication.excerpt, t("publications.form.titleExcerpt"))) return;
       onApplyPatch({ excerpt: item });
     } else if (definition.targetField === "hashtags") {
       if (!publication.hashtags.includes(item)) onApplyPatch({ hashtags: [...publication.hashtags, item] });
@@ -215,19 +217,19 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-violet-200 bg-violet-50/40 p-5 dark:border-violet-500/20 dark:bg-violet-500/[.04]">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Génération avec Claude</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("publications.claudeGeneration.title")}</h2>
         {canUndo && (
           <button type="button" onClick={onUndo} className="text-xs font-medium text-muted-foreground hover:underline">
-            Annuler la dernière insertion IA
+            {t("publications.claudeGeneration.undoLastInsertion")}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
         <label className={LABEL_CLASS}>
-          Marque
+          {t("publications.form.brand")}
           <select value={brandId} onChange={(event) => setBrandId(event.target.value)} className={FIELD_CLASS}>
-            <option value="">Sans marque (ponctuel)</option>
+            <option value="">{t("publications.claudeGeneration.noBrand")}</option>
             {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>{brand.name}</option>
             ))}
@@ -236,13 +238,13 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
 
         {!brandId && (
           <label className={LABEL_CLASS}>
-            Niche
-            <input value={standaloneNiche} onChange={(event) => setStandaloneNiche(event.target.value)} placeholder="Ex. Fitness" className={FIELD_CLASS} />
+            {t("publications.claudeGeneration.niche")}
+            <input value={standaloneNiche} onChange={(event) => setStandaloneNiche(event.target.value)} placeholder={t("publications.claudeGeneration.nichePlaceholder")} className={FIELD_CLASS} />
           </label>
         )}
 
         <label className={LABEL_CLASS}>
-          Réseau social
+          {t("publications.claudeGeneration.socialNetwork")}
           <select value={platform} onChange={(event) => setPlatform(event.target.value as SocialPlatform)} className={FIELD_CLASS}>
             {ALL_PLATFORMS.map((p) => (
               <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>
@@ -251,29 +253,29 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
         </label>
 
         <label className={LABEL_CLASS}>
-          Thématique
+          {t("publications.form.theme")}
           {brandThemes.length > 0 ? (
             <select value={themeId} onChange={(event) => setThemeId(event.target.value)} className={FIELD_CLASS}>
-              <option value="">Autre thématique…</option>
+              <option value="">{t("publications.claudeGeneration.otherTheme")}</option>
               {brandThemes.map((theme) => (
-                <option key={theme.id} value={theme.id}>{theme.label || "Sans titre"}</option>
+                <option key={theme.id} value={theme.id}>{theme.label || t("publications.card.untitled")}</option>
               ))}
             </select>
           ) : (
-            <input value={adhocTheme} onChange={(event) => setAdhocTheme(event.target.value)} placeholder="Libre" className={FIELD_CLASS} />
+            <input value={adhocTheme} onChange={(event) => setAdhocTheme(event.target.value)} placeholder={t("publications.claudeGeneration.freeform")} className={FIELD_CLASS} />
           )}
         </label>
         {brandThemes.length > 0 && !themeId && (
           <label className={LABEL_CLASS}>
-            Thématique libre
-            <input value={adhocTheme} onChange={(event) => setAdhocTheme(event.target.value)} placeholder="Libre" className={FIELD_CLASS} />
+            {t("publications.claudeGeneration.freeformTheme")}
+            <input value={adhocTheme} onChange={(event) => setAdhocTheme(event.target.value)} placeholder={t("publications.claudeGeneration.freeform")} className={FIELD_CLASS} />
           </label>
         )}
 
         <label className={LABEL_CLASS}>
-          Type de contenu
+          {t("publications.claudeGeneration.contentType")}
           <select value={contentType} onChange={(event) => setContentType(event.target.value as ContentType | "")} className={FIELD_CLASS}>
-            <option value="">Non précisé</option>
+            <option value="">{t("publications.claudeGeneration.unspecified")}</option>
             {ALL_CONTENT_TYPES.map((type) => (
               <option key={type} value={type}>{CONTENT_TYPE_LABEL[type]}</option>
             ))}
@@ -281,7 +283,7 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
         </label>
 
         <label className={LABEL_CLASS}>
-          Format
+          {t("publications.form.format")}
           <select value={format} onChange={(event) => setFormat(event.target.value as ContentFormat)} className={FIELD_CLASS}>
             {CONTENT_FORMATS.map((f) => (
               <option key={f} value={f}>{FORMAT_LABEL[f]}</option>
@@ -290,17 +292,17 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
         </label>
 
         <label className={LABEL_CLASS}>
-          Ton
+          {t("publications.claudeGeneration.tone")}
           <select value={tone} onChange={(event) => setTone(event.target.value as GenerationTone | "")} className={FIELD_CLASS}>
-            <option value="">Ton de la marque</option>
-            {TONES.map((t) => (
-              <option key={t} value={t}>{TONE_LABEL[t]}</option>
+            <option value="">{t("publications.claudeGeneration.brandTone")}</option>
+            {TONES.map((toneOption) => (
+              <option key={toneOption} value={toneOption}>{TONE_LABEL[toneOption]}</option>
             ))}
           </select>
         </label>
 
         <label className={LABEL_CLASS}>
-          Longueur souhaitée
+          {t("publications.claudeGeneration.desiredLength")}
           <select value={length} onChange={(event) => setLength(event.target.value as GenerationLength)} className={FIELD_CLASS}>
             {LENGTHS.map((l) => (
               <option key={l} value={l}>{LENGTH_LABEL[l]}</option>
@@ -309,33 +311,32 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
         </label>
 
         <label className={LABEL_CLASS}>
-          Langue
+          {t("publications.claudeGeneration.language")}
           <input value={language} onChange={(event) => setLanguage(event.target.value)} placeholder="fr" className={FIELD_CLASS} />
         </label>
 
         <label className={LABEL_CLASS}>
-          Audience
-          <input value={audience} onChange={(event) => setAudience(event.target.value)} placeholder="Audience de la marque par défaut" className={FIELD_CLASS} />
+          {t("publications.claudeGeneration.audience")}
+          <input value={audience} onChange={(event) => setAudience(event.target.value)} placeholder={t("publications.claudeGeneration.audiencePlaceholder")} className={FIELD_CLASS} />
         </label>
 
         <div className="md:col-span-2 lg:col-span-3">
           <label className={LABEL_CLASS}>
-            Objectif
+            {t("publications.form.objective")}
             <input value={objective} onChange={(event) => setObjective(event.target.value)} className={FIELD_CLASS} />
           </label>
         </div>
 
         <div className="md:col-span-2 lg:col-span-3">
           <label className={LABEL_CLASS}>
-            Instruction complémentaire (facultatif)
+            {t("publications.claudeGeneration.additionalInstruction")}
             <textarea rows={2} value={instructions} onChange={(event) => setInstructions(event.target.value)} className={FIELD_CLASS} />
           </label>
         </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Le profil de la marque active (niche, positionnement, ton, audience, comptes affiliés) est utilisé
-        automatiquement lorsqu&apos;une marque est sélectionnée.
+        {t("publications.claudeGeneration.brandProfileNotice")}
       </p>
 
       <div>
@@ -345,7 +346,11 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
           disabled={status === "loading"}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 disabled:opacity-60"
         >
-          {status === "loading" ? "Génération en cours…" : proposal ? "Régénérer" : "Générer"}
+          {status === "loading"
+            ? t("publications.claudeGeneration.generating")
+            : proposal
+              ? t("publications.claudeGeneration.regenerate")
+              : t("publications.claudeGeneration.generate")}
         </button>
         {status === "error" && errorMessage && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{errorMessage}</p>}
       </div>
@@ -353,11 +358,11 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
       {proposal && (
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
-            Aperçu — rien n&apos;est encore appliqué au formulaire
+            {t("publications.claudeGeneration.previewNotice")}
           </p>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Titres proposés</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("publications.claudeGeneration.proposedTitles")}</p>
             {proposal.titles.map((title, index) => (
               <label key={title} className="flex items-center gap-2 text-sm text-foreground">
                 <input type="radio" name="proposal-title" checked={selectedTitleIndex === index} onChange={() => setSelectedTitleIndex(index)} />
@@ -365,37 +370,37 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
               </label>
             ))}
             <button type="button" onClick={applyTitle} className="w-fit text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-              Appliquer uniquement le titre
+              {t("publications.claudeGeneration.applyTitleOnly")}
             </button>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Texte</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("publications.claudeGeneration.textLabel")}</p>
             <p className="whitespace-pre-wrap rounded-lg bg-muted/40 p-2 text-sm text-foreground">{proposal.text}</p>
             <button type="button" onClick={applyText} className="w-fit text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-              Appliquer uniquement le texte
+              {t("publications.claudeGeneration.applyTextOnly")}
             </button>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Appel à l&apos;action</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("publications.form.cta")}</p>
             <p className="text-sm text-foreground">{proposal.cta}</p>
             <button type="button" onClick={applyCta} className="w-fit text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-              Appliquer uniquement l&apos;appel à l&apos;action
+              {t("publications.claudeGeneration.applyCtaOnly")}
             </button>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <p className="text-xs font-medium text-muted-foreground">Hashtags</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("publications.claudeGeneration.hashtagsLabel")}</p>
             <p className="text-sm text-foreground">{proposal.hashtags.join(" ")}</p>
             <button type="button" onClick={applyHashtags} className="w-fit text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-              Appliquer uniquement les hashtags
+              {t("publications.claudeGeneration.applyHashtagsOnly")}
             </button>
           </div>
 
           <div className="flex flex-col gap-1 rounded-lg bg-amber-50 p-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">
-            <p><strong>Suggestion de format :</strong> {proposal.formatSuggestion}</p>
-            <p><strong>Suggestion de média à produire :</strong> {proposal.mediaSuggestion} — aucun média n&apos;a été créé, ceci est une description à réaliser vous-même.</p>
+            <p><strong>{t("publications.claudeGeneration.formatSuggestionLabel")}</strong> {proposal.formatSuggestion}</p>
+            <p><strong>{t("publications.claudeGeneration.mediaSuggestionLabel")}</strong> {proposal.mediaSuggestion} {t("publications.claudeGeneration.mediaSuggestionNote")}</p>
           </div>
 
           <button
@@ -403,13 +408,13 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
             onClick={applyAll}
             className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white"
           >
-            Appliquer tous les champs
+            {t("publications.claudeGeneration.applyAllFields")}
           </button>
         </div>
       )}
 
       <div className="flex flex-col gap-2 border-t border-border pt-3">
-        <p className="text-xs font-medium text-muted-foreground">Actions rapides — s&apos;appliquent au contenu déjà dans le formulaire</p>
+        <p className="text-xs font-medium text-muted-foreground">{t("publications.claudeGeneration.quickActionsNotice")}</p>
         <div className="flex flex-wrap items-center gap-2">
           {PUBLICATION_QUICK_ACTIONS.map((action) => (
             <button
@@ -423,9 +428,9 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
             </button>
           ))}
           <select value={toneForChange} onChange={(event) => setToneForChange(event.target.value as GenerationTone | "")} className={`${FIELD_CLASS} w-auto`}>
-            <option value="">Ton pour « Changer le ton »</option>
-            {TONES.map((t) => (
-              <option key={t} value={t}>{TONE_LABEL[t]}</option>
+            <option value="">{t("publications.claudeGeneration.toneForChangeOption")}</option>
+            {TONES.map((toneOption) => (
+              <option key={toneOption} value={toneOption}>{TONE_LABEL[toneOption]}</option>
             ))}
           </select>
         </div>
@@ -433,22 +438,22 @@ export function ClaudeGenerationPanel({ publication, onApplyPatch, canUndo, onUn
 
         {quickActionChoices && (
           <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-surface p-3">
-            <p className="text-xs font-medium text-muted-foreground">Choisissez une proposition à insérer</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("publications.claudeGeneration.chooseProposal")}</p>
             {quickActionChoices.items.map((item) => (
               <div key={item} className="flex items-center justify-between gap-2 text-sm text-foreground">
                 <span>{item}</span>
                 <button type="button" onClick={() => applyQuickActionChoice(item)} className="shrink-0 text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-                  Insérer
+                  {t("publications.claudeGeneration.insert")}
                 </button>
               </div>
             ))}
             {getPublicationQuickAction(quickActionChoices.action).targetField === "hashtags" && (
               <button type="button" onClick={applyAllHashtagChoices} className="w-fit text-xs font-semibold text-violet-700 hover:underline dark:text-violet-300">
-                Ajouter tous les hashtags proposés
+                {t("publications.claudeGeneration.addAllHashtags")}
               </button>
             )}
             <button type="button" onClick={() => setQuickActionChoices(null)} className="w-fit text-xs text-muted-foreground hover:underline">
-              Fermer
+              {t("common.close")}
             </button>
           </div>
         )}

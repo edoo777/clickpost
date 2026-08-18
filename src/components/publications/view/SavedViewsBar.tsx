@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SavedView } from "@/types/saved-view";
 
 const PILL_CLASS =
@@ -29,6 +30,7 @@ export function SavedViewsBar({
   onDelete,
   onSetDefault,
 }: SavedViewsBarProps) {
+  const t = useTranslations();
   const activeView = savedViews.find((view) => view.id === activeSavedViewId);
   const [isSaving, setIsSaving] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,7 +70,7 @@ export function SavedViewsBar({
             : "border-border text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         }`}
       >
-        Vue rapide
+        {t("publications.savedViews.quickView")}
       </button>
 
       {savedViews.map((view) => (
@@ -96,7 +98,7 @@ export function SavedViewsBar({
                 onClick={onUpdate}
                 className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Mettre à jour la vue
+                {t("publications.savedViews.updateView")}
               </button>
             )}
             <button
@@ -104,7 +106,7 @@ export function SavedViewsBar({
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-haspopup="true"
               aria-expanded={isMenuOpen}
-              aria-label="Options de la vue"
+              aria-label={t("publications.savedViews.viewOptions")}
               className="rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-zinc-600 hover:bg-muted  dark:text-zinc-400"
             >
               ⋯
@@ -118,13 +120,13 @@ export function SavedViewsBar({
                   type="button"
                   role="menuitem"
                   onClick={() => {
-                    const name = window.prompt("Nouveau nom de la vue", activeView.name);
+                    const name = window.prompt(t("publications.savedViews.newViewNamePrompt"), activeView.name);
                     if (name && name.trim()) onRename(name.trim());
                     setIsMenuOpen(false);
                   }}
                   className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Renommer
+                  {t("publications.savedViews.rename")}
                 </button>
                 {!activeView.isDefault && (
                   <button
@@ -136,7 +138,7 @@ export function SavedViewsBar({
                     }}
                     className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                   >
-                    Définir par défaut
+                    {t("publications.savedViews.setDefault")}
                   </button>
                 )}
                 <button
@@ -148,7 +150,7 @@ export function SavedViewsBar({
                   }}
                   className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                 >
-                  Supprimer la vue
+                  {t("publications.savedViews.deleteView")}
                 </button>
               </div>
             )}
@@ -163,7 +165,7 @@ export function SavedViewsBar({
                 if (event.key === "Enter") confirmSave();
                 if (event.key === "Escape") setIsSaving(false);
               }}
-              placeholder="Nom de la vue"
+              placeholder={t("publications.savedViews.viewNamePlaceholder")}
               className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-zinc-700   dark:text-zinc-300"
             />
             <button
@@ -171,7 +173,7 @@ export function SavedViewsBar({
               onClick={confirmSave}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white"
             >
-              Enregistrer
+              {t("common.save")}
             </button>
           </div>
         ) : (
@@ -180,7 +182,7 @@ export function SavedViewsBar({
             onClick={() => openSaveForm("")}
             className="rounded-lg border border-dashed border-zinc-400 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
           >
-            + Enregistrer la vue
+            {t("publications.savedViews.saveView")}
           </button>
         )}
       </div>

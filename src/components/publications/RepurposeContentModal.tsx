@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -30,23 +31,24 @@ interface RepurposeContentModalProps {
  * ici.
  */
 export function RepurposeContentModal({ sourceTitle, sourcePlatform, sourceFormat, onCancel, onConfirm }: RepurposeContentModalProps) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
   const FORMAT_LABEL = useFormatLabel();
   const [platform, setPlatform] = useState<SocialPlatform>(sourcePlatform);
   const [format, setFormat] = useState<ContentFormat>(sourceFormat);
+  const sameAsOriginal = t("publications.repurpose.sameAsOriginal");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-label="Réutiliser ce contenu">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true" aria-label={t("publications.repurpose.title")}>
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface-elevated p-6 shadow-xl">
-        <h2 className="text-base font-semibold text-foreground">Réutiliser ce contenu</h2>
+        <h2 className="text-base font-semibold text-foreground">{t("publications.repurpose.title")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Crée une nouvelle idée liée à « {sourceTitle} », prête à adapter dans l&apos;Atelier (raccourcir, développer,
-          refaire le hook, générer une variante).
+          {t("publications.repurpose.description", { sourceTitle })}
         </p>
 
         <div className="mt-4 flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nouvelle plateforme
+            {t("publications.repurpose.newPlatform")}
             <select
               value={platform}
               onChange={(event) => setPlatform(event.target.value as SocialPlatform)}
@@ -55,14 +57,14 @@ export function RepurposeContentModal({ sourceTitle, sourcePlatform, sourceForma
               {REPURPOSE_PLATFORMS.map((option) => (
                 <option key={option} value={option}>
                   {PLATFORM_LABEL[option]}
-                  {option === sourcePlatform ? " (identique à l'original)" : ""}
+                  {option === sourcePlatform ? ` ${sameAsOriginal}` : ""}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nouveau format
+            {t("publications.repurpose.newFormat")}
             <select
               value={format}
               onChange={(event) => setFormat(event.target.value as ContentFormat)}
@@ -71,7 +73,7 @@ export function RepurposeContentModal({ sourceTitle, sourcePlatform, sourceForma
               {CONTENT_FORMATS.map((option) => (
                 <option key={option} value={option}>
                   {FORMAT_LABEL[option]}
-                  {option === sourceFormat ? " (identique à l'original)" : ""}
+                  {option === sourceFormat ? ` ${sameAsOriginal}` : ""}
                 </option>
               ))}
             </select>
@@ -84,14 +86,14 @@ export function RepurposeContentModal({ sourceTitle, sourcePlatform, sourceForma
             onClick={onCancel}
             className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-muted dark:text-zinc-400"
           >
-            Annuler
+            {t("common.cancel")}
           </button>
           <button
             type="button"
             onClick={() => onConfirm({ platform, format })}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500"
           >
-            Créer le contenu dérivé
+            {t("publications.repurpose.confirm")}
           </button>
         </div>
       </div>

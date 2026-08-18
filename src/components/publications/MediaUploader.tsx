@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import {
   buildPublicationMediaPath,
   deletePublicationMediaFile,
@@ -41,6 +42,7 @@ interface MediaUploaderProps {
  * réelle vient des politiques RLS du bucket, pas de ce composant.
  */
 export function MediaUploader({ workspaceId, brandId, publicationId, value, editable, onChange }: MediaUploaderProps) {
+  const t = useTranslations();
   const [uploading, setUploading] = useState<UploadingEntry[]>([]);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
 
   async function startUpload(file: File) {
     if (!workspaceId) {
-      setGlobalError("Espace de travail introuvable — impossible de téléverser un média pour l'instant.");
+      setGlobalError(t("publications.mediaUploader.noWorkspace"));
       return;
     }
     const validation = validateMediaFile(file, totalCount);
@@ -110,7 +112,7 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
     if (!files || files.length === 0) return;
     const remaining = MAX_MEDIA_COUNT - totalCount;
     if (remaining <= 0) {
-      setGlobalError(`Maximum ${MAX_MEDIA_COUNT} médias par publication.`);
+      setGlobalError(t("publications.mediaUploader.maxMedia", { max: MAX_MEDIA_COUNT }));
       return;
     }
     Array.from(files)
@@ -135,7 +137,7 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
   }
 
   async function removeMedia(media: PublicationMedia) {
-    if (!window.confirm(`Supprimer le média « ${media.label || media.id} » ? Cette action est définitive.`)) return;
+    if (!window.confirm(t("publications.mediaUploader.confirmDelete", { label: media.label || media.id }))) return;
     if (media.storagePath) {
       await deletePublicationMediaFile(media.storagePath);
     }
@@ -160,7 +162,7 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
       setGlobalError(validation.message);
       return;
     }
-    if (!window.confirm(`Remplacer « ${target.label || target.id} » par « ${file.name} » ?`)) return;
+    if (!window.confirm(t("publications.mediaUploader.confirmReplace", { oldLabel: target.label || target.id, newLabel: file.name }))) return;
 
     if (target.storagePath) await deletePublicationMediaFile(target.storagePath);
 
@@ -212,13 +214,13 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
             isDraggingOver ? "border-violet-400 bg-violet-50 dark:bg-violet-500/10" : "border-zinc-300 dark:border-white/[.16]"
           }`}
         >
-          <p className="text-sm text-muted-foreground">Glissez-déposez un fichier ici, ou</p>
+          <p className="text-sm text-muted-foreground">{t("publications.mediaUploader.dragDrop")}</p>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
           >
-            Choisir un fichier
+            {t("publications.mediaUploader.chooseFile")}
           </button>
           <input
             ref={fileInputRef}
@@ -232,7 +234,7 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
             }}
           />
           <p className="text-[11px] text-muted-foreground">
-            JPG, PNG, WEBP (10 Mo max) ou MP4, MOV, WEBM (200 Mo max) — {MAX_MEDIA_COUNT} médias max par publication.
+            {t("publications.mediaUploader.formatsHint", { count: MAX_MEDIA_COUNT })}
           </p>
         </div>
       )}
@@ -272,11 +274,11 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
           </div>
           {entry.error ? (
             <button type="button" onClick={() => void retryUpload(entry)} className="shrink-0 text-xs font-medium text-violet-700 hover:underline dark:text-violet-300">
-              Réessayer
+              {t("common.retry")}
             </button>
           ) : (
             <button type="button" onClick={() => cancelUploading(entry.mediaId)} className="shrink-0 text-xs font-medium text-muted-foreground hover:underline">
-              Annuler
+              {t("common.cancel")}
             </button>
           )}
         </div>
@@ -293,13 +295,13 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
                 <video src={media.url} className="h-full w-full object-cover" muted />
               )
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">Aperçu</div>
+              <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">{t("publications.mediaUploader.preview")}</div>
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p className="truncate text-xs font-medium text-foreground">{media.label || media.id}</p>
             <p className="text-[11px] text-muted-foreground">
-              {media.type === "image" ? "Image" : "Vidéo"}
+              {media.type === "image" ? t("publications.preview.image") : t("publications.preview.video")}
               {media.mimeType ? ` · ${media.mimeType}` : ""}
               {typeof media.sizeBytes === "number" ? ` · ${formatBytes(media.sizeBytes)}` : ""}
             </p>
@@ -317,17 +319,17 @@ export function MediaUploader({ workspaceId, brandId, publicationId, value, edit
                 </>
               )}
               <button type="button" onClick={() => beginReplace(media.id)} className="text-xs font-medium text-violet-700 hover:underline dark:text-violet-300">
-                Remplacer
+                {t("publications.mediaUploader.replace")}
               </button>
               <button type="button" onClick={() => void removeMedia(media)} className="text-xs font-medium text-red-500 hover:underline">
-                Supprimer
+                {t("common.delete")}
               </button>
             </div>
           )}
         </div>
       ))}
 
-      {value.length === 0 && uploading.length === 0 && !editable && <p className="text-sm text-muted-foreground">Aucun média associé.</p>}
+      {value.length === 0 && uploading.length === 0 && !editable && <p className="text-sm text-muted-foreground">{t("publications.mediaUploader.noMedia")}</p>}
     </div>
   );
 }

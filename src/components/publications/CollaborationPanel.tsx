@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Publication } from "@/types/publication";
 import type { TeamMember } from "@/types/team";
 
@@ -55,6 +56,7 @@ export function CollaborationPanel({
   currentUserName,
   onAddComment,
 }: CollaborationPanelProps) {
+  const t = useTranslations();
   const [audience, setAudience] = useState<"internal" | "client">("internal");
   const [text, setText] = useState("");
 
@@ -70,10 +72,10 @@ export function CollaborationPanel({
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Commentaires</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("publications.collaboration.title")}</h2>
 
       {publication.comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucun commentaire pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground ">{t("publications.collaboration.empty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {publication.comments.map((comment) => (
@@ -91,7 +93,7 @@ export function CollaborationPanel({
                         : "bg-muted text-zinc-600  dark:text-zinc-400"
                     }`}
                   >
-                    {comment.audience === "client" ? "Client" : "Interne"}
+                    {comment.audience === "client" ? t("publications.collaboration.client") : t("publications.collaboration.internal")}
                   </span>
                   <span className="text-[10px] text-muted-foreground ">
                     {dateFormatter.format(new Date(comment.createdAt))}
@@ -116,7 +118,7 @@ export function CollaborationPanel({
                   : "text-muted-foreground "
               }`}
             >
-              Interne
+              {t("publications.collaboration.internal")}
             </button>
             <button
               type="button"
@@ -127,7 +129,7 @@ export function CollaborationPanel({
                   : "text-muted-foreground "
               }`}
             >
-              Client
+              {t("publications.collaboration.client")}
             </button>
           </div>
 
@@ -139,7 +141,7 @@ export function CollaborationPanel({
               }}
               className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-zinc-600   dark:text-zinc-400"
             >
-              <option value="">Mentionner…</option>
+              <option value="">{t("publications.collaboration.mention")}</option>
               {members.map((member) => (
                 <option key={member.id} value={member.name}>
                   {member.name}
@@ -153,7 +155,7 @@ export function CollaborationPanel({
           rows={2}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Ajouter un commentaire…"
+          placeholder={t("publications.collaboration.placeholder")}
           className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800   dark:text-zinc-200"
         />
 
@@ -162,7 +164,7 @@ export function CollaborationPanel({
           onClick={handleSubmit}
           className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
-          Commenter en tant que {currentUserName}
+          {t("publications.collaboration.submitAs", { name: currentUserName })}
         </button>
       </div>
     </section>

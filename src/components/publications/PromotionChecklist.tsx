@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import {
   PROMOTION_STATUS_STYLE,
   PROMOTION_TASK_OPTIONAL,
@@ -30,6 +31,7 @@ interface PromotionChecklistProps {
  * échéance, statut, notes) ; la progression est calculée, jamais stockée séparément.
  */
 export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionChecklistProps) {
+  const t = useTranslations();
   const PROMOTION_STATUS_LABEL = usePromotionStatusLabel();
   const PROMOTION_TASK_LABEL = usePromotionTaskLabel();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -41,9 +43,9 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground ">Promotion et diffusion</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("publications.promotion.title")}</h2>
         <span className="text-xs font-medium text-muted-foreground ">
-          {progress.done}/{progress.total} traitées ({progress.percent}%)
+          {t("publications.promotion.progress", { done: progress.done, total: progress.total, percent: progress.percent })}
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted ">
@@ -65,18 +67,18 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
                 >
                   {PROMOTION_TASK_LABEL[task.type]}
                   {PROMOTION_TASK_OPTIONAL.has(task.type) && (
-                    <span className="text-xs font-normal text-muted-foreground ">(facultative)</span>
+                    <span className="text-xs font-normal text-muted-foreground ">{t("publications.promotion.optional")}</span>
                   )}
                 </button>
                 <div className="flex items-center gap-2">
                   {overdue && (
                     <span className="rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
-                      En retard
+                      {t("publications.promotion.overdue")}
                     </span>
                   )}
                   {!overdue && dueToday && (
                     <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                      Aujourd&apos;hui
+                      {t("publications.promotion.dueToday")}
                     </span>
                   )}
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${PROMOTION_STATUS_STYLE[task.status]}`}>
@@ -88,13 +90,13 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
               {isExpanded && (
                 <div className="grid grid-cols-1 gap-3 rounded-lg bg-muted p-3 sm:grid-cols-2 ">
                   <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                    Responsable
+                    {t("publications.promotion.owner")}
                     <select
                       value={task.owner}
                       onChange={(event) => onUpdateTask(task.id, { owner: event.target.value })}
                       className={INPUT_CLASS}
                     >
-                      <option value="">Non assigné</option>
+                      <option value="">{t("publications.card.unassigned")}</option>
                       {members.map((member) => (
                         <option key={member.id} value={member.name}>
                           {member.name}
@@ -103,7 +105,7 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
                     </select>
                   </label>
                   <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                    Échéance
+                    {t("publications.promotion.dueDate")}
                     <input
                       type="date"
                       value={task.dueDate ?? ""}
@@ -112,7 +114,7 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                    Statut
+                    {t("publications.promotion.status")}
                     <select
                       value={task.status}
                       onChange={(event) => onUpdateTask(task.id, { status: event.target.value as PromotionTaskStatus })}
@@ -126,7 +128,7 @@ export function PromotionChecklist({ tasks, members, onUpdateTask }: PromotionCh
                     </select>
                   </label>
                   <label className="flex flex-col gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 sm:col-span-2">
-                    Notes
+                    {t("publications.promotion.notes")}
                     <textarea
                       rows={2}
                       value={task.notes}

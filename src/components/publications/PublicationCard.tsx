@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { platformIcons } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
@@ -18,6 +19,7 @@ interface PublicationCardProps {
 }
 
 export function PublicationCard({ publication, onClick }: PublicationCardProps) {
+  const t = useTranslations();
   const STATUS_LABEL = useStatusLabel();
   const Icon = platformIcons[publication.platform];
 
@@ -48,14 +50,14 @@ export function PublicationCard({ publication, onClick }: PublicationCardProps) 
         </span>
       </div>
       <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
-        {publication.excerpt || "Sans titre"}
+        {publication.excerpt || t("publications.card.untitled")}
       </p>
       <p className="truncate text-xs text-muted-foreground ">
-        {publication.theme || "Sans thématique"} · {publication.owner || "Non assigné"}
+        {publication.theme || t("publications.card.noTheme")} · {publication.owner || t("publications.card.unassigned")}
       </p>
       {publication.comments.length > 0 && (
         <span className="w-fit rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ">
-          {publication.comments.length} commentaire{publication.comments.length > 1 ? "s" : ""}
+          {t("publications.card.comments", { count: publication.comments.length, plural: publication.comments.length > 1 ? "s" : "" })}
         </span>
       )}
     </Link>

@@ -53,7 +53,7 @@ export function PublicationsListView() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.publications")}</h1>
           <p className="text-sm text-muted-foreground ">
-            {sorted.length} publication{sorted.length > 1 ? "s" : ""} affichée{sorted.length > 1 ? "s" : ""}
+            {t("calendar.page.publicationsDisplayed", { count: sorted.length, plural: sorted.length > 1 ? "s" : "" })}
           </p>
         </div>
         <Link
@@ -61,7 +61,7 @@ export function PublicationsListView() {
           onClick={() => view.saveScrollPosition()}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
-          + Nouvelle publication
+          {t("publications.list.newPublication")}
         </Link>
       </header>
 
@@ -86,7 +86,7 @@ export function PublicationsListView() {
 
       {sorted.length === 0 && view.viewType !== "calendar" && view.viewType !== "kanban" && view.viewType !== "promotion" ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-          Aucune publication ne correspond à ces critères.
+          {t("publications.list.emptyFiltered")}
         </p>
       ) : view.viewType === "promotion" ? (
         <PromotionTasksBoard publications={sorted} onOpen={handleOpen} />

@@ -5,6 +5,7 @@ import { MediaUploader } from "@/components/publications/MediaUploader";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel, useStatusLabel } from "@/lib/post-status";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import { useTeamSession } from "@/lib/team-store";
@@ -94,6 +95,7 @@ function ListField({
   editable: boolean;
   onChange: (value: string[]) => void;
 }) {
+  const t = useTranslations();
   return (
     <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
       {label}
@@ -101,7 +103,7 @@ function ListField({
         rows={2}
         disabled={!editable}
         value={value.join("\n")}
-        placeholder="Une valeur par ligne"
+        placeholder={t("publications.form.onePerLine")}
         onChange={(event) => onChange(event.target.value.split("\n"))}
         className={INPUT_CLASS}
       />
@@ -116,6 +118,7 @@ interface PublicationFormProps {
 }
 
 export function PublicationForm({ publication, editable, onChange }: PublicationFormProps) {
+  const t = useTranslations();
   const { accounts } = useAccountsSession();
   const { members } = useTeamSession();
   const { brands } = useBrandsSession();
@@ -165,8 +168,10 @@ export function PublicationForm({ publication, editable, onChange }: Publication
     const currentIsExternal = currentValue !== "" && !membersForBrand.some((member) => member.name === currentValue);
     return (
       <>
-        <option value="">Non assigné</option>
-        {currentIsExternal && <option value={currentValue}>{currentValue} (hors accès marque)</option>}
+        <option value="">{t("publications.card.unassigned")}</option>
+        {currentIsExternal && (
+          <option value={currentValue}>{t("publications.form.outsideBrandAccess", { name: currentValue })}</option>
+        )}
         {membersForBrand.map((member) => (
           <option key={member.id} value={member.name}>
             {member.name}
@@ -178,9 +183,9 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
   return (
     <div className="flex flex-col gap-4">
-      <Section title="Diffusion">
+      <Section title={t("publications.form.diffusion")}>
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Marque
+          {t("publications.form.brand")}
           <select
             disabled={!editable}
             value={publication.brand}
@@ -196,7 +201,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Compte social concerné
+          {t("publications.form.account")}
           <select
             disabled={!editable}
             value={publication.accountId}
@@ -212,7 +217,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Réseau
+          {t("publications.form.network")}
           <select
             disabled={!editable}
             value={publication.platform}
@@ -228,7 +233,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Date et heure
+          {t("publications.form.dateTime")}
           <input
             type="datetime-local"
             disabled={!editable}
@@ -239,7 +244,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Fuseau horaire
+          {t("publications.form.timeZone")}
           <select
             disabled={!editable}
             value={publication.timeZone}
@@ -255,11 +260,11 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
       </Section>
 
-      <Section title="Contenu éditorial">
-        <TextField label="Thématique" value={publication.theme} editable={editable} onChange={(v) => set("theme", v)} />
+      <Section title={t("publications.form.editorialContent")}>
+        <TextField label={t("publications.form.theme")} value={publication.theme} editable={editable} onChange={(v) => set("theme", v)} />
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Format
+          {t("publications.form.format")}
           <select
             disabled={!editable}
             value={publication.format}
@@ -276,7 +281,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
         <div className="md:col-span-2">
           <TextField
-            label="Objectif"
+            label={t("publications.form.objective")}
             value={publication.objective}
             editable={editable}
             multiline
@@ -286,7 +291,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
         <div className="md:col-span-2">
           <TextField
-            label="Titre / extrait"
+            label={t("publications.form.titleExcerpt")}
             value={publication.excerpt}
             editable={editable}
             onChange={(v) => set("excerpt", v)}
@@ -295,7 +300,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
         <div className="md:col-span-2">
           <TextField
-            label="Texte de la publication"
+            label={t("publications.form.text")}
             value={publication.text}
             editable={editable}
             multiline
@@ -303,9 +308,9 @@ export function PublicationForm({ publication, editable, onChange }: Publication
           />
         </div>
 
-        <TextField label="Appel à l'action" value={publication.cta} editable={editable} onChange={(v) => set("cta", v)} />
+        <TextField label={t("publications.form.cta")} value={publication.cta} editable={editable} onChange={(v) => set("cta", v)} />
         <ListField
-          label="Hashtags (un par ligne)"
+          label={t("publications.form.hashtags")}
           value={publication.hashtags}
           editable={editable}
           onChange={(v) => set("hashtags", v)}
@@ -313,7 +318,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
         <div className="md:col-span-2">
           <TextField
-            label="Premier commentaire"
+            label={t("publications.form.firstComment")}
             value={publication.firstComment}
             editable={editable}
             multiline
@@ -322,7 +327,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </div>
       </Section>
 
-      <Section title="Médias">
+      <Section title={t("publications.form.media")}>
         <MediaUploader
           workspaceId={workspace?.id}
           brandId={resolvedBrandId}
@@ -333,9 +338,9 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         />
       </Section>
 
-      <Section title="Suivi">
+      <Section title={t("publications.form.tracking")}>
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Statut
+          {t("publications.promotion.status")}
           <select
             disabled={!editable}
             value={publication.status}
@@ -353,10 +358,10 @@ export function PublicationForm({ publication, editable, onChange }: Publication
               return (
                 <option key={status} value={status} disabled={lockedApproved || lockedPublished || lockedPublishing || lockedScheduled}>
                   {STATUS_LABEL[status]}
-                  {lockedApproved ? " (via Actions d'approbation)" : ""}
-                  {lockedPublished ? " (via Publication manuelle)" : ""}
-                  {lockedPublishing ? " (posé par le planificateur uniquement)" : ""}
-                  {lockedScheduled ? " (nécessite une approbation préalable)" : ""}
+                  {lockedApproved ? ` ${t("publications.form.lockedApproved")}` : ""}
+                  {lockedPublished ? ` ${t("publications.form.lockedPublished")}` : ""}
+                  {lockedPublishing ? ` ${t("publications.form.lockedPublishing")}` : ""}
+                  {lockedScheduled ? ` ${t("publications.form.lockedScheduled")}` : ""}
                 </option>
               );
             })}
@@ -364,7 +369,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Responsable
+          {t("publications.promotion.owner")}
           <select
             disabled={!editable}
             value={publication.owner}
@@ -376,7 +381,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Approbateur
+          {t("publications.form.approver")}
           <select
             disabled={!editable}
             value={publication.approver}
@@ -389,7 +394,7 @@ export function PublicationForm({ publication, editable, onChange }: Publication
 
         <div className="md:col-span-2">
           <TextField
-            label="Notes internes"
+            label={t("publications.form.internalNotes")}
             value={publication.internalNotes}
             editable={editable}
             multiline

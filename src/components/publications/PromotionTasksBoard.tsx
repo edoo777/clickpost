@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { platformIcons } from "@/components/icons";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import {
   DEFAULT_PROMOTION_TASK_FILTERS,
   PROMOTION_STATUS_STYLE,
@@ -35,6 +36,7 @@ interface PromotionTasksBoardProps {
  * checklist (donc déjà réellement publiées).
  */
 export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoardProps) {
+  const t = useTranslations();
   const { updatePost } = usePostsSession();
   const { brands } = useBrandsSession();
   const { members } = useTeamSession();
@@ -56,7 +58,7 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value as PromotionTaskFilters["status"] })} className={FIELD_CLASS}>
-          <option value="all">Tous les statuts</option>
+          <option value="all">{t("publications.promotion.allStatuses")}</option>
           {(["todo", "in_progress", "done", "skipped"] as PromotionTaskStatus[]).map((status) => (
             <option key={status} value={status}>
               {PROMOTION_STATUS_LABEL[status]}
@@ -64,7 +66,7 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
           ))}
         </select>
         <select value={filters.type} onChange={(event) => setFilters({ ...filters, type: event.target.value as PromotionTaskFilters["type"] })} className={FIELD_CLASS}>
-          <option value="all">Toutes les actions</option>
+          <option value="all">{t("publications.promotion.allActions")}</option>
           {PROMOTION_TASK_ORDER.map((type) => (
             <option key={type} value={type}>
               {PROMOTION_TASK_LABEL[type]}
@@ -72,7 +74,7 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
           ))}
         </select>
         <select value={filters.owner} onChange={(event) => setFilters({ ...filters, owner: event.target.value })} className={FIELD_CLASS}>
-          <option value="all">Tous les responsables</option>
+          <option value="all">{t("publications.promotion.allOwners")}</option>
           {members.map((member) => (
             <option key={member.id} value={member.name}>
               {member.name}
@@ -80,7 +82,7 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
           ))}
         </select>
         <select value={filters.brand} onChange={(event) => setFilters({ ...filters, brand: event.target.value })} className={FIELD_CLASS}>
-          <option value="all">Toutes les marques</option>
+          <option value="all">{t("dashboard.allBrands")}</option>
           {brands.map((brand) => (
             <option key={brand.id} value={brand.name}>
               {brand.name}
@@ -91,8 +93,7 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
 
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-          Aucune tâche de promotion pour ces critères — les checklists apparaissent automatiquement
-          dès qu&apos;une publication est marquée publiée.
+          {t("publications.promotion.emptyTasks")}
         </p>
       ) : (
         <ul className="flex flex-col divide-y divide-border rounded-xl border border-border bg-surface ">
@@ -107,21 +108,23 @@ export function PromotionTasksBoard({ publications, onOpen }: PromotionTasksBoar
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <button type="button" onClick={() => onOpen(publication.id)} className="truncate text-left text-sm font-medium text-foreground hover:underline ">
-                    {PROMOTION_TASK_LABEL[task.type]} — {publication.excerpt || "Sans titre"}
+                    {PROMOTION_TASK_LABEL[task.type]} — {publication.excerpt || t("publications.card.untitled")}
                   </button>
                   <span className="truncate text-xs text-muted-foreground ">
-                    {publication.brand} · {task.owner || "Non assigné"}
-                    {task.dueDate ? ` · échéance ${dateFormatter.format(new Date(`${task.dueDate}T00:00:00`))}` : ""}
+                    {publication.brand} · {task.owner || t("publications.card.unassigned")}
+                    {task.dueDate
+                      ? ` · ${t("publications.promotion.dueDatePrefix", { date: dateFormatter.format(new Date(`${task.dueDate}T00:00:00`)) })}`
+                      : ""}
                   </span>
                 </div>
                 {overdue && (
                   <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400">
-                    En retard
+                    {t("publications.promotion.overdue")}
                   </span>
                 )}
                 {!overdue && dueToday && (
                   <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                    Aujourd&apos;hui
+                    {t("publications.promotion.dueToday")}
                   </span>
                 )}
                 <select

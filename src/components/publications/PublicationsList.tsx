@@ -1,6 +1,7 @@
 "use client";
 
 import { platformIcons } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
@@ -17,6 +18,7 @@ interface PublicationsListProps {
 }
 
 export function PublicationsList({ publications, onOpen }: PublicationsListProps) {
+  const t = useTranslations();
   const STATUS_LABEL = useStatusLabel();
   return (
     <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-surface  ">
@@ -36,7 +38,7 @@ export function PublicationsList({ publications, onOpen }: PublicationsListProps
               {dateFormatter.format(new Date(post.scheduledFor))}
             </span>
             <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              {post.excerpt || "Sans titre"}
+              {post.excerpt || t("publications.card.untitled")}
             </span>
             <span className="w-32 shrink-0 truncate text-xs text-muted-foreground ">{post.brand}</span>
             <span className="w-32 shrink-0 truncate text-xs text-muted-foreground ">{post.owner || "—"}</span>
