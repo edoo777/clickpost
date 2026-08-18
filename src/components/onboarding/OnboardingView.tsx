@@ -15,22 +15,23 @@ import {
   WorkspaceNameStep,
 } from "@/components/onboarding/OnboardingSteps";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
-const STEP_TITLES = [
-  "Informations personnelles",
-  "Nom de l'espace de travail",
-  "Type d'utilisation",
-  "Entreprise ou marque",
-  "Secteur d'activité",
-  "Réseaux sociaux",
-  "Objectifs de contenu",
-  "Identité visuelle",
-  "Confirmation",
+const STEP_TITLE_KEYS: TranslationKey[] = [
+  "onboarding.steps.personalInfo",
+  "onboarding.steps.workspaceName",
+  "onboarding.steps.usageType",
+  "onboarding.steps.company",
+  "onboarding.steps.industry",
+  "onboarding.steps.platforms",
+  "onboarding.steps.goals",
+  "onboarding.steps.branding",
+  "onboarding.steps.confirmation",
 ];
 
-const TOTAL_STEPS = STEP_TITLES.length;
+const TOTAL_STEPS = STEP_TITLE_KEYS.length;
 
 interface OnboardingViewProps {
   /** Texte configurable depuis l'espace Admin (voir src/lib/admin/product-texts.ts) — valeur par
@@ -41,6 +42,7 @@ interface OnboardingViewProps {
 
 export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingViewProps) {
   const router = useRouter();
+  const t = useTranslations();
   const { profile, workspace, branding, isLoading, workspaceError, updateProfile, updateWorkspace, updateBranding, refresh } =
     useWorkspaceSession();
 
@@ -87,7 +89,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
   if (isLoading || !hasInitialized || !draftProfile || !draftWorkspace || !draftBranding || isAlreadyOnboarded) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">{isAlreadyOnboarded ? "Redirection…" : "Chargement…"}</p>
+        <p className="text-sm text-muted-foreground">{isAlreadyOnboarded ? t("onboarding.redirecting") : t("onboarding.loading")}</p>
       </div>
     );
   }
@@ -105,7 +107,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
   async function persistCurrentStep(nextStep: number): Promise<boolean> {
     setErrorMessage(null);
     if (step === 2 && !draftWorkspace!.name.trim()) {
-      setErrorMessage("Le nom de l'espace de travail est requis.");
+      setErrorMessage(t("onboarding.workspaceNameRequired"));
       return false;
     }
 
@@ -185,7 +187,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-foreground">{welcomeTitle}</span>
             <span className="text-xs text-muted-foreground">
-              Étape {step} sur {TOTAL_STEPS} — {STEP_TITLES[step - 1]}
+              {t("onboarding.stepOf", { step, total: TOTAL_STEPS, title: t(STEP_TITLE_KEYS[step - 1]) })}
             </span>
           </div>
         </div>
@@ -200,7 +202,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
         </div>
 
         <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-          <h1 className="mb-5 text-lg font-semibold text-foreground">{STEP_TITLES[step - 1]}</h1>
+          <h1 className="mb-5 text-lg font-semibold text-foreground">{t(STEP_TITLE_KEYS[step - 1])}</h1>
 
           {step === 1 && (
             <PersonalInfoStep
@@ -283,7 +285,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
                   disabled={isSaving}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Précédent
+                  {t("onboarding.back")}
                 </button>
               )}
               <button
@@ -292,7 +294,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
                 disabled={isSaving}
                 className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline disabled:opacity-50"
               >
-                Terminer plus tard
+                {t("onboarding.finishLater")}
               </button>
             </div>
 
@@ -303,7 +305,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
                 disabled={isSaving}
                 className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSaving ? "Enregistrement…" : "Suivant"}
+                {isSaving ? t("onboarding.saving") : t("onboarding.next")}
               </button>
             ) : (
               <button
@@ -312,7 +314,7 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
                 disabled={isSaving}
                 className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSaving ? "Finalisation…" : "Terminer"}
+                {isSaving ? t("onboarding.finishing") : t("onboarding.finish")}
               </button>
             )}
           </div>

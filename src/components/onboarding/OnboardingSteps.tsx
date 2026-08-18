@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ProfileRow, UsageType, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
@@ -43,11 +44,12 @@ export interface StepProps {
 }
 
 export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Prénom
+          {t("onboarding.personalInfo.firstName")}
           <input
             value={profile.first_name}
             onChange={(event) => onProfileChange("first_name", event.target.value)}
@@ -55,7 +57,7 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
           />
         </label>
         <label className={LABEL_CLASS}>
-          Nom
+          {t("onboarding.personalInfo.lastName")}
           <input
             value={profile.last_name}
             onChange={(event) => onProfileChange("last_name", event.target.value)}
@@ -64,7 +66,7 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
         </label>
       </div>
       <label className={LABEL_CLASS}>
-        Fonction ou poste (facultatif)
+        {t("onboarding.personalInfo.jobTitle")}
         <input
           value={profile.job_title ?? ""}
           onChange={(event) => onProfileChange("job_title", event.target.value)}
@@ -73,7 +75,7 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
       </label>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Langue préférée
+          {t("onboarding.personalInfo.preferredLanguage")}
           <input
             value={profile.language}
             onChange={(event) => onProfileChange("language", event.target.value)}
@@ -82,7 +84,7 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
           />
         </label>
         <label className={LABEL_CLASS}>
-          Fuseau horaire
+          {t("onboarding.personalInfo.timeZone")}
           <input
             value={profile.time_zone}
             onChange={(event) => onProfileChange("time_zone", event.target.value)}
@@ -96,28 +98,28 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
 }
 
 export function WorkspaceNameStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   return (
     <label className={LABEL_CLASS}>
-      Nom de l&apos;espace de travail
+      {t("onboarding.workspaceName.label")}
       <input
         value={workspace.name}
         onChange={(event) => onWorkspaceChange("name", event.target.value)}
         className={FIELD_CLASS}
       />
-      <span className="text-xs font-normal text-muted-foreground">
-        Visible par tous les membres de votre équipe. Vous pourrez le modifier à tout moment.
-      </span>
+      <span className="text-xs font-normal text-muted-foreground">{t("onboarding.workspaceName.hint")}</span>
     </label>
   );
 }
 
-const USAGE_TYPES: { value: UsageType; label: string; description: string }[] = [
-  { value: "solo", label: "Créateur solo", description: "Je gère seul(e) mes contenus." },
-  { value: "team", label: "Équipe marketing", description: "Nous sommes plusieurs à collaborer en interne." },
-  { value: "agency", label: "Agence", description: "Nous gérons du contenu pour plusieurs clients." },
+const USAGE_TYPES: { value: UsageType; labelKey: "solo" | "team" | "agency" }[] = [
+  { value: "solo", labelKey: "solo" },
+  { value: "team", labelKey: "team" },
+  { value: "agency", labelKey: "agency" },
 ];
 
 export function UsageTypeStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {USAGE_TYPES.map((option) => (
@@ -132,8 +134,8 @@ export function UsageTypeStep({ workspace, onWorkspaceChange }: StepProps) {
               : "border-border bg-surface hover:border-violet-200 dark:hover:border-violet-500/30"
           }`}
         >
-          <span className="text-sm font-semibold text-foreground">{option.label}</span>
-          <span className="text-xs text-muted-foreground">{option.description}</span>
+          <span className="text-sm font-semibold text-foreground">{t(`onboarding.usageType.${option.labelKey}.label`)}</span>
+          <span className="text-xs text-muted-foreground">{t(`onboarding.usageType.${option.labelKey}.description`)}</span>
         </button>
       ))}
     </div>
@@ -141,9 +143,10 @@ export function UsageTypeStep({ workspace, onWorkspaceChange }: StepProps) {
 }
 
 export function CompanyStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   return (
     <label className={LABEL_CLASS}>
-      Nom de l&apos;entreprise ou de la marque
+      {t("onboarding.company.label")}
       <input
         value={workspace.company_name ?? ""}
         onChange={(event) => onWorkspaceChange("company_name", event.target.value)}
@@ -154,13 +157,14 @@ export function CompanyStep({ workspace, onWorkspaceChange }: StepProps) {
 }
 
 export function IndustryStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   return (
     <label className={LABEL_CLASS}>
-      Secteur d&apos;activité
+      {t("onboarding.industry.label")}
       <input
         value={workspace.industry ?? ""}
         onChange={(event) => onWorkspaceChange("industry", event.target.value)}
-        placeholder="Ex. Cosmétique, conseil, alimentation…"
+        placeholder={t("onboarding.industry.placeholder")}
         className={FIELD_CLASS}
       />
     </label>
@@ -168,6 +172,7 @@ export function IndustryStep({ workspace, onWorkspaceChange }: StepProps) {
 }
 
 export function PlatformsStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   function toggle(platform: SocialPlatform) {
     const next = workspace.social_platforms.includes(platform)
       ? workspace.social_platforms.filter((p) => p !== platform)
@@ -176,7 +181,7 @@ export function PlatformsStep({ workspace, onWorkspaceChange }: StepProps) {
   }
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">Sélectionnez les réseaux sociaux que vous utilisez.</p>
+      <p className="text-sm text-muted-foreground">{t("onboarding.platforms.hint")}</p>
       <div className="flex flex-wrap gap-2">
         {ALL_PLATFORMS.map((platform) => (
           <ToggleChip
@@ -192,6 +197,7 @@ export function PlatformsStep({ workspace, onWorkspaceChange }: StepProps) {
 }
 
 export function GoalsStep({ workspace, onWorkspaceChange }: StepProps) {
+  const t = useTranslations();
   function toggle(goal: string) {
     const next = workspace.content_goals.includes(goal)
       ? workspace.content_goals.filter((g) => g !== goal)
@@ -200,7 +206,7 @@ export function GoalsStep({ workspace, onWorkspaceChange }: StepProps) {
   }
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">Quels sont vos objectifs de contenu ?</p>
+      <p className="text-sm text-muted-foreground">{t("onboarding.goals.hint")}</p>
       <div className="flex flex-wrap gap-2">
         {CONTENT_GOAL_OPTIONS.map((goal) => (
           <ToggleChip key={goal} label={goal} active={workspace.content_goals.includes(goal)} onClick={() => toggle(goal)} />
@@ -216,62 +222,64 @@ interface BrandingStepProps {
 }
 
 export function BrandingStep({ branding, onBrandingChange }: BrandingStepProps) {
-  const fields: { key: "color_primary" | "color_secondary" | "color_accent"; label: string }[] = [
-    { key: "color_primary", label: "Couleur principale" },
-    { key: "color_secondary", label: "Couleur secondaire" },
-    { key: "color_accent", label: "Couleur d'accent" },
+  const t = useTranslations();
+  const fields: { key: "color_primary" | "color_secondary" | "color_accent"; labelKey: "primaryColor" | "secondaryColor" | "accentColor" }[] = [
+    { key: "color_primary", labelKey: "primaryColor" },
+    { key: "color_secondary", labelKey: "secondaryColor" },
+    { key: "color_accent", labelKey: "accentColor" },
   ];
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
-        Personnalisez les couleurs de base de votre espace. Vous pourrez affiner l&apos;identité visuelle complète
-        (typographie, sidebar, arrondis…) plus tard depuis Paramètres → Identité visuelle.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("onboarding.branding.hint")}</p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {fields.map((field) => (
-          <label key={field.key} className={LABEL_CLASS}>
-            {field.label}
-            <span className="flex items-center gap-2">
-              <input
-                type="color"
-                value={branding[field.key]}
-                onChange={(event) => onBrandingChange(field.key, event.target.value)}
-                className="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-border bg-transparent"
-                aria-label={field.label}
-              />
-              <input
-                value={branding[field.key]}
-                onChange={(event) => onBrandingChange(field.key, event.target.value)}
-                className={FIELD_CLASS}
-              />
-            </span>
-          </label>
-        ))}
+        {fields.map((field) => {
+          const label = t(`onboarding.branding.${field.labelKey}`);
+          return (
+            <label key={field.key} className={LABEL_CLASS}>
+              {label}
+              <span className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={branding[field.key]}
+                  onChange={(event) => onBrandingChange(field.key, event.target.value)}
+                  className="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-border bg-transparent"
+                  aria-label={label}
+                />
+                <input
+                  value={branding[field.key]}
+                  onChange={(event) => onBrandingChange(field.key, event.target.value)}
+                  className={FIELD_CLASS}
+                />
+              </span>
+            </label>
+          );
+        })}
       </div>
     </div>
   );
 }
 
 export function ConfirmationStep({ profile, workspace }: StepProps) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-foreground">
-        Tout est prêt, <strong>{profile.first_name || "vous"}</strong> ! Voici un résumé de votre espace :
+        {t("onboarding.confirmation.intro", { name: profile.first_name || t("onboarding.confirmation.fallbackName") })}
       </p>
       <dl className="flex flex-col gap-2 rounded-xl border border-border bg-muted p-4 text-sm">
         <div className="flex justify-between gap-4">
-          <dt className="text-muted-foreground">Espace de travail</dt>
+          <dt className="text-muted-foreground">{t("onboarding.confirmation.workspaceLabel")}</dt>
           <dd className="font-medium text-foreground">{workspace.name}</dd>
         </div>
         {workspace.company_name && (
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Entreprise</dt>
+            <dt className="text-muted-foreground">{t("onboarding.confirmation.companyLabel")}</dt>
             <dd className="font-medium text-foreground">{workspace.company_name}</dd>
           </div>
         )}
         {workspace.social_platforms.length > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Réseaux</dt>
+            <dt className="text-muted-foreground">{t("onboarding.confirmation.platformsLabel")}</dt>
             <dd className="font-medium text-foreground">
               {workspace.social_platforms.map((platform) => PLATFORM_LABEL[platform as SocialPlatform]).join(", ")}
             </dd>
