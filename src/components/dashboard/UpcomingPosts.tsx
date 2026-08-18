@@ -3,6 +3,7 @@
 import { platformIcons } from "@/components/icons";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
@@ -20,6 +21,7 @@ interface UpcomingPostsProps {
 }
 
 export function UpcomingPosts({ filters = DEFAULT_DASHBOARD_FILTERS }: UpcomingPostsProps) {
+  const t = useTranslations();
   const { posts } = usePostsSession();
   const { brands } = useBrandsSession();
   const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
@@ -36,10 +38,10 @@ export function UpcomingPosts({ filters = DEFAULT_DASHBOARD_FILTERS }: UpcomingP
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <h2 className="mb-4 text-sm font-semibold text-foreground ">
-        Publications à venir
+        {t("dashboard.upcomingPostsTitle")}
       </h2>
       {upcoming.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucune publication à venir pour ces filtres.</p>
+        <p className="text-sm text-muted-foreground ">{t("dashboard.upcomingPostsEmpty")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border ">
           {upcoming.map((post) => {

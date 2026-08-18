@@ -2,6 +2,7 @@
 
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { PLATFORM_LABEL, STATUS_LABEL } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -53,6 +54,7 @@ interface DashboardFiltersProps {
 }
 
 export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const isDefault =
     value.brandId === "all" &&
@@ -63,7 +65,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
 
   return (
     <div
-      aria-label="Filtres du tableau de bord"
+      aria-label={t("dashboard.filtersLabel")}
       className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm  "
     >
       <select
@@ -71,7 +73,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         onChange={(event) => onChange({ ...value, brandId: event.target.value })}
         className={FIELD_CLASS}
       >
-        <option value="all">Toutes les marques</option>
+        <option value="all">{t("dashboard.allBrands")}</option>
         {brands.map((brand) => (
           <option key={brand.id} value={brand.id}>
             {brand.name}
@@ -84,7 +86,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les réseaux</option>
+        <option value="all">{t("dashboard.allNetworks")}</option>
         {ALL_PLATFORMS.map((platform) => (
           <option key={platform} value={platform}>
             {PLATFORM_LABEL[platform]}
@@ -97,9 +99,9 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         onChange={(event) => onChange({ ...value, period: event.target.value as DashboardPeriod })}
         className={FIELD_CLASS}
       >
-        <option value="7">7 derniers jours</option>
-        <option value="30">30 derniers jours</option>
-        <option value="90">90 derniers jours</option>
+        <option value="7">{t("dashboard.last7Days")}</option>
+        <option value="30">{t("dashboard.last30Days")}</option>
+        <option value="90">{t("dashboard.last90Days")}</option>
       </select>
 
       <select
@@ -107,7 +109,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         onChange={(event) => onChange({ ...value, status: event.target.value as PublicationStatus | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les statuts</option>
+        <option value="all">{t("dashboard.allStatuses")}</option>
         {ALL_STATUSES.map((status) => (
           <option key={status} value={status}>
             {STATUS_LABEL[status]}
@@ -120,7 +122,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
         onChange={(event) => onChange({ ...value, format: event.target.value as ContentFormat | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les types de contenu</option>
+        <option value="all">{t("dashboard.allFormats")}</option>
         {CONTENT_FORMATS.map((format) => (
           <option key={format} value={format}>
             {FORMAT_LABEL[format]}
@@ -134,7 +136,7 @@ export function DashboardFilters({ value, onChange }: DashboardFiltersProps) {
           onClick={() => onChange(DEFAULT_DASHBOARD_FILTERS)}
           className="text-sm font-medium text-violet-600 hover:underline dark:text-violet-400"
         >
-          Réinitialiser
+          {t("dashboard.resetFilters")}
         </button>
       )}
     </div>

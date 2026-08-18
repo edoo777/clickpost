@@ -3,17 +3,19 @@
 import { platformIcons } from "@/components/icons";
 import { ACCOUNT_STATUS_DOT, ACCOUNT_STATUS_LABEL } from "@/lib/account-status";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 export function ConnectedAccounts() {
+  const t = useTranslations();
   const { accounts } = useAccountsSession();
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <h2 className="mb-4 text-sm font-semibold text-foreground ">
-        Comptes sociaux connectés
+        {t("dashboard.connectedAccountsTitle")}
       </h2>
       {accounts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucun compte social connecté pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.connectedAccountsEmpty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {accounts.map((account) => {

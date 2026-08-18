@@ -8,6 +8,7 @@ import { getTopPublications } from "@/lib/analytics-report";
 import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
 import { isDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { usePostsSession } from "@/lib/posts-store";
 
@@ -19,6 +20,7 @@ interface TopPublicationsWidgetProps {
 }
 
 export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: TopPublicationsWidgetProps) {
+  const t = useTranslations();
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
@@ -33,9 +35,9 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
 
   return (
     <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
-      <h2 className="text-sm font-semibold text-foreground ">Meilleures publications</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("dashboard.topPublicationsTitle")}</h2>
       {top.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">{t("dashboard.topPublicationsEmpty")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border ">
           {top.map((publication) => {
@@ -51,7 +53,7 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate text-sm font-medium text-foreground ">
-                      {publication.excerpt || "Sans titre"}
+                      {publication.excerpt || t("dashboard.untitled")}
                     </span>
                     <span className="text-xs text-muted-foreground ">
                       {publication.brand} · {dateFormatter.format(new Date(publication.scheduledFor))}
@@ -62,7 +64,7 @@ export function TopPublicationsWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: T
                       {publication.engagementRate.toFixed(1)}%
                     </span>
                     <span className="text-xs text-muted-foreground ">
-                      {numberFormatter.format(publication.performance.reach)} vues
+                      {numberFormatter.format(publication.performance.reach)} {t("dashboard.topPublicationsViews")}
                     </span>
                   </div>
                 </Link>

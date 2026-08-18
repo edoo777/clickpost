@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 
 const MAX_ITEMS = 6;
@@ -28,6 +29,7 @@ interface ActivityRow {
 }
 
 export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: RecentActivityWidgetProps) {
+  const t = useTranslations();
   const { posts } = usePostsSession();
   const { brands } = useBrandsSession();
   const brandName = filters.brandId !== "all" ? brands.find((brand) => brand.id === filters.brandId)?.name : undefined;
@@ -43,7 +45,7 @@ export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Re
       post.history.map((entry) => ({
         id: entry.id,
         publicationId: post.id,
-        publicationExcerpt: post.excerpt || "Sans titre",
+        publicationExcerpt: post.excerpt || t("dashboard.untitled"),
         action: entry.action,
         actorName: entry.actorName,
         createdAt: entry.createdAt,
@@ -54,9 +56,9 @@ export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Re
 
   return (
     <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
-      <h2 className="text-sm font-semibold text-foreground ">Activité récente</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("dashboard.recentActivityTitle")}</h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucune activité pour ces filtres.</p>
+        <p className="text-sm text-muted-foreground ">{t("dashboard.recentActivityEmpty")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {rows.map((row) => (
@@ -67,7 +69,7 @@ export function RecentActivityWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Re
                   href={`/publications/${row.publicationId}`}
                   className="truncate text-sm text-zinc-800 hover:underline dark:text-zinc-200"
                 >
-                  <span className="font-medium">{row.actorName || "Système"}</span> — {row.action}
+                  <span className="font-medium">{row.actorName || t("dashboard.recentActivitySystem")}</span> — {row.action}
                 </Link>
                 <span className="text-xs text-muted-foreground ">
                   {row.publicationExcerpt} · {dateFormatter.format(new Date(row.createdAt))}

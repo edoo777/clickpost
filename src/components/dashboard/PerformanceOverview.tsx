@@ -8,6 +8,7 @@ import { aggregateTotals, sumByDate } from "@/lib/analytics-report";
 import { useBrandsSession } from "@/lib/brands-store";
 import { buildDashboardPerformancePoints } from "@/lib/dashboard-performance";
 import { isDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { usePostsSession } from "@/lib/posts-store";
 import type { DailyMetricPoint } from "@/types/analytics";
@@ -37,6 +38,7 @@ interface PerformanceOverviewProps {
 }
 
 export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: PerformanceOverviewProps) {
+  const t = useTranslations();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
   const { posts } = usePostsSession();
@@ -55,7 +57,7 @@ export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Per
   const metrics = [
     {
       id: "impressions",
-      label: `Impressions (${windowDays} j)`,
+      label: t("dashboard.metricImpressions", { days: windowDays }),
       value: numberFormatter.format(currentTotals.impressions),
       change: percentChange(currentTotals.impressions, previousTotals.impressions),
       icon: IconChartBar,
@@ -64,7 +66,7 @@ export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Per
     },
     {
       id: "engagement",
-      label: "Taux d'engagement",
+      label: t("dashboard.metricEngagementRate"),
       value: `${currentTotals.engagementRate.toFixed(1)}%`,
       change: Math.round((currentTotals.engagementRate - previousTotals.engagementRate) * 10) / 10,
       icon: IconSparkles,
@@ -73,7 +75,7 @@ export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Per
     },
     {
       id: "followers",
-      label: "Nouveaux abonnés",
+      label: t("dashboard.metricNewFollowers"),
       value: numberFormatter.format(currentTotals.newFollowers),
       change: percentChange(currentTotals.newFollowers, previousTotals.newFollowers),
       icon: IconUsers,
@@ -82,7 +84,7 @@ export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Per
     },
     {
       id: "clicks",
-      label: "Clics sur les liens",
+      label: t("dashboard.metricLinkClicks"),
       value: numberFormatter.format(currentTotals.clicks),
       change: percentChange(currentTotals.clicks, previousTotals.clicks),
       icon: IconSend,
@@ -93,7 +95,7 @@ export function PerformanceOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Per
 
   return (
     <section
-      aria-label="Aperçu des performances"
+      aria-label={t("dashboard.performanceOverviewLabel")}
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
     >
       {metrics.map((metric) => (

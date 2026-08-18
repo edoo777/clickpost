@@ -1,22 +1,9 @@
 "use client";
 
+import { useLocale, useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
-const MONTH_NAMES = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
 
 function buildMonthGrid(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
@@ -29,11 +16,16 @@ function buildMonthGrid(year: number, month: number) {
 }
 
 export function CalendarPreview() {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const { posts } = usePostsSession();
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
   const cells = buildMonthGrid(year, month);
+  const monthLabel = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "fr-FR", { month: "long" }).format(
+    new Date(year, month, 1)
+  );
 
   const postDays = new Set(
     posts
@@ -45,10 +37,10 @@ export function CalendarPreview() {
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">
-          {MONTH_NAMES[month]} {year}
+        <h2 className="text-sm font-semibold capitalize text-foreground ">
+          {monthLabel} {year}
         </h2>
-        <span className="text-xs text-muted-foreground ">Aperçu du calendrier</span>
+        <span className="text-xs text-muted-foreground ">{t("dashboard.calendarPreviewLabel")}</span>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground ">
         {WEEKDAYS.map((day, i) => (

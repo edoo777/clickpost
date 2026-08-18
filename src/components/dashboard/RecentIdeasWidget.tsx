@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { IDEA_STATUS_LABEL, IDEA_STATUS_STYLE } from "@/lib/idea-status";
 
 const MAX_ITEMS = 5;
@@ -13,6 +14,7 @@ interface RecentIdeasWidgetProps {
 }
 
 export function RecentIdeasWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: RecentIdeasWidgetProps) {
+  const t = useTranslations();
   const { ideas } = useContentWorkspace();
 
   const recent = ideas
@@ -26,13 +28,13 @@ export function RecentIdeasWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Recen
   return (
     <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Idées récentes</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("dashboard.recentIdeasTitle")}</h2>
         <Link href="/boite-idees" className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400">
-          Voir tout
+          {t("dashboard.viewAll")}
         </Link>
       </div>
       {recent.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucune idée pour ces filtres.</p>
+        <p className="text-sm text-muted-foreground ">{t("dashboard.recentIdeasEmpty")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border ">
           {recent.map((idea) => (
@@ -40,7 +42,7 @@ export function RecentIdeasWidget({ filters = DEFAULT_DASHBOARD_FILTERS }: Recen
               <Link href={`/atelier/${idea.id}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <div className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-sm font-medium text-foreground ">
-                    {idea.title || "Sans titre"}
+                    {idea.title || t("dashboard.untitled")}
                   </span>
                   <span className="text-xs text-muted-foreground ">
                     {dateFormatter.format(new Date(idea.updatedAt))}

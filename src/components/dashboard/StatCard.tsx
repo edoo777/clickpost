@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { IconArrowDown, IconArrowUp } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { PerformanceMetric } from "@/types/dashboard";
 
 function Sparkline({ values, positive }: { values: number[]; positive: boolean }) {
@@ -37,6 +38,7 @@ interface StatCardProps extends PerformanceMetric {
 }
 
 export function StatCard({ label, value, change, icon: Icon, accentClass, trend }: StatCardProps) {
+  const t = useTranslations();
   const isPositive = change >= 0;
 
   return (
@@ -60,7 +62,7 @@ export function StatCard({ label, value, change, icon: Icon, accentClass, trend 
         }`}
       >
         {isPositive ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-        {Math.abs(change)}% vs période précédente
+        {Math.abs(change)}% {t("dashboard.metricChangeSuffix")}
       </span>
     </div>
   );

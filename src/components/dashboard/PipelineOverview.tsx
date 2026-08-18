@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { DEFAULT_DASHBOARD_FILTERS, type DashboardFiltersValue } from "@/components/dashboard/DashboardFilters";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface PipelineOverviewProps {
   filters?: DashboardFiltersValue;
 }
 
 export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: PipelineOverviewProps) {
+  const t = useTranslations();
   const { ideas: allIdeas } = useContentWorkspace();
 
   const ideas = allIdeas.filter((idea) => {
@@ -21,25 +23,26 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
   if (ideas.length === 0) {
     return (
       <section
-        aria-label="Aperçu du pipeline d'idées"
+        aria-label={t("dashboard.pipelineTitle")}
         className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-300 bg-surface px-4 py-8 text-center dark:border-white/[.15] "
       >
         <p className="text-sm text-muted-foreground ">
-          Aucune idée {filters.brandId !== "all" || filters.platform !== "all" ? "pour ces filtres" : "pour l'instant"}
-          . Générez des sujets ou créez une idée pour commencer.
+          {filters.brandId !== "all" || filters.platform !== "all"
+            ? t("dashboard.pipelineEmptyFiltered")
+            : t("dashboard.pipelineEmpty")}
         </p>
         <div className="flex items-center gap-3">
           <Link
             href="/boite-idees"
             className="rounded-xl border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            Générateur de sujets
+            {t("dashboard.pipelineGenerator")}
           </Link>
           <Link
             href="/boite-idees"
             className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
-            Banque d&apos;idées
+            {t("dashboard.pipelineBank")}
           </Link>
         </div>
       </section>
@@ -54,21 +57,21 @@ export function PipelineOverview({ filters = DEFAULT_DASHBOARD_FILTERS }: Pipeli
   const transformed = ideas.filter((idea) => idea.publicationId);
 
   const stats = [
-    { key: "active", label: "Idées actives", count: active.length },
-    { key: "withoutDate", label: "Sans date", count: withoutDate.length },
-    { key: "ready", label: "Prêtes à transformer", count: readyToTransform.length },
-    { key: "transformed", label: "Transformées en publication", count: transformed.length },
+    { key: "active", label: t("dashboard.pipelineActive"), count: active.length },
+    { key: "withoutDate", label: t("dashboard.pipelineWithoutDate"), count: withoutDate.length },
+    { key: "ready", label: t("dashboard.pipelineReady"), count: readyToTransform.length },
+    { key: "transformed", label: t("dashboard.pipelineTransformed"), count: transformed.length },
   ];
 
   return (
     <section
-      aria-label="Aperçu du pipeline d'idées"
+      aria-label={t("dashboard.pipelineTitle")}
       className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm  "
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Pipeline d&apos;idées</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("dashboard.pipelineTitle")}</h2>
         <Link href="/boite-idees" className="text-sm font-medium text-violet-600 hover:underline dark:text-violet-400">
-          Voir la banque d&apos;idées
+          {t("dashboard.pipelineViewBank")}
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

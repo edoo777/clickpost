@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { platformIcons } from "@/components/icons";
 import { getNextActor } from "@/lib/approval";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 import { PROMOTION_TASK_LABEL, isTaskDueToday, isTaskOverdue } from "@/lib/promotion";
@@ -33,6 +34,7 @@ type TaskItem = PublicationTaskItem | PromotionTaskItem;
  * action de l'utilisateur courant ET ses tâches de promotion en retard ou dues aujourd'hui —
  * jamais un système de notification séparé, uniquement dérivé des données déjà existantes. */
 export function MyTasksWidget() {
+  const t = useTranslations();
   const { posts } = usePostsSession();
   const { members, currentUserId } = useTeamSession();
   const currentUserName = members.find((member) => member.id === currentUserId)?.name ?? "";
@@ -60,11 +62,11 @@ export function MyTasksWidget() {
   return (
     <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Mes tâches</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("dashboard.myTasksTitle")}</h2>
         <span className="text-xs text-muted-foreground ">{currentUserName}</span>
       </div>
       {myTasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Aucune tâche assignée pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground ">{t("dashboard.myTasksEmpty")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border ">
           {myTasks.map((item) => {
@@ -81,7 +83,7 @@ export function MyTasksWidget() {
                     </span>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate text-sm font-medium text-foreground ">
-                        {item.publication.excerpt || "Sans titre"}
+                        {item.publication.excerpt || t("dashboard.untitled")}
                       </span>
                       <span className="truncate text-xs text-muted-foreground ">{item.publication.brand}</span>
                     </div>
@@ -108,7 +110,7 @@ export function MyTasksWidget() {
                       {PROMOTION_TASK_LABEL[item.task.type]}
                     </span>
                     <span className="truncate text-xs text-muted-foreground ">
-                      {item.publication.excerpt || "Sans titre"}
+                      {item.publication.excerpt || t("dashboard.untitled")}
                     </span>
                   </div>
                   <span
@@ -118,7 +120,7 @@ export function MyTasksWidget() {
                         : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                     }`}
                   >
-                    {item.overdue ? "En retard" : "Aujourd'hui"}
+                    {item.overdue ? t("dashboard.myTasksOverdue") : t("dashboard.myTasksDueToday")}
                   </span>
                 </Link>
               </li>

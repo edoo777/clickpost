@@ -17,11 +17,14 @@ import { RecentActivityWidget } from "@/components/dashboard/RecentActivityWidge
 import { RecentIdeasWidget } from "@/components/dashboard/RecentIdeasWidget";
 import { TopPublicationsWidget } from "@/components/dashboard/TopPublicationsWidget";
 import { UpcomingPosts } from "@/components/dashboard/UpcomingPosts";
+import { useLocale, useTranslations } from "@/lib/i18n/locale-provider";
 
 export function DashboardView() {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [filters, setFilters] = useState<DashboardFiltersValue>(DEFAULT_DASHBOARD_FILTERS);
 
-  const today = new Intl.DateTimeFormat("fr-FR", {
+  const today = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "fr-FR", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -31,7 +34,7 @@ export function DashboardView() {
     <>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-          Tableau de bord
+          {t("dashboard.title")}
         </h1>
         <p className="text-sm capitalize text-muted-foreground ">{today}</p>
       </header>
