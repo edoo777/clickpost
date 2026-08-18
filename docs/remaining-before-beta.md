@@ -1,12 +1,31 @@
 # ClickPost — Ce qui reste avant la bêta (5 à 10 utilisateurs)
 
-Liste stricte, mise à jour à la fin de la session autonome du 2026-08-18 (6e passage —
-internationalisation FR/EN complète du produit, retrait du sélecteur d'identité fictif en
-production, audit complet du parcours utilisateur, correction de la langue des générations IA,
-renforcement des tests automatisés). Ne contient que ce qui reste réellement à faire — voir
+Liste stricte, mise à jour à la fin de la session autonome du 2026-08-18 (7e passage — correctif de
+layout de la sidebar, deuxième audit du parcours complet avec 2 bugs réels corrigés, audit sécurité/
+RLS/Admin sans nouvelle faille). Ne contient que ce qui reste réellement à faire — voir
 `docs/clickpost-product-status.md` pour l'état détaillé fonctionnalité par fonctionnalité.
 
 Depuis la dernière version de ce document :
+- Sidebar : la zone de navigation ne défile plus (retour arrière sur `overflow-y-auto`, demandé
+  explicitement) — tout le contenu (logo, navigation, thème, langue, compte) tient désormais dans
+  la hauteur de la sidebar sur un laptop standard grâce à un resserrement délibéré des paddings/
+  line-heights, sans toucher aux tailles de police principales ni au design.
+- « Ajouter au calendrier » (recommandations d'optimisation ET menu d'actions d'une tendance)
+  créait une idée puis redirigeait vers `/calendrier`, qui n'affiche que des publications — l'idée
+  n'y apparaissait jamais. Corrigé : les deux actions ouvrent maintenant l'Atelier (même parcours
+  que les autres actions), seul chemin réel vers une publication programmée.
+- Le double interrupteur documenté pour l'export PDF Gamma (clé API serveur + interrupteur admin
+  `gamma_pdf_export`) n'était vérifié que par `/api/gamma/config` (qui décide quoi afficher dans
+  l'UI) — `/api/gamma/generate` et `/api/gamma/status` ne revérifiaient que la clé API, jamais
+  l'interrupteur. Un membre de workspace authentifié pouvait donc déclencher une génération Gamma
+  réelle et facturable en appelant directement la route, même interrupteur admin désactivé. Les
+  deux routes appliquent désormais la même double condition.
+- Deuxième audit du parcours complet (inscription → ... → nouvelle planification), sécurité/RLS/
+  Admin : aucune nouvelle faille trouvée au-delà des deux bugs ci-dessus — RLS activée sur 100 % des
+  tables publiques, les 3 routes `/api/admin/*` correctement protégées, architecture multi-
+  plateformes toujours honnête (seul LinkedIn réellement connecté).
+
+Version précédente de ce résumé (session du même jour, passage antérieur) :
 - Le sélecteur « Connecté en tant que » n'est plus visible en production — l'identité réelle de
   l'utilisateur (via son e-mail Supabase) est désormais mise en correspondance automatique avec
   l'annuaire d'équipe local ; le sélecteur manuel ne reste disponible qu'en développement.
@@ -58,6 +77,17 @@ Depuis la dernière version de ce document :
    identifiants Supabase valides.
 7. Responsive : mobile, tablette, desktop, dans les deux langues — non vérifiable par l'agent
    (aucun accès navigateur réel).
+8. **Sidebar** (nouveau) : vérifier sur 1366×768, 1440×900 et 1920×1080 que la totalité de la
+   sidebar (logo, navigation, thème, langue, compte, déconnexion) tient sans défilement ni
+   scrollbar, avec un léger espace visible sous « Déconnexion » sur 1366×768 — resserrement
+   calculé à partir de l'échelle Tailwind, jamais mesuré dans un vrai navigateur par l'agent.
+9. **« Ajouter au calendrier »** (nouveau, corrigé) : depuis une recommandation d'optimisation ou
+   le menu d'actions d'une tendance, vérifier que l'action ouvre bien l'Atelier avec l'idée créée
+   (et non plus un calendrier vide).
+10. **Export PDF Gamma** (nouveau, corrigé) : avec `GAMMA_API_KEY` configurée mais l'interrupteur
+    admin `gamma_pdf_export` désactivé, vérifier qu'un appel direct à `/api/gamma/generate` est
+    bien refusé (503) — ce correctif n'a pas de test automatisé, seulement vérifié par lecture du
+    code et typecheck.
 8. États de chargement / erreur / vide sur les principaux écrans (dashboard, calendrier,
    publications, boîte à idées, tendances, rapports) — relus dans le code cette session, jamais
    testés en conditions réelles de réseau lent ou d'erreur serveur.
@@ -72,7 +102,13 @@ Depuis la dernière version de ce document :
   un utilisateur en anglais verra un mélange FR/EN au-delà du tableau de bord. La prochaine étape à
   plus fort effet de levier serait de convertir ces trois tables de libellés partagées en clés de
   traduction (un seul point de changement, propagé automatiquement partout où elles sont
-  utilisées) plutôt que de traduire page par page.
+  utilisées) plutôt que de traduire page par page — chiffré cette session : `STATUS_LABEL` et
+  `PLATFORM_LABEL` sont utilisés dans 51 fichiers, `FORMAT_LABEL` dans 19, `IDEA_STATUS_LABEL` dans
+  5, `ACCOUNT_STATUS_LABEL` dans 6, `PROMOTION_TASK_LABEL` dans 3 (dont quelques fichiers `src/lib`
+  non-UI comme les prompts IA ou le générateur de rapports, qui doivent rester en français car ils
+  produisent du contenu, pas de l'interface — à exclure de la conversion). Volontairement pas
+  entamé cette session : trop large pour être fiable sans revue visuelle, et les priorités
+  explicites de la session (audit, sécurité, workflow) passaient avant.
 - **Sélecteur d'identité — décision appliquée, à valider en usage réel** : l'auto-association par
   e-mail suppose qu'un utilisateur réel a une entrée dans l'annuaire d'équipe local (toujours un
   jeu de données fictif, voir ci-dessous) avec la même adresse. Si aucune correspondance n'existe,

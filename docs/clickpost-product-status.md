@@ -1,9 +1,10 @@
 # ClickPost — État produit détaillé
 
-Photographie de l'état réel du produit à la fin de la session autonome du 2026-08-18 (6e passage —
-i18n FR/EN complète du produit, retrait du sélecteur d'identité fictif en production, audit du
-parcours complet avec correction de 4 bugs réels, correction de la langue des 5 routes IA qui
-l'ignoraient encore, renforcement des tests automatisés). Classification stricte :
+Photographie de l'état réel du produit à la fin de la session autonome du 2026-08-18 (7e passage —
+correctif de layout de la sidebar sur demande explicite, deuxième audit du parcours complet (2
+bugs réels corrigés : « Ajouter au calendrier » n'atteignait jamais le calendrier, interrupteur
+admin Gamma non appliqué côté serveur), audit sécurité/RLS/Admin sans nouvelle faille. Classification
+stricte :
 
 - **DONE** — construit, câblé à des données réelles, vérifié (build/typecheck/lint et, quand
   possible, vérification live en base ou sur route).
@@ -88,8 +89,9 @@ signale l'absence de ce niveau de preuve, pas nécessairement un bug.
 | Analyse déterministe des performances réelles (jamais de donnée inventée) | DONE (préexistant + amélioré) | Oui (tests automatisés, y compris garanties anti-invention) | — | — |
 | Recommandations « meilleur contenu » et « contenu faible » | DONE | Oui (tests automatisés) | — | — |
 | Message explicite si données insuffisantes | DONE | Oui (test automatisé) | — | — |
-| Bouton → envoi vers générateur d'idées / calendrier | DONE (préexistant, vérifié conforme) | Partiel | — | Test navigateur humain |
+| Bouton « Ajouter au calendrier » → ouvre réellement un parcours qui mène à une publication programmée | DONE (corrigé cette session — bug trouvé par le 2e audit : redirigeait vers `/calendrier`, qui n'affiche que des publications, jamais l'idée nouvellement créée) | Oui (typecheck, lint, build) | — | Test navigateur humain |
 | Ciblage de la marque active lors de la création d'idée depuis une recommandation | DONE (corrigé cette session — bug trouvé par l'audit : créait toujours l'idée sur la première marque du workspace, pas la marque filtrée sur la page) | Oui (typecheck, tests existants) | — | Test navigateur humain |
+| « Ajouter au calendrier » depuis le menu d'actions d'une tendance (Tendances) | DONE (même bug, même corrective, corrigé cette session) | Oui (typecheck, lint, build) | — | Test navigateur humain |
 
 ## 7. Chantier 7 — Admin
 
@@ -101,7 +103,8 @@ signale l'absence de ce niveau de preuve, pas nécessairement un bug.
 | Gestion des utilisateurs | DONE (préexistant) | Partiel | — | Test navigateur humain |
 | Informations système utiles | DONE (préexistant) | Partiel | — | Test navigateur humain |
 | Secrets/clés API jamais visibles dans l'Admin | DONE | Oui (vérifié par lecture du code — aucune route n'expose de secret) | — | — |
-| Feature flags | NOT STARTED | — | — | Aucun système de feature flags n'existe encore dans le produit — à concevoir si besoin futur |
+| Feature flags (`/admin/fonctionnalites`, table `feature_flags`) | DONE (préexistant — corrigée cette ligne du tableau, elle indiquait à tort NOT STARTED) | Partiel | — | Test navigateur humain |
+| Feature flag « Export PDF Gamma » réellement appliqué aux routes qui génèrent/interrogent un PDF | DONE (corrigé cette session — bug trouvé par le 2e audit : seul `/api/gamma/config` vérifiait l'interrupteur ; `/api/gamma/generate` et `/api/gamma/status` ne vérifiaient que la clé API, rendant l'interrupteur admin cosmétique — un appel direct à la route pouvait déclencher une génération Gamma réelle et facturable même désactivé) | Oui (typecheck) — pas de test automatisé (nécessiterait de mocker Supabase/next headers, absent des conventions de test actuelles) | — | Test navigateur humain (basculer l'interrupteur, vérifier le refus 503) |
 | `/admin/utilisateurs` — erreurs Supabase visibles (pas une fausse liste vide) | DONE (corrigé cette session — bug trouvé par l'audit : une erreur sur l'un des 3 appels Supabase rendait silencieusement un tableau vide) | Oui (typecheck) | — | Test navigateur humain |
 
 ## 8. Qualité avant bêta
@@ -115,7 +118,10 @@ signale l'absence de ce niveau de preuve, pas nécessairement un bug.
 | Vérification des routes (accès non authentifié) | DONE | Oui (live : `/`, `/admin`, `/publications`, `/calendrier`, `/parametres`, `/api/admin/prompts` → 307 sans session) | — | — |
 | Vérification auth | DONE | Oui | — | — |
 | Séparation multi-workspace | DONE | Oui (vérifiée dans les sessions précédentes + relecture RLS) | — | — |
-| RLS (advisors Supabase) | DONE | Oui — seules les 6 alertes WARN déjà documentées/acceptées, aucune nouvelle malgré la nouvelle migration de cette session | — | — |
+| RLS (advisors Supabase) | DONE | Oui — seules les 6 alertes WARN déjà documentées/acceptées, aucune nouvelle | — | — |
+| RLS activée sur toutes les tables publiques | DONE (vérifié cette session par requête directe sur `pg_class.relrowsecurity`) | Oui — 0 table avec RLS désactivée | — | — |
+| Routes `/api/admin/*` protégées indépendamment du client | DONE (vérifié cette session — les 3 routes utilisent `requirePlatformAdmin()`) | Oui | — | — |
+| Sidebar — tient sans défilement sur laptop standard (1366×768+) | DONE (corrigé cette session, sur demande explicite : padding/line-height resserrés, `overflow-y-auto` retiré) | Non — calculé à partir de l'échelle Tailwind, jamais mesuré dans un vrai navigateur | — | Test navigateur humain sur 1366×768 / 1440×900 / 1920×1080 |
 | Responsive (mobile/tablette/desktop) | BLOCKED | Non | Nécessite un navigateur réel — l'agent n'a pas d'accès visuel | Test navigateur humain |
 | Vérification FR | DONE | Oui (live via curl : landing page et pages d'authentification rendues en français par défaut) | — | Test navigateur humain sur le reste de l'application |
 | Vérification EN | DONE | Oui (live via curl avec cookie `clickpost-locale=en` : landing page et pages d'authentification rendues en anglais, `<html lang="en">` correct) | — | Test navigateur humain sur le reste de l'application |
