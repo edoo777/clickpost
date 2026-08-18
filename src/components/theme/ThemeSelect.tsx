@@ -33,7 +33,7 @@ export function ThemeSelect({ surface = "light" }: ThemeSelectProps) {
             role="radio"
             aria-checked={isActive}
             onClick={() => setTheme(value)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs transition-all ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2.5 py-1 text-xs leading-none transition-all ${
               isActive
                 ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 font-semibold text-white shadow-sm shadow-fuchsia-500/30"
                 : onDarkSurface

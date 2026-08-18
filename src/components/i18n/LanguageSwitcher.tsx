@@ -32,7 +32,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           type="button"
           onClick={() => handleChange(option)}
           aria-pressed={locale === option}
-          className={`rounded-md px-2.5 py-1 transition-colors ${
+          className={`rounded-md px-2.5 py-0.5 leading-tight transition-colors ${
             locale === option
               ? "bg-violet-600 text-white"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"

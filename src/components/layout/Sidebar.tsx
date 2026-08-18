@@ -61,7 +61,7 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   aria-current={isActive ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 rounded-full px-3 py-1.5 text-sm font-medium leading-tight transition-all ${
                     isCollapsed ? "lg:hidden" : ""
                   } ${
                     isActive
@@ -92,7 +92,7 @@ export function Sidebar() {
               onClick={() => setIsMobileOpen(false)}
               aria-current={isActive ? "page" : undefined}
               aria-label={t(item.labelKey)}
-              className={`group relative flex items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-all ${
+              className={`group relative flex items-center gap-3 rounded-full px-3 py-1.5 text-sm font-medium leading-tight transition-all ${
                 isCollapsed ? "lg:justify-center" : ""
               } ${
                 isActive
@@ -155,7 +155,7 @@ export function Sidebar() {
         {/* Zone fixe du haut : logo, réduction, action principale — ne défile jamais. */}
         <div className="sidebar-top-zone shrink-0">
           <div
-            className={`flex items-center gap-2.5 px-5 py-4 ${
+            className={`flex items-center gap-2.5 px-4 py-3 ${
               isCollapsed ? "lg:justify-center lg:px-3" : "justify-between"
             }`}
           >
@@ -163,7 +163,9 @@ export function Sidebar() {
               <span className="accent-halo flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
                 <IconLogoMark className="h-5 w-5 text-white" />
               </span>
-              <span className={`text-lg font-semibold tracking-tight text-white ${isCollapsed ? "lg:hidden" : ""}`}>
+              <span
+                className={`text-lg font-semibold leading-tight tracking-tight text-white ${isCollapsed ? "lg:hidden" : ""}`}
+              >
                 ClickPost
               </span>
             </Link>
@@ -180,14 +182,14 @@ export function Sidebar() {
             </div>
           </div>
 
-          <div className="hidden px-3 pb-2 lg:block">
+          <div className="hidden px-3 pb-1.5 lg:block">
             <button
               type="button"
               onClick={toggleCollapsed}
               aria-expanded={!isCollapsed}
               aria-controls="clickpost-sidebar-nav"
               aria-label={isCollapsed ? t("nav.expandSidebar") : t("nav.collapseSidebar")}
-              className={`group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white/50 transition-all hover:bg-white/[.08] hover:text-white ${
+              className={`group relative flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium leading-tight text-white/50 transition-all hover:bg-white/[.08] hover:text-white ${
                 isCollapsed ? "justify-center" : ""
               }`}
             >
@@ -204,12 +206,12 @@ export function Sidebar() {
             </button>
           </div>
 
-          <div className="px-3 pb-2">
+          <div className="px-3 pb-1.5">
             <Link
               href="/publications/new"
               onClick={() => setIsMobileOpen(false)}
               aria-label={t("nav.createPublication")}
-              className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:opacity-90`}
+              className={`group relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary px-4 py-2 text-sm font-semibold leading-tight text-white shadow-lg shadow-fuchsia-900/40 transition-all hover:opacity-90`}
             >
               <span className="text-base leading-none">+</span>
               <span className={isCollapsed ? "lg:hidden" : ""}>{t("nav.createPublication")}</span>
@@ -227,38 +229,39 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Zone centrale : seule zone qui défile. `min-h-0` est indispensable ici — sans lui, un
-            enfant flex-1 garde `min-height: auto` et ne peut jamais devenir plus petit que son
-            contenu, ce qui pousse la zone du bas (thème/langue/compte) hors de l'écran sur les
-            hauteurs réduites (ex. 1366×768) au lieu de la laisser toujours visible. */}
-        <nav id="clickpost-sidebar-nav" className="min-h-0 flex-1 overflow-y-auto px-3">
-          <div className="flex flex-col gap-1 pb-2">{renderNavGroup(PRIMARY_NAV_ITEMS)}</div>
+        {/* Zone centrale : jamais de défilement — le budget vertical de la sidebar (zones haut/bas
+            comprises) est volontairement resserré (padding, hauteur des boutons, line-height) pour
+            que tout tienne sans scroll ni flèches sur un laptop standard (1366×768 et plus). */}
+        <nav id="clickpost-sidebar-nav" className="flex-1 px-3">
+          <div className="flex flex-col gap-1 pb-1.5">{renderNavGroup(PRIMARY_NAV_ITEMS)}</div>
         </nav>
 
         {/* Zone fixe du bas : préférences et session — jamais de carte marque/workspace
             (déjà accessible via la barre supérieure et l'avatar de profil). */}
         <div className={`sidebar-bottom-zone shrink-0 border-t border-white/[.06] ${isCollapsed ? "lg:border-t-0" : ""}`}>
-          <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
-            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">{t("nav.theme")}</label>
+          <div className={`flex flex-col gap-1 px-3 pt-1.5 ${isCollapsed ? "lg:hidden" : ""}`}>
+            <label className="px-1 text-[10px] font-medium uppercase leading-none tracking-wide text-white/30">
+              {t("nav.theme")}
+            </label>
             <ThemeSelect surface="dark" />
           </div>
 
-          <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
-            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
+          <div className={`flex flex-col gap-1 px-3 pt-1.5 ${isCollapsed ? "lg:hidden" : ""}`}>
+            <label className="px-1 text-[10px] font-medium uppercase leading-none tracking-wide text-white/30">
               {t("common.languageSwitcherLabel")}
             </label>
             <LanguageSwitcher compact />
           </div>
 
           {process.env.NODE_ENV !== "production" && (
-            <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
-              <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
+            <div className={`flex flex-col gap-1 px-3 pt-1.5 ${isCollapsed ? "lg:hidden" : ""}`}>
+              <label className="px-1 text-[10px] font-medium uppercase leading-none tracking-wide text-white/30">
                 {t("nav.connectedAs")} (dev)
               </label>
               <select
                 value={currentUserId}
                 onChange={(event) => setCurrentUserId(event.target.value)}
-                className="rounded-lg border border-white/[.1] bg-white/[.04] px-2 py-1.5 text-xs text-white/80"
+                className="rounded-lg border border-white/[.1] bg-white/[.04] px-2 py-1 text-xs leading-tight text-white/80"
               >
                 {members.map((member) => (
                   <option key={member.id} value={member.id} className="text-black">
@@ -269,11 +272,11 @@ export function Sidebar() {
             </div>
           )}
 
-          <div className={`px-3 py-2 ${isCollapsed ? "lg:hidden" : ""}`}>
+          <div className={`px-3 py-1.5 ${isCollapsed ? "lg:hidden" : ""}`}>
             <button
               type="button"
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:bg-white/[.06] hover:text-white"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs font-medium leading-tight text-white/60 transition-colors hover:bg-white/[.06] hover:text-white"
             >
               <IconLogout className="h-4 w-4 shrink-0" />
               {t("common.signOut")}
