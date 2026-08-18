@@ -248,22 +248,24 @@ export function Sidebar() {
             <LanguageSwitcher compact />
           </div>
 
-          <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
-            <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
-              {t("nav.connectedAs")}
-            </label>
-            <select
-              value={currentUserId}
-              onChange={(event) => setCurrentUserId(event.target.value)}
-              className="rounded-lg border border-white/[.1] bg-white/[.04] px-2 py-1.5 text-xs text-white/80"
-            >
-              {members.map((member) => (
-                <option key={member.id} value={member.id} className="text-black">
-                  {member.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {process.env.NODE_ENV !== "production" && (
+            <div className={`flex flex-col gap-1.5 px-3 pt-2 ${isCollapsed ? "lg:hidden" : ""}`}>
+              <label className="px-1 text-[11px] font-medium uppercase tracking-wide text-white/30">
+                {t("nav.connectedAs")} (dev)
+              </label>
+              <select
+                value={currentUserId}
+                onChange={(event) => setCurrentUserId(event.target.value)}
+                className="rounded-lg border border-white/[.1] bg-white/[.04] px-2 py-1.5 text-xs text-white/80"
+              >
+                {members.map((member) => (
+                  <option key={member.id} value={member.id} className="text-black">
+                    {member.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className={`px-3 py-2 ${isCollapsed ? "lg:hidden" : ""}`}>
             <button
