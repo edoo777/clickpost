@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { ThemeRow } from "@/components/themes/ThemeRow";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { getThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 
 export function ThemesView() {
+  const t = useTranslations();
   const { themes, addTheme, updateTheme, toggleThemeActive, toggleThemeWeekday, moveTheme, removeTheme } =
     useThemesSession();
   const { brands } = useBrandsSession();
@@ -21,7 +23,7 @@ export function ThemesView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-          Thématiques
+          {t("pageTitle.themes")}
         </h1>
         <p className="text-sm text-muted-foreground ">
           Gérez la bibliothèque de thématiques de chaque marque et attribuez-les librement aux jours

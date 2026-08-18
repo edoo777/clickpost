@@ -14,10 +14,12 @@ import { PublicationsViewSwitcher } from "@/components/publications/view/Publica
 import { SavedViewsBar } from "@/components/publications/view/SavedViewsBar";
 import { filterPublications, sortPublications } from "@/components/publications/view/filter-sort-publications";
 import { usePublicationsViewState } from "@/components/publications/view/usePublicationsViewState";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 import { restoreScrollTop } from "@/lib/scroll-container";
 
 export function PublicationsListView() {
+  const t = useTranslations();
   const router = useRouter();
   const { posts } = usePostsSession();
   const view = usePublicationsViewState();
@@ -49,7 +51,7 @@ export function PublicationsListView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Publications</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.publications")}</h1>
           <p className="text-sm text-muted-foreground ">
             {sorted.length} publication{sorted.length > 1 ? "s" : ""} affichée{sorted.length > 1 ? "s" : ""}
           </p>

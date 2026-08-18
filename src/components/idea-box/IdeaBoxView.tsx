@@ -5,6 +5,7 @@ import { useState } from "react";
 import { IconLightbulb } from "@/components/icons";
 import { IdeasBankListView } from "@/components/ideas-bank/IdeasBankListView";
 import { TopicGeneratorView } from "@/components/topic-generator/TopicGeneratorView";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 type IdeaBoxTab = "generateur" | "banque";
 
@@ -18,6 +19,7 @@ function tabFromParam(value: string | null): IdeaBoxTab {
 }
 
 export function IdeaBoxView() {
+  const t = useTranslations();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [tab, setTab] = useState<IdeaBoxTab>(() => tabFromParam(tabParam));
@@ -39,7 +41,7 @@ export function IdeaBoxView() {
             <IconLightbulb className="h-5 w-5 text-white" />
           </span>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Boîte à idées
+            {t("pageTitle.ideasBank")}
           </h1>
         </div>
         <p className="text-sm text-muted-foreground">

@@ -60,6 +60,13 @@ const fr = {
     themes: "Thématiques",
     admin: "Administration ClickPost",
   },
+  pageHeader: {
+    accountsAffiliated: "Comptes affiliés",
+    approvalQueue: "File d'approbation",
+    assistantPreparation: "Assistant IA de préparation",
+    performancesAndReports: "Performances et rapports",
+    settingsSubtitle: "Paramètres généraux utilisés dans toute la plateforme.",
+  },
   common: {
     save: "Enregistrer",
     cancel: "Annuler",

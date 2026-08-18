@@ -7,9 +7,11 @@ import { ConflictListItem } from "@/components/conflicts/ConflictListItem";
 import { useBrandsSession } from "@/lib/brands-store";
 import { getConflictBrandRef, getConflictTitle } from "@/lib/conflict-display";
 import { useConflictsSession } from "@/lib/conflicts-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { ConflictEntry } from "@/types/conflict";
 
 export function ConflictCenterView() {
+  const t = useTranslations();
   const { conflicts, isLoading, resolve } = useConflictsSession();
   const { brands } = useBrandsSession();
   const [filters, setFilters] = useState<ConflictFiltersValue>(DEFAULT_CONFLICT_FILTERS);
@@ -66,7 +68,7 @@ export function ConflictCenterView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Centre des conflits</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.conflictCenter")}</h1>
         <p className="text-sm text-muted-foreground">
           {conflicts.length === 0
             ? "Aucun conflit de synchronisation en attente."

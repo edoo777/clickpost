@@ -6,6 +6,7 @@ import { AssistantGenerationStep } from "@/components/assistant-ia/AssistantGene
 import { useBrandsSession } from "@/lib/brands-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { FORMAT_LABEL, WEEKDAY_LABEL } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { getActiveDays } from "@/lib/idea-scheduling";
 import { PLATFORM_LABEL } from "@/lib/post-status";
 import { getActiveThemesForBrand } from "@/lib/themes";
@@ -21,6 +22,7 @@ const STEP_LABELS: { key: WizardStep; label: string }[] = [
 ];
 
 export function AssistantPreparationView() {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const [step, setStep] = useState<WizardStep>("brand");
@@ -55,7 +57,7 @@ export function AssistantPreparationView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-          Assistant IA de préparation
+          {t("pageHeader.assistantPreparation")}
         </h1>
         <p className="text-sm text-muted-foreground ">
           Un parcours guidé, en mode démonstration, pour préparer rapidement le

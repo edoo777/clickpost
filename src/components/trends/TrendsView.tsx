@@ -10,6 +10,7 @@ import { buildDefaultFilters, TrendsFilterBar, type TrendFilters } from "@/compo
 import { YoutubeTrendsSection, type YoutubeSectionState } from "@/components/trends/YoutubeTrendsSection";
 import { IconTrendingUp } from "@/components/icons";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useThemesSession } from "@/lib/themes-store";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { fetchPlatformNews, fetchYoutubeTrends } from "@/lib/trends/client";
@@ -26,6 +27,7 @@ const TABS: { key: TrendsTab; label: string }[] = [
 ];
 
 export function TrendsView() {
+  const t = useTranslations();
   const { activeBrand } = useBrandsSession();
   const { themes } = useThemesSession();
   const brandThemes = activeBrand ? getActiveThemesForBrand(themes, activeBrand.id) : [];
@@ -106,7 +108,7 @@ export function TrendsView() {
           <span className="accent-halo flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">
             <IconTrendingUp className="h-5 w-5 text-white" />
           </span>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Tendances</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.trends")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Sources officielles, publiques et traçables uniquement — YouTube Data API v3 et flux officiels des

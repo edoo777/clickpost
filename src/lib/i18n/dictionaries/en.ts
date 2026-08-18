@@ -56,6 +56,13 @@ const en = {
     themes: "Themes",
     admin: "ClickPost Admin",
   },
+  pageHeader: {
+    accountsAffiliated: "Affiliated accounts",
+    approvalQueue: "Approval queue",
+    assistantPreparation: "AI preparation assistant",
+    performancesAndReports: "Performance & reports",
+    settingsSubtitle: "General settings used across the whole platform.",
+  },
   common: {
     save: "Save",
     cancel: "Cancel",

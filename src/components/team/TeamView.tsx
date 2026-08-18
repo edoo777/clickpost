@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { InviteMemberPanel, type NewMemberInput } from "@/components/team/InviteMemberPanel";
 import { TeamTable } from "@/components/team/TeamTable";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useTeamSession } from "@/lib/team-store";
 import type { TeamRole } from "@/types/team";
 
 export function TeamView() {
+  const t = useTranslations();
   const { members, addMember, updateMember, removeMember } = useTeamSession();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export function TeamView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Équipe</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.team")}</h1>
           <p className="text-sm text-muted-foreground ">
             {members.length} membre{members.length > 1 ? "s" : ""}
           </p>

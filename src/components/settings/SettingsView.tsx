@@ -15,6 +15,7 @@ import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { DEFAULT_AGENCY_SETTINGS } from "@/lib/settings-data";
 import { useSettingsSession } from "@/lib/settings-store";
 import { useTeamSession } from "@/lib/team-store";
@@ -22,6 +23,7 @@ import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { AgencySettings } from "@/types/settings";
 
 export function SettingsView() {
+  const t = useTranslations();
   const { settings, setSettings } = useSettingsSession();
   const { members } = useTeamSession();
   const { accounts } = useAccountsSession();
@@ -60,9 +62,9 @@ export function SettingsView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Paramètres</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.settings")}</h1>
           <p className="text-sm text-muted-foreground ">
-            Paramètres généraux utilisés dans toute la plateforme.
+            {t("pageHeader.settingsSubtitle")}
           </p>
         </header>
 

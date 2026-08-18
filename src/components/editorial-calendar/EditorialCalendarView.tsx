@@ -7,6 +7,7 @@ import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { WEEKDAYS } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { BrandEditorialCalendar, EditorialDayPlan, EditorialWeekPlan } from "@/types/editorial-calendar";
@@ -44,6 +45,7 @@ function buildCalendarForBrand(brandId: string): BrandEditorialCalendar {
 }
 
 export function EditorialCalendarView() {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { addIdea } = useContentWorkspace();
@@ -88,7 +90,7 @@ export function EditorialCalendarView() {
     return (
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Calendrier éditorial</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.editorialCalendar")}</h1>
           <p className="text-sm text-muted-foreground">
             Définissez les thématiques récurrentes de chaque marque pour guider la génération de contenu.
           </p>
@@ -175,7 +177,7 @@ export function EditorialCalendarView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-          Calendrier éditorial
+          {t("pageTitle.editorialCalendar")}
         </h1>
         <p className="text-sm text-muted-foreground ">
           Définissez les thématiques récurrentes de chaque marque pour guider la génération de

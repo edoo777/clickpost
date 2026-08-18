@@ -10,6 +10,7 @@ import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { isDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
 import { buildIdeaFromSeed } from "@/lib/develop-idea";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { usePostsSession } from "@/lib/posts-store";
 import { buildReportKpiSnapshot } from "@/lib/reports/build-report-data";
@@ -273,9 +274,10 @@ export function ReportsView() {
 }
 
 function Header() {
+  const t = useTranslations();
   return (
     <header className="flex flex-col gap-1">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Rapports</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.reports")}</h1>
       <p className="text-sm text-muted-foreground">
         Générez un rapport professionnel — interne, client ou exécutif — sur le travail réalisé et
         la performance d&apos;une marque.

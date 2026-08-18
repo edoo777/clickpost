@@ -10,9 +10,11 @@ import {
 } from "@/components/accounts/AccountsFilters";
 import { AddAccountPanel, type NewAccountInput } from "@/components/accounts/AddAccountPanel";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 
 export function AccountsListView() {
+  const t = useTranslations();
   const { accounts, addAccount, updateAccount, removeAccount } = useAccountsSession();
   const { posts } = usePostsSession();
   const [filters, setFilters] = useState<AccountsFiltersValue>(DEFAULT_ACCOUNTS_FILTERS);
@@ -78,7 +80,7 @@ export function AccountsListView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Comptes affiliés</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageHeader.accountsAffiliated")}</h1>
           <p className="text-sm text-muted-foreground ">
             {filteredAccounts.length} compte{filteredAccounts.length > 1 ? "s" : ""} affiché
             {filteredAccounts.length > 1 ? "s" : ""} — profils enregistrés localement ; connexion

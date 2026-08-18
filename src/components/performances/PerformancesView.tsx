@@ -39,6 +39,7 @@ import {
 import { toISODate } from "@/lib/date-utils";
 import { useBrandsSession } from "@/lib/brands-store";
 import { isDemoAnalyticsEnabled, setDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { buildOptimizationRecommendations } from "@/lib/optimization-recommendations";
 import { usePostsSession } from "@/lib/posts-store";
@@ -77,6 +78,7 @@ function buildInitialFilters(): PerformancesFiltersValue {
 }
 
 export function PerformancesView() {
+  const t = useTranslations();
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
@@ -172,7 +174,7 @@ export function PerformancesView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
-          Performances et rapports
+          {t("pageHeader.performancesAndReports")}
         </h1>
         <p className="text-sm text-muted-foreground ">
           Analyse des marques, comptes et publications pour identifier ce qui fonctionne le mieux.

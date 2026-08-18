@@ -30,6 +30,7 @@ import {
 } from "@/lib/topic-generator";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Brand } from "@/types/brand";
 import type { Idea } from "@/types/idea";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
@@ -96,6 +97,7 @@ function patchLot(
 }
 
 export function TopicGeneratorView() {
+  const t = useTranslations();
   const { brands, activeBrandId } = useBrandsSession();
   const { themes } = useThemesSession();
   const {
@@ -672,7 +674,7 @@ export function TopicGeneratorView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Générateur de sujets</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.topicGenerator")}</h1>
         <p className="text-sm text-muted-foreground ">
           Génère un ou plusieurs blocs de sujets, un par thématique, avec leur propre répartition de
           types de contenu — par lots de {DEFAULT_LOT_SIZE} pour rester fiable sur de grandes demandes.

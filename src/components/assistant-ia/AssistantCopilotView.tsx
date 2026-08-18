@@ -8,6 +8,7 @@ import { useThemesSession } from "@/lib/themes-store";
 import { runCopilotConversation } from "@/lib/ai/copilot-client";
 import type { CopilotHistoryItem } from "@/lib/ai/validate-copilot-request";
 import { IconSparkles, IconSend, IconLightbulb, IconChatBubble, IconClock } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 const SUGGESTIONS = [
   "Que devrais-je publier cette semaine ?",
@@ -31,6 +32,7 @@ function buildContextSummary(brandName: string, accountsCount: number, ideasCoun
 }
 
 export function AssistantCopilotView() {
+  const t = useTranslations();
   const { activeBrand, brands } = useBrandsSession();
   const { ideas } = useContentWorkspace();
   const { posts } = usePostsSession();
@@ -99,7 +101,7 @@ export function AssistantCopilotView() {
       <header className="flex flex-col gap-2">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Copilote éditorial IA</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.assistant")}</h1>
             <p className="max-w-3xl text-sm text-muted-foreground">
               Un assistant conversationnel connecté à votre contexte ClickPost : marque, calendrier, idées
               et publications.

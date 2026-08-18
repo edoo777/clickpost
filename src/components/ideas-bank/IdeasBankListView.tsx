@@ -1,6 +1,7 @@
 "use client";
 
 import { NotesView } from "@/components/ideas-bank/notes/NotesView";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 /**
  * Onglet « Banque d'idées » de la Boîte à idées — simplifié à la seule vue Notes (Cartes/
@@ -9,10 +10,11 @@ import { NotesView } from "@/components/ideas-bank/notes/NotesView";
  * sélecteur de vue ni barre de filtres Idée (celle-ci ne s'appliquait qu'à Cartes/Tableau/Kanban).
  */
 export function IdeasBankListView() {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Banque d&apos;idées</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.ideasBankPage")}</h1>
         <p className="text-sm text-muted-foreground">Notes</p>
       </header>
       <NotesView />

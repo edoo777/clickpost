@@ -14,6 +14,7 @@ import {
 import { PublicationsFilters } from "@/components/publications/PublicationsFilters";
 import { filterPublications } from "@/components/publications/view/filter-sort-publications";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { resolveDefaultCountryCode } from "@/lib/holidays/resolve-default-region";
 import { useHolidayOptions } from "@/lib/holidays/use-holiday-options";
 import { useHolidays } from "@/lib/holidays/use-holidays";
@@ -30,6 +31,7 @@ import type { ImportantDate } from "@/types/important-date";
  * importantes » est propre à cette page — jamais rendu dans /publications?view=calendar.
  */
 export function CalendrierPageView() {
+  const t = useTranslations();
   const router = useRouter();
   const { posts } = usePostsSession();
   const { profile } = useWorkspaceSession();
@@ -103,7 +105,7 @@ export function CalendrierPageView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Calendrier éditorial</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.editorialCalendar")}</h1>
           <p className="text-sm text-muted-foreground ">
             {filtered.length} publication{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
           </p>
