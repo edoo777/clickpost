@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { IconWand } from "@/components/icons";
 import { NOTE_QUICK_ACTIONS, type NoteQuickActionDefinition } from "@/lib/ai/quick-actions";
 import { runNoteQuickAction } from "@/lib/banque-quick-action";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 const ITEM_CLASS =
   "block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-violet-50 hover:text-violet-700 dark:hover:bg-violet-500/10 dark:hover:text-violet-300";
@@ -36,6 +37,7 @@ interface NoteQuickActionsMenuProps {
  * silencieusement). Aperçu obligatoire avant toute application, jamais d'écrasement direct.
  */
 export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCopy }: NoteQuickActionsMenuProps) {
+  const t = useTranslations();
   const [state, setState] = useState<MenuState>({ phase: "closed" });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +73,7 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
     if (!editor) return;
     const content = selection ? selection.text : editor.getText();
     if (!content.trim()) {
-      setState({ phase: "error", message: "Rien à améliorer — la note est vide." });
+      setState({ phase: "error", message: t("ideasBank.noteQuickActions.emptyNoteError") });
       return;
     }
     setState({ phase: "loading", action, selection });
@@ -135,11 +137,15 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
         className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
       >
         <IconWand className="h-3.5 w-3.5" />
-        Améliorer avec l&apos;IA
+        {t("ideasBank.noteQuickActions.improveWithAi")}
       </button>
 
       {state.phase === "open" && (
-        <div role="menu" aria-label="Améliorer avec l'IA" className="absolute right-0 top-full z-50 mt-1 w-64 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-xl">
+        <div
+          role="menu"
+          aria-label={t("ideasBank.noteQuickActions.improveWithAi")}
+          className="absolute right-0 top-full z-50 mt-1 w-64 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-xl"
+        >
           {NOTE_QUICK_ACTIONS.map((action) => (
             <button key={action.key} type="button" role="menuitem" onClick={(event) => handlePickAction(event, action)} className={ITEM_CLASS}>
               {action.label}
@@ -151,7 +157,7 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
       {state.phase === "confirmWholeNote" && (
         <div onClick={stop} className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border border-border bg-surface-elevated p-3 shadow-xl">
           <p className="mb-2 text-xs text-muted-foreground ">
-            Aucun texte sélectionné — « {state.action.label} » sera appliqué à toute la note. Continuer ?
+            {t("ideasBank.noteQuickActions.confirmWholeNote", { action: state.action.label })}
           </p>
           <div className="flex gap-2">
             <button
@@ -159,10 +165,10 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
               onClick={() => void execute(state.action, null)}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white"
             >
-              Continuer
+              {t("ideasBank.noteQuickActions.continue")}
             </button>
             <button type="button" onClick={() => setState({ phase: "closed" })} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground ">
-              Annuler
+              {t("common.cancel")}
             </button>
           </div>
         </div>
@@ -170,7 +176,7 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
 
       {state.phase === "loading" && (
         <div onClick={stop} className="absolute right-0 top-full z-50 mt-1 w-64 rounded-xl border border-border bg-surface-elevated p-3 text-xs text-muted-foreground shadow-xl">
-          Génération en cours avec Claude…
+          {t("ideasBank.noteQuickActions.generatingWithClaude")}
         </div>
       )}
 
@@ -178,7 +184,7 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
         <div onClick={stop} className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border border-red-200 bg-surface-elevated p-3 shadow-xl dark:border-red-500/30">
           <p className="mb-2 text-xs text-red-600 dark:text-red-400">{state.message}</p>
           <button type="button" onClick={() => setState({ phase: "closed" })} className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground ">
-            Fermer
+            {t("common.close")}
           </button>
         </div>
       )}
@@ -186,8 +192,8 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
       {state.phase === "preview" && (
         <div onClick={stop} className="absolute right-0 top-full z-50 mt-1 w-96 rounded-xl border border-violet-300 bg-surface-elevated p-3 shadow-xl dark:border-violet-500/30">
           <p className="mb-1 text-xs font-semibold text-foreground ">
-            Aperçu — {state.action.label}
-            {state.selection ? " (sur la sélection)" : " (sur toute la note)"}
+            {t("ideasBank.noteQuickActions.previewPrefix", { action: state.action.label })}
+            {state.selection ? t("ideasBank.noteQuickActions.onSelection") : t("ideasBank.noteQuickActions.onWholeNote")}
           </p>
           <div className="mb-2 flex max-h-56 flex-col gap-1.5 overflow-y-auto">
             {state.items.map((item, index) => (
@@ -208,7 +214,7 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
           <div className="flex flex-wrap gap-1.5">
             {state.selection && (
               <button type="button" onClick={handleApplyReplace} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-xs font-semibold text-white">
-                Remplacer la sélection
+                {t("ideasBank.noteQuickActions.replaceSelection")}
               </button>
             )}
             <button
@@ -216,13 +222,13 @@ export function NoteQuickActionsMenu({ editor, noteTitle, brandTone, onCreateCop
               onClick={handleApplyInsertBelow}
               className={`rounded-lg px-2.5 py-1 text-xs font-medium ${state.selection ? "border border-border text-foreground hover:bg-muted" : "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white"}`}
             >
-              Insérer sous le texte
+              {t("ideasBank.noteQuickActions.insertBelowText")}
             </button>
             <button type="button" onClick={handleApplyCreateCopy} className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted">
-              Créer une copie
+              {t("ideasBank.noteQuickActions.createCopy")}
             </button>
             <button type="button" onClick={() => setState({ phase: "closed" })} className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted">
-              Annuler
+              {t("common.cancel")}
             </button>
           </div>
         </div>

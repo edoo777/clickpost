@@ -14,6 +14,7 @@ import {
   IconRedo,
   IconUndo,
 } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -57,6 +58,7 @@ function Separator() {
 }
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
+  const t = useTranslations();
   const state = useEditorState({
     editor,
     selector: (ctx) => {
@@ -82,7 +84,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
   function handleLink() {
     const previousUrl = editor!.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Lien (URL) :", previousUrl ?? "https://");
+    const url = window.prompt(t("ideaWorkshop.editorToolbar.linkPrompt"), previousUrl ?? "https://");
     if (url === null) return;
     if (url.trim() === "") {
       editor!.chain().focus().extendMarkRange("link").unsetLink().run();
@@ -94,49 +96,81 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   return (
     <div
       role="toolbar"
-      aria-label="Mise en forme"
+      aria-label={t("ideaWorkshop.editorToolbar.formatting")}
       className="sticky top-0 z-10 flex flex-wrap items-center gap-1 rounded-xl border border-border bg-surface px-2 py-1.5 shadow-sm"
     >
-      <ToolbarButton active={state.h1} label="Titre 1" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+      <ToolbarButton
+        active={state.h1}
+        label={t("ideaWorkshop.editorToolbar.heading1")}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+      >
         H1
       </ToolbarButton>
-      <ToolbarButton active={state.h2} label="Titre 2" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+      <ToolbarButton
+        active={state.h2}
+        label={t("ideaWorkshop.editorToolbar.heading2")}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+      >
         H2
       </ToolbarButton>
-      <ToolbarButton active={state.h3} label="Titre 3" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+      <ToolbarButton
+        active={state.h3}
+        label={t("ideaWorkshop.editorToolbar.heading3")}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+      >
         H3
       </ToolbarButton>
       <Separator />
-      <ToolbarButton active={state.bold} label="Gras" onClick={() => editor.chain().focus().toggleBold().run()}>
+      <ToolbarButton active={state.bold} label={t("ideaWorkshop.editorToolbar.bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
         <IconBold className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton active={state.italic} label="Italique" onClick={() => editor.chain().focus().toggleItalic().run()}>
+      <ToolbarButton
+        active={state.italic}
+        label={t("ideaWorkshop.editorToolbar.italic")}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
         <IconItalic className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton active={state.link} label="Lien" onClick={handleLink}>
+      <ToolbarButton active={state.link} label={t("ideaWorkshop.editorToolbar.link")} onClick={handleLink}>
         <IconLink className="h-4 w-4" />
       </ToolbarButton>
       <Separator />
-      <ToolbarButton active={state.bulletList} label="Liste à puces" onClick={() => editor.chain().focus().toggleBulletList().run()}>
+      <ToolbarButton
+        active={state.bulletList}
+        label={t("ideaWorkshop.editorToolbar.bulletList")}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
         <IconListBullet className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton active={state.orderedList} label="Liste numérotée" onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+      <ToolbarButton
+        active={state.orderedList}
+        label={t("ideaWorkshop.editorToolbar.orderedList")}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
         <IconListNumbered className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton active={state.taskList} label="Checklist" onClick={() => editor.chain().focus().toggleTaskList().run()}>
+      <ToolbarButton
+        active={state.taskList}
+        label={t("ideaWorkshop.editorToolbar.taskList")}
+        onClick={() => editor.chain().focus().toggleTaskList().run()}
+      >
         <IconListCheck className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton active={state.blockquote} label="Citation" onClick={() => editor.chain().focus().toggleBlockquote().run()}>
+      <ToolbarButton
+        active={state.blockquote}
+        label={t("ideaWorkshop.editorToolbar.blockquote")}
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+      >
         <IconQuote className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton label="Séparateur" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+      <ToolbarButton label={t("ideaWorkshop.editorToolbar.horizontalRule")} onClick={() => editor.chain().focus().setHorizontalRule().run()}>
         <IconMinus className="h-4 w-4" />
       </ToolbarButton>
       <Separator />
-      <ToolbarButton label="Annuler" disabled={!state.canUndo} onClick={() => editor.chain().focus().undo().run()}>
+      <ToolbarButton label={t("ideaWorkshop.editorToolbar.undo")} disabled={!state.canUndo} onClick={() => editor.chain().focus().undo().run()}>
         <IconUndo className="h-4 w-4" />
       </ToolbarButton>
-      <ToolbarButton label="Rétablir" disabled={!state.canRedo} onClick={() => editor.chain().focus().redo().run()}>
+      <ToolbarButton label={t("ideaWorkshop.editorToolbar.redo")} disabled={!state.canRedo} onClick={() => editor.chain().focus().redo().run()}>
         <IconRedo className="h-4 w-4" />
       </ToolbarButton>
     </div>

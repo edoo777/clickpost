@@ -1,6 +1,7 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { TopicBatch } from "@/types/topic-batch";
 
 interface TopicBatchListProps {
@@ -11,13 +12,13 @@ interface TopicBatchListProps {
 }
 
 export function TopicBatchList({ batches, themeLabelFor, onOpen }: TopicBatchListProps) {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
 
   if (batches.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-        Aucun bloc de sujets généré pour l&apos;instant. Choisissez une marque, une ou plusieurs
-        thématiques et une quantité ci-dessus pour commencer.
+        {t("topicGenerator.batchList.empty")}
       </p>
     );
   }
@@ -34,7 +35,7 @@ export function TopicBatchList({ batches, themeLabelFor, onOpen }: TopicBatchLis
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold text-foreground ">Générations précédentes</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("topicGenerator.batchList.previousGenerations")}</h2>
       {Array.from(groups.entries()).map(([groupId, groupBatches]) => {
         const first = groupBatches[0];
         const brand = brands.find((b) => b.id === first.brandId);
@@ -57,7 +58,8 @@ export function TopicBatchList({ batches, themeLabelFor, onOpen }: TopicBatchLis
               </span>
             </div>
             <span className="text-xs text-muted-foreground ">
-              {totalSelected}/{totalGenerated} sélectionnées · {allArchived ? "Archivé" : "Actif"}
+              {t("topicGenerator.batchList.selectedProgress", { selected: totalSelected, total: totalGenerated })} ·{" "}
+              {allArchived ? t("topicGenerator.batchList.archived") : t("topicGenerator.batchList.active")}
             </span>
           </button>
         );

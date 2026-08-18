@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
 
 interface MixedTopicsViewProps {
@@ -18,6 +19,7 @@ interface MixedTopicsViewProps {
  * d'affichage : aucune donnée déplacée, les Topic restent rattachés à leur TopicBatch d'origine.
  */
 export function MixedTopicsView({ batches, topicsByBatch, themeLabelFor, onToggleSelect, onSaveAllSelected }: MixedTopicsViewProps) {
+  const t = useTranslations();
   const [includedBatchIds, setIncludedBatchIds] = useState<Set<string>>(() => new Set(batches.map((batch) => batch.id)));
 
   function toggleBatch(batchId: string) {
@@ -63,16 +65,21 @@ export function MixedTopicsView({ batches, topicsByBatch, themeLabelFor, onToggl
           ))}
         </div>
         <span className="text-xs text-muted-foreground ">
-          {rows.length} idée{rows.length > 1 ? "s" : ""} · {selectedCount} sélectionnée{selectedCount > 1 ? "s" : ""}
+          {t("topicGenerator.mixedView.ideaCountSummary", {
+            count: rows.length,
+            countPlural: rows.length > 1 ? "s" : "",
+            selected: selectedCount,
+            selectedPlural: selectedCount > 1 ? "s" : "",
+          })}
         </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={() => selectAll(true)} className="text-sm font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400">
-          Tout sélectionner
+          {t("topicGenerator.batchResults.selectAll")}
         </button>
         <button type="button" onClick={() => selectAll(false)} className="text-sm font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400">
-          Tout désélectionner
+          {t("topicGenerator.batchResults.deselectAll")}
         </button>
         <button
           type="button"
@@ -80,7 +87,7 @@ export function MixedTopicsView({ batches, topicsByBatch, themeLabelFor, onToggl
           disabled={selectedCount === 0}
           className="ml-auto rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
         >
-          Ajouter la sélection à la Banque d&apos;idées ({selectedCount})
+          {t("topicGenerator.mixedView.addSelectionToBank", { count: selectedCount })}
         </button>
       </div>
 
@@ -99,7 +106,7 @@ export function MixedTopicsView({ batches, topicsByBatch, themeLabelFor, onToggl
         ))}
         {rows.length === 0 && (
           <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-            Sélectionnez au moins une thématique ci-dessus pour afficher ses idées.
+            {t("topicGenerator.mixedView.selectThemeHint")}
           </p>
         )}
       </div>

@@ -15,6 +15,7 @@ import { NotePropertiesPanel } from "@/components/ideas-bank/notes/NotePropertie
 import { NoteQuickActionsMenu } from "@/components/ideas-bank/notes/NoteQuickActionsMenu";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useDevelopIdea } from "@/lib/develop-idea";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useIdeaNotesSession } from "@/lib/idea-notes-store";
 import { buildNewNote, duplicateNote } from "@/lib/notes";
 import { flushNow, getStatusServerSnapshot, getStatusSnapshot, subscribeStatus } from "@/lib/persistence/coordinator";
@@ -60,6 +61,7 @@ interface NoteEditorProps {
  * Remonte un éditeur neuf à chaque changement de note (le parent doit passer `key={note.id}`).
  */
 export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
+  const t = useTranslations();
   const router = useRouter();
   const { brands } = useBrandsSession();
   const { updateNote, archiveNote, restoreNote, removeNote, addNote } = useIdeaNotesSession();
@@ -90,7 +92,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
       TaskList,
       TaskItem.configure({ nested: true }),
       TiptapLink.configure({ openOnClick: false, autolink: true }),
-      Placeholder.configure({ placeholder: "Écrivez librement, ou tapez « / » pour insérer un bloc…" }),
+      Placeholder.configure({ placeholder: t("ideasBank.noteEditor.editorPlaceholder") }),
       SlashCommand,
     ],
     editorProps: {
@@ -103,18 +105,18 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
   });
 
   function statusLabel(): { text: string; tone: "muted" | "warning" | "error" } {
-    if (!isOnline) return { text: "Hors ligne", tone: "warning" };
-    if (saveStatus.status === "pending") return { text: "Modification en cours…", tone: "muted" };
-    if (saveStatus.status === "saving") return { text: "Enregistrement…", tone: "muted" };
-    if (saveStatus.status === "error") return { text: "Sauvegarde impossible", tone: "error" };
-    if (syncStatus.status === "conflict") return { text: "Conflit de synchronisation", tone: "error" };
+    if (!isOnline) return { text: t("ideasBank.noteEditor.statusOffline"), tone: "warning" };
+    if (saveStatus.status === "pending") return { text: t("ideasBank.noteEditor.statusPending"), tone: "muted" };
+    if (saveStatus.status === "saving") return { text: t("common.saving"), tone: "muted" };
+    if (saveStatus.status === "error") return { text: t("ideasBank.noteEditor.statusError"), tone: "error" };
+    if (syncStatus.status === "conflict") return { text: t("ideasBank.noteEditor.statusConflict"), tone: "error" };
     if (syncStatus.status === "error") {
-      if (syncStatus.hasPermissionError) return { text: "Permission refusée", tone: "error" };
-      if (syncStatus.hasBlockedOperations) return { text: "Données locales à réparer", tone: "error" };
-      if (syncStatus.isPersistentError) return { text: "Erreur persistante", tone: "error" };
-      return { text: "Synchronisation temporairement interrompue", tone: "error" };
+      if (syncStatus.hasPermissionError) return { text: t("ideasBank.noteEditor.statusPermissionDenied"), tone: "error" };
+      if (syncStatus.hasBlockedOperations) return { text: t("ideasBank.noteEditor.statusLocalDataToRepair"), tone: "error" };
+      if (syncStatus.isPersistentError) return { text: t("ideasBank.noteEditor.statusPersistentError"), tone: "error" };
+      return { text: t("ideasBank.noteEditor.statusSyncInterrupted"), tone: "error" };
     }
-    return { text: `Enregistré à ${updatedAtFormatter.format(new Date(note.updatedAt))}`, tone: "muted" };
+    return { text: t("ideasBank.noteEditor.statusSavedAt", { date: updatedAtFormatter.format(new Date(note.updatedAt)) }), tone: "muted" };
   }
   const status = statusLabel();
 
@@ -122,7 +124,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
     const copy = duplicateNote(note);
     addNote(copy);
     onSelectNote(copy.id);
-    setConfirmation("Note dupliquée.");
+    setConfirmation(t("ideasBank.noteEditor.noteDuplicated"));
   }
 
   function handleArchiveToggle() {
@@ -131,7 +133,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
   }
 
   function handleDelete() {
-    if (!window.confirm(`Supprimer définitivement la note « ${note.title || "Sans titre"} » ?`)) return;
+    if (!window.confirm(t("ideasBank.noteEditor.confirmDeleteNote", { title: note.title || t("publications.card.untitled") }))) return;
     removeNote(note.id);
     onDeleted();
   }
@@ -145,7 +147,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
       return;
     }
     convertNoteToIdea(note);
-    setConfirmation("Idée créée dans la Banque d'idées — cliquez à nouveau sur ce bouton pour l'ouvrir dans l'Atelier.");
+    setConfirmation(t("ideasBank.noteEditor.ideaCreatedNotice"));
   }
 
   function handleDevelop() {
@@ -159,13 +161,13 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
       standaloneNiche: note.standaloneNiche,
       themeId: note.themeId,
       adhocThemeLabel: note.adhocThemeLabel,
-      title: `${note.title || "Sans titre"} (IA)`,
+      title: t("ideasBank.noteEditor.aiCopyTitle", { title: note.title || t("publications.card.untitled") }),
     });
     copy.content = plainTextToDocument(text);
     copy.bodyText = text;
     addNote(copy);
     onSelectNote(copy.id);
-    setConfirmation("Copie créée avec le résultat de l'IA.");
+    setConfirmation(t("ideasBank.noteEditor.copyCreatedNotice"));
   }
 
   return (
@@ -181,7 +183,7 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
           value={note.title}
           onChange={(event) => updateNote(note.id, { title: event.target.value })}
           disabled={!canEdit}
-          placeholder="Titre de la note"
+          placeholder={t("ideasBank.noteEditor.titlePlaceholder")}
           className="min-w-0 flex-1 border-none bg-transparent text-xl font-semibold text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         />
         <span
@@ -195,36 +197,38 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
       </div>
 
       {note.archiveStatus === "archived" && (
-        <p className="rounded-lg bg-zinc-100 px-2.5 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">Note archivée.</p>
+        <p className="rounded-lg bg-zinc-100 px-2.5 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
+          {t("ideasBank.noteEditor.archivedNotice")}
+        </p>
       )}
       {!canEdit && (
         <p className="rounded-lg bg-zinc-100 px-2.5 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Lecture seule — votre rôle ne permet pas la modification.
+          {t("ideasBank.noteEditor.readOnlyNotice")}
         </p>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" onClick={() => flushNow()} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
-          Enregistrer
+          {t("common.save")}
         </button>
         <button type="button" onClick={handleDuplicate} disabled={!canEdit} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
-          Dupliquer
+          {t("ideaWorkshop.versionsPanel.duplicate")}
         </button>
         {canDestruct && (
           <>
             <button type="button" onClick={handleArchiveToggle} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
-              {note.archiveStatus === "archived" ? "Restaurer" : "Archiver"}
+              {note.archiveStatus === "archived" ? t("ideaWorkshop.versionsPanel.restore") : t("calendar.importantDates.archive")}
             </button>
             <button type="button" onClick={handleDelete} className="rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10">
-              Supprimer
+              {t("common.delete")}
             </button>
           </>
         )}
         <button type="button" onClick={handleConvertToIdea} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
-          {note.convertedIdeaId ? "Ouvrir l'idée dans l'Atelier" : "Convertir en idée"}
+          {note.convertedIdeaId ? t("ideasBank.noteEditor.openIdeaInWorkshop") : t("ideasBank.noteEditor.convertToIdea")}
         </button>
         <button type="button" onClick={handleDevelop} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
-          Développer dans la production
+          {t("ideasBank.noteEditor.developInProduction")}
         </button>
         <NoteQuickActionsMenu editor={editor} noteTitle={note.title} brandTone={brand?.toneOfVoice} onCreateCopy={handleCreateCopyFromAi} />
       </div>

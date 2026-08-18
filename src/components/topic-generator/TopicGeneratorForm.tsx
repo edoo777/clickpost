@@ -14,6 +14,7 @@ import type { GenerationTone } from "@/lib/assisted-generation";
 import { TONE_LABEL } from "@/lib/assisted-generation";
 import { useBrandsSession } from "@/lib/brands-store";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Brand } from "@/types/brand";
@@ -23,7 +24,11 @@ import type { Theme } from "@/types/theme";
 import type { TopicVarietyLevel } from "@/types/topic-batch";
 
 const VARIETY_LEVELS: TopicVarietyLevel[] = ["low", "medium", "high"];
-const VARIETY_LABEL: Record<TopicVarietyLevel, string> = { low: "Basse", medium: "Moyenne", high: "Haute" };
+const VARIETY_LABEL_KEY: Record<TopicVarietyLevel, TranslationKey> = {
+  low: "topicGenerator.form.varietyLow",
+  medium: "topicGenerator.form.varietyMedium",
+  high: "topicGenerator.form.varietyHigh",
+};
 const TONES: GenerationTone[] = [
   "professional",
   "friendly",
@@ -97,6 +102,7 @@ export function TopicGeneratorForm({
   niche,
   errors,
 }: TopicGeneratorFormProps) {
+  const t = useTranslations();
   const { brands, canManageBrands } = useBrandsSession();
   const { accounts } = useAccountsSession();
   const { addTheme } = useThemesSession();
@@ -145,7 +151,7 @@ export function TopicGeneratorForm({
       ...value,
       themeSelections: exists
         ? value.themeSelections.filter((selection) => selection.themeId !== theme.id)
-        : [...value.themeSelections, buildDefaultThemeSelection(theme.id, theme.label || "Sans titre")],
+        : [...value.themeSelections, buildDefaultThemeSelection(theme.id, theme.label || t("publications.card.untitled"))],
     });
   }
 
@@ -180,7 +186,7 @@ export function TopicGeneratorForm({
       ...value,
       themeSelections: [
         ...value.themeSelections,
-        { ...source, themeId: crypto.randomUUID(), isAdhoc: true, themeLabel: `${source.themeLabel} (copie)` },
+        { ...source, themeId: crypto.randomUUID(), isAdhoc: true, themeLabel: t("topicGenerator.form.themeCopySuffix", { label: source.themeLabel }) },
       ],
     });
   }
@@ -199,15 +205,14 @@ export function TopicGeneratorForm({
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       {isStandalone && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Génération ponctuelle — sans marque associée. Rien n&apos;est enregistré dans les paramètres tant que vous ne le
-          confirmez pas explicitement.
+          {t("topicGenerator.form.standaloneNotice")}
         </p>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {brands.length > 0 && (
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Marque
+            {t("ideaWorkshop.propertiesPanel.brandLabel")}
             <select
               value={value.brandId}
               onChange={(event) => onChange({ ...value, brandId: event.target.value, themeSelections: [] })}
@@ -224,26 +229,26 @@ export function TopicGeneratorForm({
 
         {isStandalone ? (
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Niche
+            {t("publications.claudeGeneration.niche")}
             <input
               value={value.standaloneNiche}
-              placeholder="Ex. Fitness"
+              placeholder={t("publications.claudeGeneration.nichePlaceholder")}
               onChange={(event) => onChange({ ...value, standaloneNiche: event.target.value })}
               className={FIELD_CLASS}
             />
           </label>
         ) : (
           <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Niche
-            <span className={`${FIELD_CLASS} text-muted-foreground`}>{niche || "Non précisée sur la marque"}</span>
+            {t("publications.claudeGeneration.niche")}
+            <span className={`${FIELD_CLASS} text-muted-foreground`}>{niche || t("topicGenerator.form.nicheNotSpecified")}</span>
           </div>
         )}
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Nom de la génération
+          {t("topicGenerator.form.generationNameLabel")}
           <input
             value={value.name}
-            placeholder="Ex. Plan de contenu Fitness — semaine 1"
+            placeholder={t("topicGenerator.form.generationNamePlaceholder")}
             onChange={(event) => onChange({ ...value, name: event.target.value })}
             className={FIELD_CLASS}
           />
@@ -253,7 +258,10 @@ export function TopicGeneratorForm({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Thématiques ({value.themeSelections.length} sélectionnée{value.themeSelections.length > 1 ? "s" : ""})
+            {t("topicGenerator.form.themesSelectedCount", {
+              count: value.themeSelections.length,
+              plural: value.themeSelections.length > 1 ? "s" : "",
+            })}
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -261,7 +269,7 @@ export function TopicGeneratorForm({
             const isSelected = value.themeSelections.some((selection) => selection.themeId === theme.id);
             return (
               <button key={theme.id} type="button" onClick={() => toggleTheme(theme)} className={TOGGLE_CLASS(isSelected)}>
-                {theme.label || "Sans titre"}
+                {theme.label || t("publications.card.untitled")}
               </button>
             );
           })}
@@ -269,11 +277,11 @@ export function TopicGeneratorForm({
         {errors.themes && <span className="text-xs font-medium text-red-500">{errors.themes}</span>}
         {themesForBrand.length === 0 && (
           <p className="text-xs text-muted-foreground ">
-            Aucune thématique active pour cette marque —{" "}
+            {t("topicGenerator.form.noActiveThemesPrefix")}{" "}
             <Link href="/marques" className="text-violet-600 hover:underline dark:text-violet-400">
-              configurez-les dans les paramètres de la marque
+              {t("topicGenerator.form.noActiveThemesLink")}
             </Link>
-            , ou utilisez une thématique ponctuelle ci-dessous.
+            {t("topicGenerator.form.noActiveThemesSuffix")}
           </p>
         )}
 
@@ -281,7 +289,7 @@ export function TopicGeneratorForm({
           <input
             value={adhocLabel}
             onChange={(event) => setAdhocLabel(event.target.value)}
-            placeholder="Autre thématique…"
+            placeholder={t("topicGenerator.form.otherThemePlaceholder")}
             className={`${FIELD_CLASS} w-56`}
           />
           <button
@@ -290,7 +298,7 @@ export function TopicGeneratorForm({
             disabled={!adhocLabel.trim()}
             className="rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-violet-300 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/[.16] dark:hover:border-violet-500/30 dark:hover:text-violet-300"
           >
-            + Ajouter cette thématique à la génération
+            + {t("topicGenerator.form.addThemeToGeneration")}
           </button>
         </div>
 
@@ -315,27 +323,27 @@ export function TopicGeneratorForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Public cible (optionnel)
+          {t("topicGenerator.form.targetAudienceLabel")}
           <input
             value={value.targetAudience}
-            placeholder="Ex. dirigeants de PME"
+            placeholder={t("topicGenerator.form.targetAudiencePlaceholder")}
             onChange={(event) => onChange({ ...value, targetAudience: event.target.value })}
             className={FIELD_CLASS}
           />
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Objectif (optionnel)
+          {t("topicGenerator.form.objectiveLabel")}
           <input
             value={value.objective}
-            placeholder="Ex. générer des prises de contact"
+            placeholder={t("topicGenerator.form.objectivePlaceholder")}
             onChange={(event) => onChange({ ...value, objective: event.target.value })}
             className={FIELD_CLASS}
           />
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Ton de marque
+          {t("topicGenerator.form.brandToneLabel")}
           <select value={value.tone} onChange={(event) => onChange({ ...value, tone: event.target.value as GenerationTone })} className={FIELD_CLASS}>
             {TONES.map((tone) => (
               <option key={tone} value={tone}>
@@ -346,7 +354,7 @@ export function TopicGeneratorForm({
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Niveau de variété (mode simulé)
+          {t("topicGenerator.form.varietyLevelLabel")}
           <select
             value={value.varietyLevel}
             onChange={(event) => onChange({ ...value, varietyLevel: event.target.value as TopicVarietyLevel })}
@@ -354,17 +362,17 @@ export function TopicGeneratorForm({
           >
             {VARIETY_LEVELS.map((level) => (
               <option key={level} value={level}>
-                {VARIETY_LABEL[level]}
+                {t(VARIETY_LABEL_KEY[level])}
               </option>
             ))}
           </select>
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Période (optionnel)
+          {t("topicGenerator.form.periodLabel")}
           <input
             value={value.period}
-            placeholder="Ex. Semaines du 3 au 17 août"
+            placeholder={t("topicGenerator.form.periodPlaceholder")}
             onChange={(event) => onChange({ ...value, period: event.target.value })}
             className={FIELD_CLASS}
           />
@@ -372,14 +380,11 @@ export function TopicGeneratorForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Plateformes ciblées</span>
-        <p className="text-xs text-muted-foreground ">
-          Contexte éditorial des idées — aucun compte connecté requis. Laissez vide pour des idées
-          générales, indépendantes d&apos;une plateforme.
-        </p>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("topicGenerator.form.targetedPlatformsLabel")}</span>
+        <p className="text-xs text-muted-foreground ">{t("topicGenerator.form.targetedPlatformsHint")}</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={toggleAllPlatforms} className={TOGGLE_CLASS(allPlatformsSelected)}>
-            Toutes les plateformes
+            {t("topicGenerator.form.allPlatforms")}
           </button>
           {ALL_PLATFORMS.map((platform) => {
             const Icon = platformIcons[platform];
@@ -397,13 +402,12 @@ export function TopicGeneratorForm({
 
       {!isStandalone && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Comptes de la marque</span>
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("topicGenerator.form.brandAccountsLabel")}</span>
           {brandAccounts.length === 0 ? (
             <p className="text-xs text-muted-foreground ">
-              Aucun compte de marque configuré — vous pouvez quand même choisir les plateformes
-              ciblées et générer vos sujets.{" "}
+              {t("topicGenerator.form.noBrandAccountsHint")}{" "}
               <Link href="/marques" className="text-violet-600 hover:underline dark:text-violet-400">
-                Configurer les comptes de la marque
+                {t("topicGenerator.form.configureBrandAccounts")}
               </Link>
             </p>
           ) : (
@@ -433,7 +437,7 @@ export function TopicGeneratorForm({
       )}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Formats</span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("publications.form.format")}</span>
         <div className="flex flex-wrap gap-2">
           {CONTENT_FORMATS.map((format) => {
             const isSelected = value.formats.includes(format);
@@ -448,11 +452,11 @@ export function TopicGeneratorForm({
       </div>
 
       <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        Consigne complémentaire (optionnel)
+        {t("topicGenerator.form.additionalInstructionLabel")}
         <textarea
           rows={2}
           value={value.instructions}
-          placeholder="Ex. privilégier un ton pédagogique, éviter le jargon technique"
+          placeholder={t("topicGenerator.form.additionalInstructionPlaceholder")}
           onChange={(event) => onChange({ ...value, instructions: event.target.value })}
           className={FIELD_CLASS}
         />
@@ -464,7 +468,7 @@ export function TopicGeneratorForm({
         disabled={isGenerating}
         className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isGenerating ? "Génération en cours…" : "Générer les idées"}
+        {isGenerating ? t("topicGenerator.form.generatingInProgress") : t("topicGenerator.form.generateIdeas")}
       </button>
     </div>
   );

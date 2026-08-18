@@ -9,6 +9,7 @@ import {
   type ContentType,
 } from "@/lib/content-types";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -85,6 +86,7 @@ export function ThemeSelectionPanel({
   availablePlatforms,
   onAddToBrandSettings,
 }: ThemeSelectionPanelProps) {
+  const t = useTranslations();
   const FORMAT_LABEL = useFormatLabel();
   const PLATFORM_LABEL = usePlatformLabel();
   const total = resolvedDistributionTotal(value);
@@ -144,16 +146,16 @@ export function ThemeSelectionPanel({
           <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{value.themeLabel}</span>
           {value.isAdhoc && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
-              Ponctuelle — non enregistrée
+              {t("topicGenerator.themePanel.adhocBadge")}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3">
           <button type="button" onClick={onDuplicate} className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400">
-            Dupliquer
+            {t("ideaWorkshop.versionsPanel.duplicate")}
           </button>
           <button type="button" onClick={onRemove} className="text-xs font-medium text-red-500 hover:underline">
-            Retirer
+            {t("topicGenerator.themePanel.remove")}
           </button>
         </div>
       </div>
@@ -164,12 +166,12 @@ export function ThemeSelectionPanel({
           onClick={onAddToBrandSettings}
           className="w-fit rounded-lg border border-violet-300 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/10"
         >
-          Ajouter cette thématique aux paramètres de la marque
+          {t("topicGenerator.themePanel.addToBrandSettings")}
         </button>
       )}
 
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
-        Nombre d&apos;idées pour cette thématique
+        {t("topicGenerator.themePanel.ideaCountLabel")}
         <input
           type="number"
           min={1}
@@ -190,7 +192,7 @@ export function ThemeSelectionPanel({
               : "text-muted-foreground "
           }`}
         >
-          Répartition automatique
+          {t("topicGenerator.themePanel.autoDistribution")}
         </button>
         <button
           type="button"
@@ -201,15 +203,17 @@ export function ThemeSelectionPanel({
               : "text-muted-foreground "
           }`}
         >
-          Répartition personnalisée
+          {t("topicGenerator.themePanel.customDistribution")}
         </button>
       </div>
 
       {value.distributionMode === "auto" ? (
         <div className="flex flex-col gap-1.5">
           <span className="text-xs text-muted-foreground ">
-            Types de contenu à répartir également ({value.selectedContentTypes.length} sélectionné
-            {value.selectedContentTypes.length > 1 ? "s" : ""})
+            {t("topicGenerator.themePanel.contentTypesSelectedCount", {
+              count: value.selectedContentTypes.length,
+              plural: value.selectedContentTypes.length > 1 ? "s" : "",
+            })}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {ALL_CONTENT_TYPES.map((contentType) => {
@@ -233,7 +237,7 @@ export function ThemeSelectionPanel({
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs text-muted-foreground ">Répartition personnalisée par type de contenu</span>
+          <span className="text-xs text-muted-foreground ">{t("topicGenerator.themePanel.customDistributionByType")}</span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {ALL_CONTENT_TYPES.map((contentType) => (
               <label key={contentType} className="flex flex-col gap-0.5 text-xs text-zinc-600 dark:text-zinc-400">
@@ -254,22 +258,25 @@ export function ThemeSelectionPanel({
             ))}
           </div>
           <span className={`text-xs font-medium ${totalMismatch ? "text-red-500" : "text-emerald-600 dark:text-emerald-400"}`}>
-            Total : {total} / {value.requestedCount} idée{value.requestedCount > 1 ? "s" : ""} demandée
-            {value.requestedCount > 1 ? "s" : ""}
-            {totalMismatch && " — la répartition doit correspondre exactement au nombre demandé."}
+            {t("topicGenerator.themePanel.distributionTotal", {
+              total,
+              count: value.requestedCount,
+              plural: value.requestedCount > 1 ? "s" : "",
+            })}
+            {totalMismatch && t("topicGenerator.themePanel.distributionMismatch")}
           </span>
         </div>
       )}
 
       <label className="flex items-center gap-2 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         <input type="checkbox" checked={value.customizeOverrides} onChange={(event) => toggleOverrides(event.target.checked)} />
-        Personnaliser pour cette thématique (formats, plateformes, objectif)
+        {t("topicGenerator.themePanel.customizeOverridesLabel")}
       </label>
 
       {value.customizeOverrides && (
         <div className="flex flex-col gap-2 rounded-lg bg-zinc-50 p-2.5 dark:bg-zinc-900/40">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground ">Formats pour cette thématique</span>
+            <span className="text-xs text-muted-foreground ">{t("topicGenerator.themePanel.formatsForTheme")}</span>
             <div className="flex flex-wrap gap-1.5">
               {CONTENT_FORMATS.map((format) => (
                 <button key={format} type="button" onClick={() => toggleOverrideFormat(format)} className={TOGGLE_CLASS((value.formats ?? []).includes(format))}>
@@ -279,7 +286,7 @@ export function ThemeSelectionPanel({
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground ">Plateformes pour cette thématique</span>
+            <span className="text-xs text-muted-foreground ">{t("topicGenerator.themePanel.platformsForTheme")}</span>
             <div className="flex flex-wrap gap-1.5">
               {availablePlatforms.map((platform) => {
                 const Icon = platformIcons[platform];
@@ -290,14 +297,16 @@ export function ThemeSelectionPanel({
                   </button>
                 );
               })}
-              {availablePlatforms.length === 0 && <span className="text-xs text-muted-foreground ">Aucun compte affilié.</span>}
+              {availablePlatforms.length === 0 && (
+                <span className="text-xs text-muted-foreground ">{t("topicGenerator.themePanel.noAffiliatedAccount")}</span>
+              )}
             </div>
           </div>
           <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
-            Objectif pour cette thématique
+            {t("topicGenerator.themePanel.objectiveForTheme")}
             <input
               value={value.objective ?? ""}
-              placeholder="Ex. générer des inscriptions"
+              placeholder={t("topicGenerator.themePanel.objectiveForThemePlaceholder")}
               onChange={(event) => onChange({ ...value, objective: event.target.value })}
               className={FIELD_CLASS}
             />

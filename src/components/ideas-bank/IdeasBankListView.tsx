@@ -15,7 +15,7 @@ export function IdeasBankListView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.ideasBankPage")}</h1>
-        <p className="text-sm text-muted-foreground">Notes</p>
+        <p className="text-sm text-muted-foreground">{t("ideasBank.listView.notes")}</p>
       </header>
       <NotesView />
     </div>

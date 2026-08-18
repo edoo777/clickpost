@@ -2,6 +2,7 @@
 
 import { useState, type ComponentType, type ReactNode, type SVGProps } from "react";
 import { IconHistory, IconPanelRight, IconSettingsGear, IconSparkles } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { PROMPT_CATEGORY_LABEL, getPresetsByCategory, type PromptCategory, type PromptPreset } from "@/lib/prompt-presets";
 
 type PanelTab = "assistant" | "properties" | "versions";
@@ -64,6 +65,7 @@ export function WritingAssistantPanel({
   initialTab = "assistant",
   isRunningPreset = false,
 }: WritingAssistantPanelProps) {
+  const t = useTranslations();
   const [tab, setTab] = useState<PanelTab>(initialTab);
   const [openCategory, setOpenCategory] = useState<PromptCategory | null>("start");
 
@@ -73,7 +75,7 @@ export function WritingAssistantPanel({
         <button
           type="button"
           onClick={onToggleCollapsed}
-          aria-label="Déployer le panneau latéral"
+          aria-label={t("ideaWorkshop.writingAssistant.expandPanel")}
           className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <IconPanelRight className="h-4 w-4" />
@@ -86,14 +88,29 @@ export function WritingAssistantPanel({
     <div className="flex w-full shrink-0 flex-col border-border bg-surface lg:w-80 lg:border-l">
       <div className="flex items-center justify-between border-b border-border px-3 py-2">
         <div className="flex items-center gap-1">
-          <TabButton active={tab === "assistant"} onClick={() => setTab("assistant")} icon={IconSparkles} label="Assistant IA" />
-          <TabButton active={tab === "properties"} onClick={() => setTab("properties")} icon={IconSettingsGear} label="Propriétés" />
-          <TabButton active={tab === "versions"} onClick={() => setTab("versions")} icon={IconHistory} label="Versions" />
+          <TabButton
+            active={tab === "assistant"}
+            onClick={() => setTab("assistant")}
+            icon={IconSparkles}
+            label={t("ideaWorkshop.writingAssistant.tabAssistant")}
+          />
+          <TabButton
+            active={tab === "properties"}
+            onClick={() => setTab("properties")}
+            icon={IconSettingsGear}
+            label={t("ideaWorkshop.writingAssistant.tabProperties")}
+          />
+          <TabButton
+            active={tab === "versions"}
+            onClick={() => setTab("versions")}
+            icon={IconHistory}
+            label={t("ideaWorkshop.writingAssistant.tabVersions")}
+          />
         </div>
         <button
           type="button"
           onClick={onToggleCollapsed}
-          aria-label="Réduire le panneau latéral"
+          aria-label={t("ideaWorkshop.writingAssistant.collapsePanel")}
           className="hidden rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground lg:block"
         >
           <IconPanelRight className="h-4 w-4" />
@@ -104,8 +121,7 @@ export function WritingAssistantPanel({
         {tab === "assistant" && (
           <div className="flex flex-col gap-1">
             <p className="mb-2 rounded-lg bg-muted px-2.5 py-2 text-xs text-muted-foreground">
-              Les actions de l&apos;Atelier utilisent Claude (IA réelle) si le serveur est configuré ;
-              en cas d&apos;échec, un résultat simulé de repli est appliqué.
+              {t("ideaWorkshop.writingAssistant.aiNotice")}
             </p>
             {resultSlot}
             {CATEGORIES.map((category) => {

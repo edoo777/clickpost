@@ -9,8 +9,9 @@ import StarterKit from "@tiptap/starter-kit";
 import { EditorToolbar } from "@/components/idea-workshop/editor/EditorToolbar";
 import { SelectionToolbar } from "@/components/idea-workshop/editor/SelectionToolbar";
 import { SlashCommand } from "@/components/idea-workshop/editor/slash-command-extension";
-import { EMPTY_DOCUMENT } from "@/lib/rich-document";
 import type { RewriteSelectionResult } from "@/lib/content-generation-provider";
+import { useTranslations } from "@/lib/i18n/locale-provider";
+import { EMPTY_DOCUMENT } from "@/lib/rich-document";
 import type { RichDocument } from "@/types/rich-document";
 
 interface WorkshopEditorProps {
@@ -35,6 +36,7 @@ export function WorkshopEditor({
   placeholder,
   editable = true,
 }: WorkshopEditorProps) {
+  const t = useTranslations();
   const editor = useEditor({
     immediatelyRender: false,
     editable,
@@ -44,7 +46,7 @@ export function WorkshopEditor({
       TaskList,
       TaskItem.configure({ nested: true }),
       Link.configure({ openOnClick: false, autolink: true }),
-      Placeholder.configure({ placeholder: placeholder ?? "Écrivez, ou tapez « / » pour insérer un bloc…" }),
+      Placeholder.configure({ placeholder: placeholder ?? t("ideaWorkshop.editor.defaultPlaceholder") }),
       SlashCommand,
     ],
     editorProps: {

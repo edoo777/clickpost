@@ -63,25 +63,27 @@ function distributionFor(selection: TopicGeneratorFormValue["themeSelections"][n
     .map(([contentType, count]) => ({ contentType: contentType as ContentTypeDistribution["contentType"], count: count ?? 0 }));
 }
 
-function validateForm(value: TopicGeneratorFormValue): TopicGeneratorFormErrors {
+type TFunc = ReturnType<typeof useTranslations>;
+
+function validateForm(value: TopicGeneratorFormValue, t: TFunc): TopicGeneratorFormErrors {
   const errors: TopicGeneratorFormErrors = {};
-  if (value.themeSelections.length === 0) errors.themes = "Sélectionnez au moins une thématique.";
+  if (value.themeSelections.length === 0) errors.themes = t("topicGenerator.view.errorSelectTheme");
   let total = 0;
   for (const selection of value.themeSelections) {
     if (!Number.isFinite(selection.requestedCount) || selection.requestedCount < 1 || selection.requestedCount > MAX_REQUESTED_PER_THEME) {
-      errors.themes = `Chaque thématique doit demander entre 1 et ${MAX_REQUESTED_PER_THEME} idées.`;
+      errors.themes = t("topicGenerator.view.errorRequestedRange", { max: MAX_REQUESTED_PER_THEME });
     }
     if (selection.distributionMode === "custom" && resolvedDistributionTotal(selection) !== selection.requestedCount) {
-      errors.themes = "La répartition personnalisée doit correspondre exactement au nombre d'idées demandé pour chaque thématique.";
+      errors.themes = t("topicGenerator.view.errorCustomDistributionMismatch");
     }
     total += selection.requestedCount;
   }
   if (total > MAX_TOTAL_REQUESTED_PER_GENERATION) {
-    errors.themes = `Le total demandé (${total}) dépasse ${MAX_TOTAL_REQUESTED_PER_GENERATION} idées — réduisez la quantité ou séparez votre génération en plusieurs demandes.`;
+    errors.themes = t("topicGenerator.view.errorTotalExceeded", { total, max: MAX_TOTAL_REQUESTED_PER_GENERATION });
   }
   // Aucune plateforme sélectionnée est un état volontairement valide : génère des idées
   // générales, indépendantes d'un réseau — jamais bloquant (voir generateur-prompt.ts).
-  if (value.formats.length === 0) errors.formats = "Sélectionnez au moins un format.";
+  if (value.formats.length === 0) errors.formats = t("topicGenerator.view.errorSelectFormat");
   return errors;
 }
 
@@ -132,8 +134,8 @@ export function TopicGeneratorView() {
     : [];
 
   function themeLabelFor(batch: TopicBatch): string {
-    if (batch.themeId) return themes.find((theme) => theme.id === batch.themeId)?.label ?? "Sans thématique";
-    return batch.adhocThemeLabel ?? "Sans thématique";
+    if (batch.themeId) return themes.find((theme) => theme.id === batch.themeId)?.label ?? t("publications.card.noTheme");
+    return batch.adhocThemeLabel ?? t("publications.card.noTheme");
   }
 
   function nicheForBrandId(brandId: string): string {
@@ -226,7 +228,7 @@ export function TopicGeneratorView() {
       : [];
     const niche = nicheForBatch(batch);
     const items = isStandalone
-      ? [niche || "ce sujet"]
+      ? [niche || t("topicGenerator.view.genericTopicFallback")]
       : brand!.productsAndServices.length > 0
         ? brand!.productsAndServices
         : [brand!.name];
@@ -261,7 +263,7 @@ export function TopicGeneratorView() {
           source,
           updatedAt: new Date().toISOString(),
         });
-        setSuccessMessage(`Lot repris avec succès pour « ${themeLabelFor(batch)} ».`);
+        setSuccessMessage(t("topicGenerator.view.lotRetriedSuccess", { theme: themeLabelFor(batch) }));
       }
     } finally {
       setIsGenerating(false);
@@ -282,7 +284,7 @@ export function TopicGeneratorView() {
 
     const niche = nicheForBatch(batch);
     const items = isStandalone
-      ? [niche || "ce sujet"]
+      ? [niche || t("topicGenerator.view.genericTopicFallback")]
       : brand!.productsAndServices.length > 0
         ? brand!.productsAndServices
         : [brand!.name];
@@ -335,7 +337,7 @@ export function TopicGeneratorView() {
           source,
           updatedAt: new Date().toISOString(),
         });
-        setSuccessMessage(`${added} idée(s) supplémentaire(s) générée(s) pour « ${themeLabelFor(batch)} ».`);
+        setSuccessMessage(t("topicGenerator.view.moreIdeasGenerated", { count: added, theme: themeLabelFor(batch) }));
       }
     } finally {
       setIsGenerating(false);
@@ -343,7 +345,7 @@ export function TopicGeneratorView() {
   }
 
   async function handleGenerate() {
-    const errors = validateForm(formValue);
+    const errors = validateForm(formValue, t);
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -353,7 +355,7 @@ export function TopicGeneratorView() {
 
     const niche = isStandalone ? formValue.standaloneNiche.trim() : (brand?.industry ?? "");
     const items = isStandalone
-      ? [niche || "ce sujet"]
+      ? [niche || t("topicGenerator.view.genericTopicFallback")]
       : brand!.productsAndServices.length > 0
         ? brand!.productsAndServices
         : [brand!.name];
@@ -389,7 +391,7 @@ export function TopicGeneratorView() {
           standaloneNiche: isStandalone ? niche || undefined : undefined,
           themeId: selection.isAdhoc ? undefined : request.themeId,
           adhocThemeLabel: selection.isAdhoc ? request.themeLabel : undefined,
-          name: formValue.name.trim() || `${request.requestedCount} idées — ${request.themeLabel}`,
+          name: formValue.name.trim() || t("topicGenerator.view.defaultBatchName", { count: request.requestedCount, theme: request.themeLabel }),
           requestedCount: request.requestedCount,
           generatedCount: 0,
           selectedCount: 0,
@@ -451,7 +453,7 @@ export function TopicGeneratorView() {
 
       setRegenerationRounds({});
       setActiveGroupId(groupId);
-      setSuccessMessage(`${totalGenerated} idée(s) générée(s) sur ${requests.length} thématique(s).`);
+      setSuccessMessage(t("topicGenerator.view.totalIdeasGenerated", { total: totalGenerated, count: requests.length }));
     } finally {
       setIsGenerating(false);
     }
@@ -486,7 +488,7 @@ export function TopicGeneratorView() {
   }
 
   function handleDeleteTopic(batchId: string, topicId: string) {
-    if (!window.confirm("Supprimer définitivement ce sujet ?")) return;
+    if (!window.confirm(t("topicGenerator.view.confirmDeleteTopic"))) return;
     const topic = topics.find((t) => t.id === topicId);
     removeTopic(topicId);
     if (topic?.selected) {
@@ -507,7 +509,7 @@ export function TopicGeneratorView() {
     const round = (regenerationRounds[batch.id] ?? 0) + 1;
     const niche = nicheForBatch(batch);
     const items = isStandalone
-      ? [niche || "ce sujet"]
+      ? [niche || t("topicGenerator.view.genericTopicFallback")]
       : brand!.productsAndServices.length > 0
         ? brand!.productsAndServices
         : [brand!.name];
@@ -593,7 +595,7 @@ export function TopicGeneratorView() {
         source: lastSource,
         updatedAt: new Date().toISOString(),
       });
-      setSuccessMessage(`${totalReplaced} idée(s) régénérée(s) pour « ${themeLabel} ».`);
+      setSuccessMessage(t("topicGenerator.view.ideasRegenerated", { count: totalReplaced, theme: themeLabel }));
     } finally {
       setIsGenerating(false);
     }
@@ -645,18 +647,18 @@ export function TopicGeneratorView() {
   // données pour l'utilisateur qui irait chercher dans cet onglet et n'y trouverait rien.
   function handleSaveSelected(batch: TopicBatch) {
     const count = saveSelectedForBatch(batch);
-    if (count > 0) setSuccessMessage(`${count} idée(s) enregistrée(s) — retrouvez-les en rouvrant ce lot.`);
+    if (count > 0) setSuccessMessage(t("topicGenerator.view.ideasSavedSingle", { count }));
   }
 
   function handleSaveAllSelected() {
     const total = activeGroupBatches.reduce((sum, batch) => sum + saveSelectedForBatch(batch), 0);
-    if (total > 0) setSuccessMessage(`${total} idée(s) enregistrée(s) — retrouvez-les en rouvrant chaque lot.`);
+    if (total > 0) setSuccessMessage(t("topicGenerator.view.ideasSavedAll", { count: total }));
   }
 
   function handleArchiveBatch(batchId: string) {
-    if (!window.confirm("Archiver ce bloc ?")) return;
+    if (!window.confirm(t("topicGenerator.view.confirmArchiveBatch"))) return;
     archiveTopicBatch(batchId);
-    setSuccessMessage("Bloc archivé.");
+    setSuccessMessage(t("topicGenerator.view.batchArchived"));
   }
 
   function handleStartNew() {
@@ -675,10 +677,7 @@ export function TopicGeneratorView() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.topicGenerator")}</h1>
-        <p className="text-sm text-muted-foreground ">
-          Génère un ou plusieurs blocs de sujets, un par thématique, avec leur propre répartition de
-          types de contenu — par lots de {DEFAULT_LOT_SIZE} pour rester fiable sur de grandes demandes.
-        </p>
+        <p className="text-sm text-muted-foreground ">{t("topicGenerator.view.subtitle", { lotSize: DEFAULT_LOT_SIZE })}</p>
       </header>
 
       {successMessage && (
@@ -695,7 +694,7 @@ export function TopicGeneratorView() {
               onClick={handleStartNew}
               className="w-fit text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
             >
-              ← Nouvelle génération
+              ← {t("topicGenerator.view.newGeneration")}
             </button>
             {activeGroupBatches.length > 1 && (
               <div className="flex items-center gap-1 rounded-lg border border-border p-1 ">
@@ -706,7 +705,7 @@ export function TopicGeneratorView() {
                     displayMode === "byTheme" ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white" : "text-muted-foreground "
                   }`}
                 >
-                  Par thématique
+                  {t("topicGenerator.view.byTheme")}
                 </button>
                 <button
                   type="button"
@@ -715,7 +714,7 @@ export function TopicGeneratorView() {
                     displayMode === "all" ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white" : "text-muted-foreground "
                   }`}
                 >
-                  Toutes les idées
+                  {t("topicGenerator.view.allIdeas")}
                 </button>
               </div>
             )}
@@ -763,23 +762,21 @@ export function TopicGeneratorView() {
         </div>
       ) : brands.length === 0 && !standaloneConfirmed ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16] ">
-          <p className="text-base font-semibold text-foreground ">Aucune marque configurée</p>
-          <p className="max-w-sm text-sm text-muted-foreground ">
-            Aucune marque configurée. Vous pouvez configurer une marque ou effectuer une génération ponctuelle.
-          </p>
+          <p className="text-base font-semibold text-foreground ">{t("topicGenerator.view.noBrandConfiguredTitle")}</p>
+          <p className="max-w-sm text-sm text-muted-foreground ">{t("topicGenerator.view.noBrandConfiguredHint")}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             <Link
               href="/marques"
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
-              Configurer une marque
+              {t("topicGenerator.view.configureBrand")}
             </Link>
             <button
               type="button"
               onClick={() => setStandaloneConfirmed(true)}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Continuer sans marque
+              {t("topicGenerator.view.continueWithoutBrand")}
             </button>
           </div>
         </div>

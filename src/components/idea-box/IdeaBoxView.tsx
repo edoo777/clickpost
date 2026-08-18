@@ -5,13 +5,13 @@ import { useState } from "react";
 import { IconLightbulb } from "@/components/icons";
 import { IdeasBankListView } from "@/components/ideas-bank/IdeasBankListView";
 import { TopicGeneratorView } from "@/components/topic-generator/TopicGeneratorView";
-import { useTranslations } from "@/lib/i18n/locale-provider";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 
 type IdeaBoxTab = "generateur" | "banque";
 
-const TABS: { key: IdeaBoxTab; label: string; description: string }[] = [
-  { key: "generateur", label: "Générateur de sujets", description: "Produire des sujets à partir d'une thématique" },
-  { key: "banque", label: "Banque d'idées", description: "Rédiger et organiser vos notes libres" },
+const TABS: { key: IdeaBoxTab; labelKey: TranslationKey; descriptionKey: TranslationKey }[] = [
+  { key: "generateur", labelKey: "pageTitle.topicGenerator", descriptionKey: "ideaBox.generatorTabDescription" },
+  { key: "banque", labelKey: "pageTitle.ideasBankPage", descriptionKey: "ideaBox.bankTabDescription" },
 ];
 
 function tabFromParam(value: string | null): IdeaBoxTab {
@@ -44,10 +44,7 @@ export function IdeaBoxView() {
             {t("pageTitle.ideasBank")}
           </h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Générez des sujets, consultez la banque, puis filtrez, éditez et transformez vos idées vers
-          l&apos;Atelier ou une publication.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("ideaBox.subtitle")}</p>
       </header>
 
       <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-1.5 sm:flex-row">
@@ -62,9 +59,9 @@ export function IdeaBoxView() {
                 : "text-zinc-600 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:bg-white/[.06] dark:hover:text-zinc-100"
             }`}
           >
-            <span className="text-sm font-semibold">{item.label}</span>
+            <span className="text-sm font-semibold">{t(item.labelKey)}</span>
             <span className={`text-xs ${tab === item.key ? "text-white/80" : "text-muted-foreground"}`}>
-              {item.description}
+              {t(item.descriptionKey)}
             </span>
           </button>
         ))}

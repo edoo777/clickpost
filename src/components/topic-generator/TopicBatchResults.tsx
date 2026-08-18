@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { TopicRow } from "@/components/topic-generator/TopicRow";
 import { CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { MAX_REQUESTED_PER_THEME, type LotStatus } from "@/lib/topic-generator";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
 
@@ -34,16 +35,16 @@ interface TopicBatchResultsProps {
   onArchiveBatch: () => void;
 }
 
-const GENERATION_STATE_LABEL: Record<NonNullable<TopicBatch["source"]>, string> = {
-  claude: "Généré par Claude",
-  simulated: "Généré en mode démonstration",
+const GENERATION_STATE_LABEL_KEY: Record<NonNullable<TopicBatch["source"]>, TranslationKey> = {
+  claude: "topicGenerator.batchResults.generatedByClaude",
+  simulated: "topicGenerator.batchResults.generatedInDemoMode",
 };
 
-const LOT_STATUS_LABEL: Record<LotStatus["status"], string> = {
-  pending: "En attente",
-  generating: "Génération…",
-  success: "Terminé",
-  error: "Erreur",
+const LOT_STATUS_LABEL_KEY: Record<LotStatus["status"], TranslationKey> = {
+  pending: "topicGenerator.batchResults.lotPending",
+  generating: "topicGenerator.batchResults.lotGenerating",
+  success: "topicGenerator.batchResults.lotSuccess",
+  error: "topicGenerator.batchResults.lotError",
 };
 
 const LOT_STATUS_CLASS: Record<LotStatus["status"], string> = {
@@ -74,6 +75,7 @@ export function TopicBatchResults({
   onSaveSelected,
   onArchiveBatch,
 }: TopicBatchResultsProps) {
+  const t = useTranslations();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const selectedCount = topics.filter((topic) => topic.selected).length;
   const allSelected = topics.length > 0 && selectedCount === topics.length;
@@ -89,30 +91,34 @@ export function TopicBatchResults({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold text-foreground ">{themeLabel}</h2>
-          <p className="text-xs text-muted-foreground ">Niche : {niche || "non précisée"}</p>
+          <p className="text-xs text-muted-foreground ">
+            {t("topicGenerator.batchResults.nichePrefix", { niche: niche || t("topicGenerator.batchResults.nicheNotSpecified") })}
+          </p>
           <p className="text-sm text-muted-foreground ">{batch.name}</p>
           {contentTypesUsed.length > 0 && (
             <p className="text-xs text-muted-foreground ">
-              Types de contenu : {contentTypesUsed.map((type) => CONTENT_TYPE_LABEL[type]).join(", ")}
+              {t("topicGenerator.batchResults.contentTypesPrefix", {
+                list: contentTypesUsed.map((type) => CONTENT_TYPE_LABEL[type]).join(", "),
+              })}
             </p>
           )}
           {batch.source && (
             <span className="w-fit rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ">
-              {GENERATION_STATE_LABEL[batch.source]}
+              {t(GENERATION_STATE_LABEL_KEY[batch.source])}
             </span>
           )}
         </div>
         <dl className="flex flex-wrap gap-4 text-sm">
           <div className="flex flex-col">
-            <dt className="text-xs font-medium text-muted-foreground ">Demandées</dt>
+            <dt className="text-xs font-medium text-muted-foreground ">{t("topicGenerator.batchResults.requestedLabel")}</dt>
             <dd className="font-semibold text-zinc-800 dark:text-zinc-200">{batch.requestedCount}</dd>
           </div>
           <div className="flex flex-col">
-            <dt className="text-xs font-medium text-muted-foreground ">Générées</dt>
+            <dt className="text-xs font-medium text-muted-foreground ">{t("topicGenerator.batchResults.generatedLabel")}</dt>
             <dd className="font-semibold text-zinc-800 dark:text-zinc-200">{topics.length}</dd>
           </div>
           <div className="flex flex-col">
-            <dt className="text-xs font-medium text-muted-foreground ">Sélectionnées</dt>
+            <dt className="text-xs font-medium text-muted-foreground ">{t("topicGenerator.batchResults.selectedLabel")}</dt>
             <dd className="font-semibold text-zinc-800 dark:text-zinc-200">{selectedCount}</dd>
           </div>
         </dl>
@@ -126,7 +132,12 @@ export function TopicBatchResults({
                 title={lot.errorMessage}
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${LOT_STATUS_CLASS[lot.status]}`}
               >
-                Lot {lot.index + 1}/{lots.length} ({lot.size}) · {LOT_STATUS_LABEL[lot.status]}
+                {t("topicGenerator.batchResults.lotProgress", {
+                  index: lot.index + 1,
+                  total: lots.length,
+                  size: lot.size,
+                  status: t(LOT_STATUS_LABEL_KEY[lot.status]),
+                })}
               </span>
               {lot.status === "error" && onRetryLot && (
                 <button
@@ -135,7 +146,7 @@ export function TopicBatchResults({
                   disabled={isBusy}
                   className="text-[11px] font-medium text-violet-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-violet-400"
                 >
-                  Reprendre
+                  {t("topicGenerator.batchResults.retry")}
                 </button>
               )}
             </span>
@@ -143,9 +154,7 @@ export function TopicBatchResults({
         </div>
       )}
       {hasErrorLot && !isLotsInProgress && (
-        <p className="text-xs text-amber-700 dark:text-amber-400">
-          Un ou plusieurs lots n&apos;ont pas pu être générés — les idées déjà reçues sont conservées, utilisez « Reprendre » sur le lot en erreur.
-        </p>
+        <p className="text-xs text-amber-700 dark:text-amber-400">{t("topicGenerator.batchResults.lotErrorNotice")}</p>
       )}
 
       <div className="flex flex-wrap items-center gap-3">
@@ -154,7 +163,7 @@ export function TopicBatchResults({
           onClick={() => setIsExpanded((prev) => !prev)}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          {isExpanded ? "Masquer les idées" : "Voir les idées"}
+          {isExpanded ? t("topicGenerator.batchResults.hideIdeas") : t("topicGenerator.batchResults.viewIdeas")}
         </button>
         <button
           type="button"
@@ -162,7 +171,7 @@ export function TopicBatchResults({
           disabled={unlockedCount === 0 || isBusy}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Régénérer
+          {t("topicGenerator.batchResults.regenerate")}
         </button>
         <button
           type="button"
@@ -170,7 +179,7 @@ export function TopicBatchResults({
           disabled={isBusy || topics.length >= MAX_REQUESTED_PER_THEME}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Générer plus
+          {t("topicGenerator.batchResults.generateMore")}
         </button>
         <button
           type="button"
@@ -178,14 +187,14 @@ export function TopicBatchResults({
           disabled={selectedCount === 0}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
         >
-          Ajouter à la Banque d&apos;idées ({selectedCount})
+          {t("topicGenerator.batchResults.addToBank", { count: selectedCount })}
         </button>
         <button
           type="button"
           onClick={onArchiveBatch}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Archiver le bloc
+          {t("topicGenerator.batchResults.archiveBatch")}
         </button>
       </div>
 
@@ -196,7 +205,7 @@ export function TopicBatchResults({
             onClick={onToggleSelectAll}
             className="w-fit text-sm font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
           >
-            {allSelected ? "Tout désélectionner" : "Tout sélectionner"}
+            {allSelected ? t("topicGenerator.batchResults.deselectAll") : t("topicGenerator.batchResults.selectAll")}
           </button>
           {topics.map((topic) => (
             <TopicRow
@@ -213,7 +222,7 @@ export function TopicBatchResults({
           ))}
           {topics.length === 0 && (
             <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-              {isLotsInProgress ? "Génération en cours…" : "Tous les sujets de ce bloc ont été supprimés."}
+              {isLotsInProgress ? t("topicGenerator.batchResults.generationInProgress") : t("topicGenerator.batchResults.allTopicsDeleted")}
             </p>
           )}
         </div>

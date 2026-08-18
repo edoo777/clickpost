@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useIdeaStatusLabel } from "@/lib/idea-status";
 import { notePreview, searchNotes, sortNotes, type NoteSortKey } from "@/lib/notes";
 import { useThemesSession } from "@/lib/themes-store";
@@ -20,6 +21,7 @@ interface NotesListPanelProps {
 
 /** Panneau gauche de la vue Notes — liste, recherche, tri, notes archivées. */
 export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreate }: NotesListPanelProps) {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const [query, setQuery] = useState("");
@@ -40,14 +42,14 @@ export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreat
   return (
     <div className="flex h-full flex-col gap-3 border-r border-border p-3 ">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-foreground ">Notes</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("ideasBank.listView.notes")}</h2>
         {canCreate && (
           <button
             type="button"
             onClick={onCreate}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-xs font-semibold text-white"
           >
-            + Nouvelle note
+            + {t("ideasBank.notes.newNote")}
           </button>
         )}
       </div>
@@ -56,18 +58,18 @@ export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreat
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Rechercher une note…"
+        placeholder={t("ideasBank.notes.searchPlaceholder")}
         className={FIELD_CLASS}
       />
 
       <div className="flex items-center justify-between gap-2">
         <select value={sortKey} onChange={(event) => setSortKey(event.target.value as NoteSortKey)} className={FIELD_CLASS}>
-          <option value="updatedAt">Dernière modification</option>
-          <option value="createdAt">Date de création</option>
-          <option value="title">Titre</option>
+          <option value="updatedAt">{t("ideaWorkshop.propertiesPanel.updatedAtLabel")}</option>
+          <option value="createdAt">{t("ideaWorkshop.propertiesPanel.createdAtLabel")}</option>
+          <option value="title">{t("ideaWorkshop.versionsPanel.fieldTitle")}</option>
         </select>
         <button type="button" onClick={() => setShowArchived((prev) => !prev)} className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:underline ">
-          {showArchived ? "Voir les actives" : "Voir les archivées"}
+          {showArchived ? t("calendar.importantDates.viewActive") : t("calendar.importantDates.viewArchived")}
         </button>
       </div>
 
@@ -86,7 +88,7 @@ export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreat
                   : "border-border hover:border-zinc-400  dark:hover:border-white/[.16]"
               }`}
             >
-              <span className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">{note.title || "Sans titre"}</span>
+              <span className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">{note.title || t("publications.card.untitled")}</span>
               {notePreview(note) && <span className="line-clamp-2 text-xs text-muted-foreground ">{notePreview(note)}</span>}
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground ">
                 <span>{dateFormatter.format(new Date(note.updatedAt))}</span>
@@ -99,7 +101,7 @@ export function NotesListPanel({ notes, selectedId, onSelect, onCreate, canCreat
         })}
         {visibleNotes.length === 0 && (
           <p className="rounded-lg border border-dashed border-zinc-300 px-3 py-6 text-center text-xs text-muted-foreground dark:border-white/[.12] ">
-            {showArchived ? "Aucune note archivée." : "Aucune note pour l'instant."}
+            {showArchived ? t("ideasBank.notes.noArchivedNotes") : t("ideasBank.notes.noNotesYet")}
           </p>
         )}
       </div>

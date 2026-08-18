@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NoteEditor } from "@/components/ideas-bank/notes/NoteEditor";
 import { NotesListPanel } from "@/components/ideas-bank/notes/NotesListPanel";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useIdeaNotesSession } from "@/lib/idea-notes-store";
 import { buildNewNote } from "@/lib/notes";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
@@ -14,6 +15,7 @@ import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
  * ordinateur (liste + éditeur), successives sur mobile.
  */
 export function NotesView() {
+  const t = useTranslations();
   const { notes, addNote } = useIdeaNotesSession();
   const { activeBrandId } = useBrandsSession();
   const { userId, role, isLoading: isWorkspaceLoading, workspaceError } = useWorkspaceSession();
@@ -54,19 +56,17 @@ export function NotesView() {
               onClick={() => setShowEditorOnMobile(false)}
               className="m-3 w-fit text-xs font-medium text-muted-foreground hover:underline lg:hidden"
             >
-              ← Retour aux notes
+              ← {t("ideasBank.notes.backToNotes")}
             </button>
             <NoteEditor key={selectedNote.id} note={selectedNote} onSelectNote={handleSelect} onDeleted={handleDeleted} />
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-            <p className="text-sm font-medium text-foreground ">Aucune note sélectionnée</p>
-            <p className="max-w-xs text-xs text-muted-foreground ">
-              Choisissez une note dans la liste, ou créez-en une nouvelle pour ouvrir une page blanche.
-            </p>
+            <p className="text-sm font-medium text-foreground ">{t("ideasBank.notes.noNoteSelected")}</p>
+            <p className="max-w-xs text-xs text-muted-foreground ">{t("ideasBank.notes.noNoteSelectedHint")}</p>
             {canCreate && (
               <button type="button" onClick={handleCreate} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white">
-                + Nouvelle note
+                + {t("ideasBank.notes.newNote")}
               </button>
             )}
           </div>

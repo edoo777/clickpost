@@ -3,6 +3,7 @@
 import { IconLock } from "@/components/icons";
 import { DevelopMenu } from "@/components/shared/DevelopMenu";
 import { CONTENT_TYPE_LABEL } from "@/lib/content-types";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
 
 interface TopicRowProps {
@@ -28,6 +29,7 @@ export function TopicRow({
   onChangeLabel,
   onDelete,
 }: TopicRowProps) {
+  const t = useTranslations();
   return (
     <div
       className={`flex items-center gap-3 rounded-lg border p-3 ${
@@ -40,17 +42,21 @@ export function TopicRow({
         type="checkbox"
         checked={topic.selected}
         onChange={onToggleSelect}
-        aria-label="Sélectionner ce sujet"
+        aria-label={t("topicGenerator.topicRow.selectTopic")}
       />
       <div className="flex flex-1 flex-col">
         <input
           value={topic.label}
           onChange={(event) => onChangeLabel(event.target.value)}
           disabled={topic.locked}
-          aria-label="Modifier le libellé du sujet"
+          aria-label={t("topicGenerator.topicRow.editLabel")}
           className="w-full rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm text-zinc-800 focus:border-zinc-200 focus:bg-white disabled:text-zinc-400 dark:text-zinc-200 dark:focus:border-white/[.08] dark:focus:bg-zinc-900 dark:disabled:text-zinc-600"
         />
-        {topic.angle && <span className="truncate px-2 text-xs text-muted-foreground">Angle : {topic.angle}</span>}
+        {topic.angle && (
+          <span className="truncate px-2 text-xs text-muted-foreground">
+            {t("topicGenerator.topicRow.anglePrefix", { angle: topic.angle })}
+          </span>
+        )}
       </div>
       {topic.contentType && (
         <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ">
@@ -59,19 +65,19 @@ export function TopicRow({
       )}
       {isDuplicate && (
         <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
-          Doublon potentiel
+          {t("topicGenerator.topicRow.potentialDuplicate")}
         </span>
       )}
       {isExistingInBank && (
         <span className="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-500/20 dark:text-sky-400">
-          Déjà dans la Banque
+          {t("topicGenerator.topicRow.alreadyInBank")}
         </span>
       )}
       <DevelopMenu variant="topic" topic={topic} batch={batch} />
       <button
         type="button"
         onClick={onToggleLock}
-        aria-label={topic.locked ? "Déverrouiller ce sujet" : "Verrouiller ce sujet"}
+        aria-label={topic.locked ? t("topicGenerator.topicRow.unlockTopic") : t("topicGenerator.topicRow.lockTopic")}
         aria-pressed={topic.locked}
         className={`shrink-0 rounded-md p-1.5 ${
           topic.locked
@@ -86,7 +92,7 @@ export function TopicRow({
         onClick={onDelete}
         className="shrink-0 text-xs font-medium text-red-500 hover:underline"
       >
-        Supprimer
+        {t("common.delete")}
       </button>
     </div>
   );

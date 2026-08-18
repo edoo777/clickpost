@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import type { RewriteSelectionResult } from "@/lib/content-generation-provider";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 
 interface SelectionToolbarProps {
   editor: Editor | null;
@@ -17,17 +18,18 @@ interface SelectionState {
   left: number;
 }
 
-const ACTIONS: { label: string; instruction: string }[] = [
-  { label: "Réécrire", instruction: "réécrire" },
-  { label: "Raccourcir", instruction: "raccourcir" },
-  { label: "Développer", instruction: "développer" },
-  { label: "Corriger", instruction: "corriger" },
-  { label: "Changer le ton", instruction: "changer le ton" },
-  { label: "Simplifier", instruction: "simplifier" },
+const ACTIONS: { labelKey: TranslationKey; instruction: string }[] = [
+  { labelKey: "ideaWorkshop.selectionToolbar.actionRewrite", instruction: "réécrire" },
+  { labelKey: "ideaWorkshop.selectionToolbar.actionShorten", instruction: "raccourcir" },
+  { labelKey: "ideaWorkshop.selectionToolbar.actionExpand", instruction: "développer" },
+  { labelKey: "ideaWorkshop.selectionToolbar.actionCorrect", instruction: "corriger" },
+  { labelKey: "ideaWorkshop.selectionToolbar.actionChangeTone", instruction: "changer le ton" },
+  { labelKey: "ideaWorkshop.selectionToolbar.actionSimplify", instruction: "simplifier" },
 ];
 
 /** Barre contextuelle affichée au-dessus d'une sélection de texte, pour les actions IA rapides. */
 export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolbarProps) {
+  const t = useTranslations();
   const [selection, setSelection] = useState<SelectionState | null>(null);
   const [proposal, setProposal] = useState<string | null>(null);
   const [proposalSource, setProposalSource] = useState<RewriteSelectionResult["source"] | null>(null);
@@ -110,17 +112,17 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
       style={{ top: Math.max(selection.top - 52, 0), left: Math.max(selection.left, 0) }}
     >
       {proposal === null ? (
-        <div className="flex flex-wrap gap-1" role="toolbar" aria-label="Actions sur la sélection">
+        <div className="flex flex-wrap gap-1" role="toolbar" aria-label={t("ideaWorkshop.selectionToolbar.selectionActions")}>
           {ACTIONS.map((action) => (
             <button
-              key={action.label}
+              key={action.labelKey}
               type="button"
               onMouseDown={preventBlur}
               onClick={() => runAction(action.instruction)}
               disabled={isGenerating}
               className="rounded-lg px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isGenerating ? "…" : action.label}
+              {isGenerating ? "…" : t(action.labelKey)}
             </button>
           ))}
         </div>
@@ -131,7 +133,9 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
               proposalSource === "claude" ? "text-violet-600 dark:text-violet-400" : "text-amber-600 dark:text-amber-400"
             }`}
           >
-            {proposalSource === "claude" ? "Généré par Claude" : "Mode démonstration — IA réelle indisponible"}
+            {proposalSource === "claude"
+              ? t("ideaWorkshop.selectionToolbar.generatedByClaude")
+              : t("ideaWorkshop.selectionToolbar.demoModeNotice")}
           </span>
           <p className="max-h-32 overflow-y-auto whitespace-pre-wrap rounded-lg bg-muted p-2 text-xs text-foreground">
             {proposal}
@@ -143,7 +147,7 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
               onClick={applyReplace}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-xs font-semibold text-white"
             >
-              Remplacer
+              {t("ideaWorkshop.selectionToolbar.replace")}
             </button>
             <button
               type="button"
@@ -151,7 +155,7 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
               onClick={applyInsertBelow}
               className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
             >
-              Insérer en dessous
+              {t("ideaWorkshop.selectionToolbar.insertBelow")}
             </button>
             <button
               type="button"
@@ -159,7 +163,7 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
               onClick={applyCopy}
               className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted"
             >
-              Copier
+              {t("ideaWorkshop.selectionToolbar.copy")}
             </button>
             <button
               type="button"
@@ -167,7 +171,7 @@ export function SelectionToolbar({ editor, onRewriteSelection }: SelectionToolba
               onClick={cancel}
               className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
             >
-              Annuler
+              {t("common.cancel")}
             </button>
           </div>
         </div>
