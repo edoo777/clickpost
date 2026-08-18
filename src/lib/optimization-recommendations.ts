@@ -156,6 +156,21 @@ export function buildOptimizationRecommendations(input: OptimizationInput): Opti
     });
   }
 
+  const topCandidate = input.topPublications[0];
+  if (topCandidate) {
+    recommendations.push({
+      id: `top-performer-${topCandidate.id}`,
+      kind: "recommendation",
+      text: `"${topCandidate.excerpt || "Cette publication"}" a le meilleur taux d'engagement de la période (${topCandidate.engagementRate.toFixed(1)}%) — une variante ou un contenu similaire a de bonnes chances de bien performer aussi.`,
+      dataBasis: `Taux d'engagement le plus élevé parmi les publications avec données disponibles sur la période affichée.`,
+      actions: ["variant", "recycle", "dismiss"],
+      sourcePublication: topCandidate,
+      seedTitle: `${topCandidate.excerpt || "Publication"} (variante)`,
+      seedPlatform: topCandidate.platform,
+      seedFormat: topCandidate.format,
+    });
+  }
+
   const worstCandidate = input.worstPublications[0];
   if (worstCandidate && input.topPublications.every((pub) => pub.id !== worstCandidate.id)) {
     recommendations.push({
