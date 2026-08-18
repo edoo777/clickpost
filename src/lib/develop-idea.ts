@@ -18,6 +18,10 @@ export interface IdeaSeed {
   format?: ContentFormat;
   body?: string;
   quickNotes?: string;
+  /** Identifiant de la Publication d'origine dont cette idée est une réutilisation — voir
+   * "Réutiliser ce contenu" (src/components/publications/RepurposeContentModal.tsx). Absent pour
+   * une idée créée à partir de rien. */
+  derivedFromId?: string;
 }
 
 /** Construit une nouvelle Idée à partir d'un point de départ arbitraire (recyclage d'une
@@ -38,6 +42,7 @@ export function buildIdeaFromSeed(seed: IdeaSeed): Idea {
     documentContent: seed.body ? plainTextToDocument(seed.body) : undefined,
     body: seed.body,
     quickNotes: seed.quickNotes,
+    derivedFromId: seed.derivedFromId,
     workshopDisplayMode: "document",
     createdAt: now,
     updatedAt: now,

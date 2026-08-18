@@ -55,6 +55,10 @@ export interface Idea {
   createdAt: string;
   updatedAt: string;
   publicationId?: string;
+  /** Identifiant de la Publication d'origine dont ce contenu est une réutilisation (autre
+   * plateforme, autre format, variante, hook retravaillé...) — voir "Réutiliser ce contenu"
+   * (RepurposeContentModal.tsx). Jamais une copie silencieuse : la relation reste traçable. */
+  derivedFromId?: string;
   hook?: string;
   personalNotes?: string;
   references?: string[];

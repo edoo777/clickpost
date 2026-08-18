@@ -15,6 +15,7 @@ import { PromotionChecklist } from "@/components/publications/PromotionChecklist
 import { PublicationForm } from "@/components/publications/PublicationForm";
 import { PublicationModeToggle, type PublicationCreationMode } from "@/components/publications/PublicationModeToggle";
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
+import { RepurposeContentModal, type RepurposeChoice } from "@/components/publications/RepurposeContentModal";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
@@ -121,6 +122,7 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
   const [creationMode, setCreationMode] = useState<PublicationCreationMode>("manual");
   const [lastAiSnapshot, setLastAiSnapshot] = useState<Publication | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
 
   function applyAiPatch(patch: Partial<Publication>) {
     setLastAiSnapshot(draft);
@@ -382,18 +384,28 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
     setIsEditing(true);
   }
 
-  function handleRecycle() {
+  // "Réutiliser ce contenu" — Chantier promotion/diffusion/repurposing. Toujours accessible
+  // depuis un contenu déjà publié ou prêt à l'être (jamais depuis un brouillon non validé, qui
+  // n'a encore rien à "réutiliser"). La relation avec l'original est conservée via
+  // `derivedFromId`, jamais une simple copie qui perdrait la traçabilité.
+  const canRepurpose = Boolean(
+    existing && ["approved", "ready_to_schedule", "scheduled", "published"].includes(existing.status)
+  );
+
+  function handleConfirmRepurpose(choice: RepurposeChoice) {
     if (!existing) return;
     const brandId = brands.find((candidate) => candidate.name === existing.brand)?.id ?? "";
     const idea = buildIdeaFromSeed({
       brandId,
-      title: `${existing.excerpt || "Publication"} (recyclée)`,
+      title: `${existing.excerpt || "Publication"} (adapté)`,
       description: existing.objective || undefined,
-      platform: existing.platform,
-      format: existing.format,
+      platform: choice.platform,
+      format: choice.format,
       body: existing.text,
+      derivedFromId: existing.id,
     });
     addIdea(idea);
+    setIsRepurposeOpen(false);
     developIdea(idea, "manual");
   }
 
@@ -459,21 +471,21 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
           ) : (
             <>
               {existing && existing.status === "published" && (
-                <>
-                  <Link
-                    href="/performances"
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
-                  >
-                    Analyser
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleRecycle}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
-                  >
-                    Recycler en nouvelle idée
-                  </button>
-                </>
+                <Link
+                  href="/performances"
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                >
+                  Analyser
+                </Link>
+              )}
+              {canRepurpose && (
+                <button
+                  type="button"
+                  onClick={() => setIsRepurposeOpen(true)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
+                >
+                  Réutiliser ce contenu
+                </button>
               )}
               <button
                 type="button"
@@ -553,6 +565,15 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
           <PublicationPreview publication={displayed} />
         </div>
       </div>
+      {isRepurposeOpen && existing && (
+        <RepurposeContentModal
+          sourceTitle={existing.excerpt || "Publication"}
+          sourcePlatform={existing.platform}
+          sourceFormat={existing.format}
+          onCancel={() => setIsRepurposeOpen(false)}
+          onConfirm={handleConfirmRepurpose}
+        />
+      )}
     </div>
   );
 }

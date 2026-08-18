@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { TONE_LABEL, type GenerationTone } from "@/lib/assisted-generation";
 import { CONTENT_FORMATS, FORMAT_LABEL } from "@/lib/editorial-constants";
@@ -155,6 +156,15 @@ export function WorkshopPropertiesPanel({ idea, brandLabel, themeLabel, campaign
           {IDEA_STATUS_LABEL[idea.status]}
         </span>
       </div>
+
+      {idea.derivedFromId && (
+        <div className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs text-violet-700 dark:border-violet-500/30 dark:bg-violet-500/10 dark:text-violet-300">
+          Contenu réutilisé —{" "}
+          <Link href={`/publications/${idea.derivedFromId}`} className="font-medium underline">
+            voir la publication d&apos;origine
+          </Link>
+        </div>
+      )}
 
       <ReadOnlyField label="Marque" value={brandLabel} />
       <ReadOnlyField label="Thématique" value={themeLabel ?? "Sans thématique"} />
