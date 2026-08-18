@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
@@ -37,7 +36,6 @@ interface OptimizationPanelProps {
  * disparaître la carte que localement, sans jamais supprimer de donnée.
  */
 export function OptimizationPanel({ recommendations, brandId }: OptimizationPanelProps) {
-  const router = useRouter();
   const { brands } = useBrandsSession();
   const { addIdea } = useContentWorkspace();
   const { developIdea } = useDevelopIdea();
@@ -55,6 +53,11 @@ export function OptimizationPanel({ recommendations, brandId }: OptimizationPane
       return;
     }
     if (action === "calendar") {
+      // "Ajouter au calendrier" ne peut pas déposer directement une publication programmée : une
+      // idée doit d'abord passer par l'Atelier (seul endroit où on lui assigne un format complet
+      // et une date) avant d'apparaître sur /calendrier, qui n'affiche que la table publications,
+      // jamais les idées. Même parcours que les autres actions ci-dessous, jamais une redirection
+      // directe vers un calendrier qui ne montrerait rien de nouveau.
       const idea = buildIdeaFromSeed({
         brandId: resolveBrandId(),
         title: recommendation.seedTitle,
@@ -62,7 +65,7 @@ export function OptimizationPanel({ recommendations, brandId }: OptimizationPane
         format: recommendation.seedFormat,
       });
       addIdea(idea);
-      router.push("/calendrier");
+      developIdea(idea, "manual");
       return;
     }
     if (action === "recycle" || action === "variant") {

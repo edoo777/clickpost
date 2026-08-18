@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isFeatureEnabled } from "@/lib/admin/feature-flags";
 import { generateGammaDocument, isGammaConfigured } from "@/lib/gamma/client";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -56,7 +57,11 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return errorResponse("unauthorized", "Authentification requise.", 401);
 
-  if (!isGammaConfigured()) {
+  // Même double condition que /api/gamma/config (clé serveur ET interrupteur admin) — jusqu'ici
+  // seule la clé était revérifiée, ce qui rendait le déploiement progressif contrôlé depuis
+  // /admin purement cosmétique : un membre de workspace pouvait déclencher une génération Gamma
+  // réelle et facturable même avec l'interrupteur "gamma_pdf_export" désactivé.
+  if (!isGammaConfigured() || !(await isFeatureEnabled("gamma_pdf_export"))) {
     return errorResponse("not_configured", "Export PDF Gamma non configuré sur ce serveur.", 503);
   }
 

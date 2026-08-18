@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isFeatureEnabled } from "@/lib/admin/feature-flags";
 import { getGammaGenerationStatus, isGammaConfigured } from "@/lib/gamma/client";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -18,7 +19,8 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return errorResponse("unauthorized", "Authentification requise.", 401);
 
-  if (!isGammaConfigured()) {
+  // Même double condition que /api/gamma/config et /api/gamma/generate — voir leurs commentaires.
+  if (!isGammaConfigured() || !(await isFeatureEnabled("gamma_pdf_export"))) {
     return errorResponse("not_configured", "Export PDF Gamma non configuré sur ce serveur.", 503);
   }
 

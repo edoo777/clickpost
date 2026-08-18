@@ -113,11 +113,15 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
   }
 
   function handleAddToCalendar() {
-    if (!window.confirm(`Créer une idée dans la Banque à partir de « ${trend.title} » et ouvrir le calendrier pour la planifier ?`)) return close();
+    // Le calendrier (/calendrier) n'affiche que des publications déjà programmées, jamais des
+    // idées — une idée doit d'abord passer par l'Atelier pour qu'on lui assigne un format complet
+    // et une date. Rediriger directement vers /calendrier ici créait l'idée sans jamais l'y faire
+    // apparaître. Même parcours que « Créer une publication » ci-dessus.
+    if (!window.confirm(`Créer une idée dans la Banque à partir de « ${trend.title} » et ouvrir l'Atelier pour la planifier ?`)) return close();
     const idea = buildIdeaFromTrend();
     addIdea(idea);
     close();
-    router.push("/calendrier");
+    developIdea(idea, "manual");
   }
 
   async function handleReport() {
