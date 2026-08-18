@@ -15,7 +15,9 @@ type DotPaths<T, Prefix extends string = ""> = {
 }[keyof T & string];
 export type TranslationKey = DotPaths<Dictionary>;
 
-function resolve(dictionary: Dictionary, key: string, vars?: Record<string, string | number>): string {
+/** Exportée uniquement pour le test unitaire de l'interpolation `{var}` — jamais utilisée
+ * directement en dehors de ce module en dehors des tests, toujours via `t()`. */
+export function resolve(dictionary: Dictionary, key: string, vars?: Record<string, string | number>): string {
   const parts = key.split(".");
   let value: unknown = dictionary;
   for (const part of parts) {
