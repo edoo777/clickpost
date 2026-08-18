@@ -3,11 +3,10 @@
 import type { DragEvent } from "react";
 import { platformIcons } from "@/components/icons";
 import { HolidayBadge } from "@/components/calendar/HolidayBadge";
+import { useLocale, useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
-
-const timeFormatter = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
 interface DayViewProps {
   date: string;
@@ -35,6 +34,10 @@ export function DayView({
   holidays,
   onSelectHoliday,
 }: DayViewProps) {
+  const t = useTranslations();
+  const { locale } = useLocale();
+  const intlLocale = locale === "fr" ? "fr-FR" : "en-US";
+  const timeFormatter = new Intl.DateTimeFormat(intlLocale, { hour: "2-digit", minute: "2-digit" });
   const STATUS_LABEL = useStatusLabel();
   const dayPosts = posts
     .filter((post) => post.scheduledFor.slice(0, 10) === date)
@@ -52,14 +55,14 @@ export function DayView({
     >
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground ">
-          {new Date(`${date}T00:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+          {new Date(`${date}T00:00:00`).toLocaleDateString(intlLocale, { weekday: "long", day: "numeric", month: "long" })}
         </h2>
         <button
           type="button"
           onClick={onCreateEmpty}
           className="rounded-lg border border-dashed border-zinc-400 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
         >
-          + Créer ce jour
+          + {t("calendar.dayView.createToday")}
         </button>
       </div>
 
@@ -92,7 +95,7 @@ export function DayView({
                 <Icon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
               </span>
               <span className="flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                {post.excerpt || "Sans titre"}
+                {post.excerpt || t("dashboard.untitled")}
               </span>
               <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[post.status]}`}>
                 {STATUS_LABEL[post.status]}
@@ -102,7 +105,7 @@ export function DayView({
         })}
         {dayPosts.length === 0 && (
           <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground  ">
-            Aucune publication ce jour.
+            {t("calendar.dayView.emptyDay")}
           </p>
         )}
       </div>

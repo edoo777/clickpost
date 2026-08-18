@@ -5,16 +5,20 @@ import { IconClose } from "@/components/icons";
 import { ALL_IMPORTANT_DATE_CATEGORIES, type ImportantDatesFiltersValue } from "@/components/calendar/calendrier-page-state";
 import { useBrandsSession } from "@/lib/brands-store";
 import { ANNUAL_EVENT_DEFINITIONS } from "@/lib/holidays/annual-events";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { type ImportantDateDraft, useImportantDatesSession } from "@/lib/important-dates-store";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { ImportantDate, ImportantDateCategory } from "@/types/important-date";
 
-const CATEGORY_LABEL: Record<ImportantDateCategory, string> = {
-  holiday: "Congé / jour férié",
-  annual_event: "Événement annuel",
-  organization: "Événement d'organisation",
-  brand_campaign: "Campagne de marque",
-};
+function useCategoryLabel(): Record<ImportantDateCategory, string> {
+  const t = useTranslations();
+  return {
+    holiday: t("calendar.importantDates.categories.holiday"),
+    annual_event: t("calendar.importantDates.categories.annual_event"),
+    organization: t("calendar.importantDates.categories.organization"),
+    brand_campaign: t("calendar.importantDates.categories.brand_campaign"),
+  };
+}
 
 const CATEGORY_BADGE: Record<ImportantDateCategory, string> = {
   holiday: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
@@ -69,6 +73,8 @@ export function ImportantDatesPanel({
   onCreatePublicationFromEvent,
   holidaysSlot,
 }: ImportantDatesPanelProps) {
+  const t = useTranslations();
+  const CATEGORY_LABEL = useCategoryLabel();
   const { importantDates, addImportantDate, updateImportantDate, archiveImportantDate, restoreImportantDate } =
     useImportantDatesSession();
   const { brands } = useBrandsSession();
@@ -144,12 +150,12 @@ export function ImportantDatesPanel({
   const content = (
     <div className="flex h-full flex-col gap-4 overflow-y-auto">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Dates importantes</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("calendar.importantDates.title")}</h2>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={onCloseMobile}
-            aria-label="Fermer le panneau"
+            aria-label={t("calendar.importantDates.closePanel")}
             className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted lg:hidden"
           >
             <IconClose className="h-4 w-4" />
@@ -157,7 +163,7 @@ export function ImportantDatesPanel({
           <button
             type="button"
             onClick={onToggleCollapsed}
-            aria-label="Réduire le panneau"
+            aria-label={t("calendar.importantDates.collapsePanel")}
             className="hidden rounded-lg p-1.5 text-muted-foreground hover:bg-muted lg:block"
           >
             «
@@ -169,12 +175,14 @@ export function ImportantDatesPanel({
 
       {!canManage && !isWorkspaceLoading && !workspaceError && (
         <p className="rounded-lg bg-zinc-100 px-2.5 py-2 text-[11px] text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Lecture seule — la création et la modification sont réservées aux rôles Propriétaire et Administrateur.
+          {t("calendar.importantDates.readOnlyNotice")}
         </p>
       )}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ">Couches</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground ">
+          {t("calendar.importantDates.layersLabel")}
+        </span>
         <div className="flex flex-col gap-1">
           {ALL_IMPORTANT_DATE_CATEGORIES.map((category) => (
             <label key={category} className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
@@ -192,9 +200,9 @@ export function ImportantDatesPanel({
 
       <div className="grid grid-cols-2 gap-2">
         <label className="flex flex-col gap-0.5 text-[11px] text-muted-foreground ">
-          Pays
+          {t("calendar.importantDates.countryLabel")}
           <select value={filters.country} onChange={(event) => onChangeFilters({ ...filters, country: event.target.value })} className={FIELD_CLASS}>
-            <option value="all">Tous</option>
+            <option value="all">{t("calendar.importantDates.allCountries")}</option>
             {countryOptions.map((country) => (
               <option key={country} value={country}>
                 {country}
@@ -203,9 +211,9 @@ export function ImportantDatesPanel({
           </select>
         </label>
         <label className="flex flex-col gap-0.5 text-[11px] text-muted-foreground ">
-          Région
+          {t("calendar.importantDates.regionLabel")}
           <select value={filters.region} onChange={(event) => onChangeFilters({ ...filters, region: event.target.value })} className={FIELD_CLASS}>
-            <option value="all">Toutes</option>
+            <option value="all">{t("calendar.importantDates.allRegions")}</option>
             {regionOptions.map((region) => (
               <option key={region} value={region}>
                 {region}
@@ -214,9 +222,9 @@ export function ImportantDatesPanel({
           </select>
         </label>
         <label className="col-span-2 flex flex-col gap-0.5 text-[11px] text-muted-foreground ">
-          Marque
+          {t("calendar.importantDates.brandLabel")}
           <select value={filters.brandId} onChange={(event) => onChangeFilters({ ...filters, brandId: event.target.value })} className={FIELD_CLASS}>
-            <option value="all">Toutes</option>
+            <option value="all">{t("calendar.importantDates.allBrands")}</option>
             {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>
                 {brand.name}
@@ -228,7 +236,7 @@ export function ImportantDatesPanel({
 
       <div className="flex items-center justify-between">
         <button type="button" onClick={() => setShowArchived((prev) => !prev)} className="text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline ">
-          {showArchived ? "Voir les actives" : "Voir les archivées"}
+          {showArchived ? t("calendar.importantDates.viewActive") : t("calendar.importantDates.viewArchived")}
         </button>
         {canEdit && (
           <button
@@ -236,7 +244,7 @@ export function ImportantDatesPanel({
             onClick={startCreate}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-[11px] font-semibold text-white"
           >
-            + Ajouter
+            + {t("calendar.importantDates.addButton")}
           </button>
         )}
       </div>
@@ -253,7 +261,7 @@ export function ImportantDatesPanel({
           {draft.category === "annual_event" && (
             <div className="flex flex-col gap-1">
               <span className="text-[11px] text-muted-foreground ">
-                Suggestions (préremplissent le formulaire — jamais créées automatiquement) :
+                {t("calendar.importantDates.suggestionsHint")}
               </span>
               <div className="flex flex-wrap gap-1">
                 {ANNUAL_EVENT_DEFINITIONS.map((definition) => (
@@ -266,7 +274,7 @@ export function ImportantDatesPanel({
                       setDraft({ ...draft, title: definition.label, startDate: computed.startDate, endDate: computed.endDate });
                     }}
                     className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground hover:border-zinc-400 dark:hover:border-white/[.16]"
-                    title={definition.approximate ? "Date approximative — convention courante, à vérifier" : undefined}
+                    title={definition.approximate ? t("calendar.importantDates.approximateDateTitle") : undefined}
                   >
                     {definition.label}
                     {definition.approximate ? " *" : ""}
@@ -275,27 +283,27 @@ export function ImportantDatesPanel({
               </div>
             </div>
           )}
-          <input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="Titre" className={FIELD_CLASS} />
-          <input value={draft.description ?? ""} onChange={(event) => setDraft({ ...draft, description: event.target.value })} placeholder="Description (optionnel)" className={FIELD_CLASS} />
+          <input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder={t("calendar.importantDates.titlePlaceholder")} className={FIELD_CLASS} />
+          <input value={draft.description ?? ""} onChange={(event) => setDraft({ ...draft, description: event.target.value })} placeholder={t("calendar.importantDates.descriptionPlaceholder")} className={FIELD_CLASS} />
           <div className="grid grid-cols-2 gap-2">
             <label className="flex flex-col gap-0.5 text-[11px] text-muted-foreground ">
-              Début
+              {t("calendar.importantDates.startLabel")}
               <input type="date" value={draft.startDate} onChange={(event) => setDraft({ ...draft, startDate: event.target.value })} className={FIELD_CLASS} />
             </label>
             <label className="flex flex-col gap-0.5 text-[11px] text-muted-foreground ">
-              Fin (optionnel)
+              {t("calendar.importantDates.endLabel")}
               <input type="date" value={draft.endDate ?? ""} onChange={(event) => setDraft({ ...draft, endDate: event.target.value || undefined })} className={FIELD_CLASS} />
             </label>
           </div>
           {draft.category === "holiday" && (
             <div className="grid grid-cols-2 gap-2">
-              <input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} placeholder="Pays (ex. CA)" className={FIELD_CLASS} />
-              <input value={draft.region ?? ""} onChange={(event) => setDraft({ ...draft, region: event.target.value })} placeholder="Région (optionnel)" className={FIELD_CLASS} />
+              <input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} placeholder={t("calendar.importantDates.countryPlaceholder")} className={FIELD_CLASS} />
+              <input value={draft.region ?? ""} onChange={(event) => setDraft({ ...draft, region: event.target.value })} placeholder={t("calendar.importantDates.regionPlaceholder")} className={FIELD_CLASS} />
             </div>
           )}
           {draft.category === "brand_campaign" && (
             <select value={draft.brandId ?? ""} onChange={(event) => setDraft({ ...draft, brandId: event.target.value || undefined })} className={FIELD_CLASS}>
-              <option value="">Choisir une marque</option>
+              <option value="">{t("calendar.importantDates.chooseBrandPlaceholder")}</option>
               {brands.map((brand) => (
                 <option key={brand.id} value={brand.id}>
                   {brand.name}
@@ -305,10 +313,10 @@ export function ImportantDatesPanel({
           )}
           <div className="flex gap-2">
             <button type="button" onClick={handleSubmit} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-[11px] font-semibold text-white">
-              {editingId ? "Enregistrer" : "Créer"}
+              {editingId ? t("common.save") : t("calendar.importantDates.create")}
             </button>
             <button type="button" onClick={() => setIsCreating(false)} className="rounded-lg border border-border px-2.5 py-1 text-[11px] text-muted-foreground ">
-              Annuler
+              {t("common.cancel")}
             </button>
           </div>
         </div>
@@ -327,23 +335,27 @@ export function ImportantDatesPanel({
               </div>
               <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">{entry.title}</span>
               {entry.description && <span className="text-[11px] text-muted-foreground ">{entry.description}</span>}
-              {brandName && <span className="text-[11px] text-muted-foreground ">Marque : {brandName}</span>}
+              {brandName && (
+                <span className="text-[11px] text-muted-foreground ">
+                  {t("calendar.importantDates.brandPrefix", { name: brandName })}
+                </span>
+              )}
               <div className="mt-1 flex flex-wrap gap-2">
                 <button type="button" onClick={() => onCreatePublicationFromEvent(entry)} className="text-[11px] font-medium text-violet-600 hover:underline dark:text-violet-400">
-                  Créer une publication
+                  {t("calendar.header.createPublication")}
                 </button>
                 {canEdit && (
                   <>
                     <button type="button" onClick={() => startEdit(entry)} className="text-[11px] font-medium text-muted-foreground hover:underline ">
-                      Modifier
+                      {t("common.edit")}
                     </button>
                     {entry.status === "active" ? (
                       <button type="button" onClick={() => archiveImportantDate(entry.id)} className="text-[11px] font-medium text-muted-foreground hover:underline ">
-                        Archiver
+                        {t("calendar.importantDates.archive")}
                       </button>
                     ) : (
                       <button type="button" onClick={() => restoreImportantDate(entry.id)} className="text-[11px] font-medium text-muted-foreground hover:underline ">
-                        Restaurer
+                        {t("calendar.importantDates.restore")}
                       </button>
                     )}
                   </>
@@ -354,7 +366,7 @@ export function ImportantDatesPanel({
         })}
         {visibleEntries.length === 0 && (
           <p className="rounded-lg border border-dashed border-zinc-300 px-3 py-6 text-center text-[11px] text-muted-foreground dark:border-white/[.12] ">
-            {showArchived ? "Aucune date archivée." : "Aucune date pour ces filtres."}
+            {showArchived ? t("calendar.importantDates.emptyArchived") : t("calendar.importantDates.emptyFiltered")}
           </p>
         )}
       </div>
@@ -369,7 +381,7 @@ export function ImportantDatesPanel({
           <button
             type="button"
             onClick={onToggleCollapsed}
-            aria-label="Déployer le panneau Dates importantes"
+            aria-label={t("calendar.importantDates.expandPanel")}
             className="flex h-full w-full flex-col items-center gap-2 rounded-xl border border-border bg-surface py-4 text-muted-foreground hover:text-foreground "
           >
             »
@@ -382,7 +394,7 @@ export function ImportantDatesPanel({
       {/* Mobile : tiroir */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 flex justify-end lg:hidden">
-          <button type="button" aria-label="Fermer le panneau" onClick={onCloseMobile} className="absolute inset-0 bg-black/30" />
+          <button type="button" aria-label={t("calendar.importantDates.closePanel")} onClick={onCloseMobile} className="absolute inset-0 bg-black/30" />
           <div className="relative flex h-full w-full max-w-sm flex-col bg-surface p-4 shadow-xl">{content}</div>
         </div>
       )}

@@ -6,16 +6,12 @@ import { DayView } from "@/components/calendar/DayView";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { PostChip } from "@/components/calendar/PostChip";
 import { WeekView } from "@/components/calendar/WeekView";
+import { useLocale, useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication, PublicationStatus } from "@/types/publication";
 
 export type CalendarMode = "month" | "week" | "day";
-
-const MONTH_NAMES = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
 
 const UNSCHEDULED_STATUSES: PublicationStatus[] = [
   "idea",
@@ -79,11 +75,27 @@ export function CalendarWorkspace({
   holidayEvents,
   onSelectHoliday,
 }: CalendarWorkspaceProps) {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const { patchPost, changeStatus } = usePostsSession();
   const [dropTargetKey, setDropTargetKey] = useState<string | number | null>(null);
   const anchorDate = new Date(`${anchor}T00:00:00`);
   const year = anchorDate.getFullYear();
   const month = anchorDate.getMonth();
+  const monthNames = [
+    t("calendar.workspace.month.january"),
+    t("calendar.workspace.month.february"),
+    t("calendar.workspace.month.march"),
+    t("calendar.workspace.month.april"),
+    t("calendar.workspace.month.may"),
+    t("calendar.workspace.month.june"),
+    t("calendar.workspace.month.july"),
+    t("calendar.workspace.month.august"),
+    t("calendar.workspace.month.september"),
+    t("calendar.workspace.month.october"),
+    t("calendar.workspace.month.november"),
+    t("calendar.workspace.month.december"),
+  ];
 
   const scheduled = publications.filter((post) => !UNSCHEDULED_STATUSES.includes(post.status));
   const unplanned = publications.filter((post) => UNSCHEDULED_STATUSES.includes(post.status));
@@ -106,9 +118,7 @@ export function CalendarWorkspace({
     // uniquement, avec une explication (contrairement aux refus silencieux ci-dessus, cette
     // erreur n'est pas évidente pour l'utilisateur qui vient de faire le geste).
     if (post.platform === "linkedin" && new Date(nextScheduledFor).getTime() <= Date.now()) {
-      window.alert(
-        "Cette date est déjà passée — une publication LinkedIn programmée serait publiée immédiatement au prochain passage du planificateur. Choisissez une date future."
-      );
+      window.alert(t("calendar.workspace.alreadyPastDate"));
       return;
     }
     patchPost(id, { scheduledFor: nextScheduledFor });
@@ -142,10 +152,15 @@ export function CalendarWorkspace({
 
   const label =
     mode === "month"
-      ? `${MONTH_NAMES[month]} ${year}`
+      ? `${monthNames[month]} ${year}`
       : mode === "day"
-        ? anchorDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
-        : `Semaine du ${anchor}`;
+        ? anchorDate.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : t("calendar.workspace.weekOf", { date: anchor });
 
   return (
     <div className="flex flex-col gap-4">
@@ -173,7 +188,11 @@ export function CalendarWorkspace({
                       : "text-muted-foreground "
                   }`}
                 >
-                  {option === "month" ? "Mois" : option === "week" ? "Semaine" : "Jour"}
+                  {option === "month"
+                    ? t("calendar.workspace.viewMonth")
+                    : option === "week"
+                      ? t("calendar.workspace.viewWeek")
+                      : t("calendar.workspace.viewDay")}
                 </button>
               ))}
             </div>
@@ -182,10 +201,10 @@ export function CalendarWorkspace({
           {holidayEvents && holidayEvents.length > 0 && (
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground ">
               <span className="flex items-center gap-1">
-                <span aria-hidden="true">🟢</span> Congé officiel
+                <span aria-hidden="true">🟢</span> {t("calendar.workspace.officialHolidayLegend")}
               </span>
               <span className="flex items-center gap-1">
-                <span aria-hidden="true">•</span> Congé informatif
+                <span aria-hidden="true">•</span> {t("calendar.workspace.informativeHolidayLegend")}
               </span>
             </div>
           )}
@@ -271,20 +290,20 @@ export function CalendarWorkspace({
           <aside className="flex w-full flex-col gap-2 rounded-xl border border-border bg-surface p-3 lg:w-64  ">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground ">
-                Non planifiées ({unplanned.length})
+                {t("calendar.workspace.unplannedTitle", { count: unplanned.length })}
               </h2>
               <button
                 type="button"
                 onClick={onToggleShowUnplanned}
                 className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
               >
-                {showUnplanned ? "Masquer" : "Afficher"}
+                {showUnplanned ? t("calendar.workspace.hide") : t("calendar.workspace.show")}
               </button>
             </div>
             {showUnplanned && (
               <>
                 <p className="text-[11px] text-muted-foreground ">
-                  Glissez une publication vers une date pour la planifier.
+                  {t("calendar.workspace.dragHint")}
                 </p>
                 <div className="flex flex-col gap-1.5">
                   {unplanned.map((post) => (
@@ -300,7 +319,7 @@ export function CalendarWorkspace({
                     />
                   ))}
                   {unplanned.length === 0 && (
-                    <p className="text-xs text-muted-foreground ">Aucune publication non planifiée.</p>
+                    <p className="text-xs text-muted-foreground ">{t("calendar.workspace.emptyUnplanned")}</p>
                   )}
                 </div>
               </>

@@ -1,10 +1,10 @@
 import type { DragEvent } from "react";
 import { HolidayBadge } from "@/components/calendar/HolidayBadge";
 import { PostChip } from "@/components/calendar/PostChip";
+import { WEEKDAYS, useWeekdayLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
-
-const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
 function startOfWeek(anchor: Date): Date {
   const date = new Date(anchor);
@@ -44,6 +44,8 @@ export function WeekView({
   holidays,
   onSelectHoliday,
 }: WeekViewProps) {
+  const t = useTranslations();
+  const weekdayLabel = useWeekdayLabel();
   const start = startOfWeek(anchor);
   const days = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(start);
@@ -94,12 +96,12 @@ export function WeekView({
           >
             <div className="flex items-center justify-between">
               <span className={`text-xs font-medium ${isToday ? "text-violet-600 dark:text-violet-400" : "text-muted-foreground"}`}>
-                {WEEKDAY_LABELS[index]} {date.getDate()}
+                {weekdayLabel[WEEKDAYS[index]]} {date.getDate()}
               </span>
               <button
                 type="button"
                 onClick={() => onCreateOnDay(key)}
-                aria-label={`Créer une publication le ${key}`}
+                aria-label={t("calendar.weekView.createOnDay", { date: key })}
                 className="hidden h-5 w-5 items-center justify-center rounded-full text-sm font-semibold text-muted-foreground hover:bg-violet-100 hover:text-violet-700 group-hover:flex dark:hover:bg-violet-500/20 dark:hover:text-violet-300"
               >
                 +
@@ -121,7 +123,9 @@ export function WeekView({
                   }}
                 />
               ))}
-              {dayPosts.length === 0 && <p className="text-xs text-muted-foreground ">Aucune publication</p>}
+              {dayPosts.length === 0 && (
+                <p className="text-xs text-muted-foreground ">{t("calendar.weekView.noPublication")}</p>
+              )}
             </div>
           </div>
         );

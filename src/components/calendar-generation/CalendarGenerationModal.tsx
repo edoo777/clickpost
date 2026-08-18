@@ -3,18 +3,12 @@
 import { useMemo, useState } from "react";
 import { generateIdeasFromCalendar, type CalendarGeneratedIdeaPreview } from "@/lib/calendar-generation";
 import { useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
+import { useLocale, useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { BrandProfile } from "@/types/brand";
 import type { EditorialWeekPlan } from "@/types/editorial-calendar";
 import type { Idea } from "@/types/idea";
 import type { Theme } from "@/types/theme";
-
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
-  day: "2-digit",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 const FIELD_CLASS =
   "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300";
@@ -42,11 +36,19 @@ interface CalendarGenerationModalProps {
 }
 
 export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onConfirm }: CalendarGenerationModalProps) {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [startDate, setStartDate] = useState(todayInputValue());
   const [weekCount, setWeekCount] = useState(2);
   const FORMAT_LABEL = useFormatLabel();
   const WEEKDAY_LABEL = useWeekdayLabel();
   const PLATFORM_LABEL = usePlatformLabel();
+  const dateFormatter = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   const previews = useMemo(
     () => generateIdeasFromCalendar({ weekPlan, startDate: parseDateInput(startDate), weekCount, themes, brand }),
@@ -86,19 +88,19 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="flex max-h-[85vh] w-full max-w-2xl flex-col gap-4 overflow-y-auto rounded-xl border border-border bg-surface p-5  ">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground ">Générer les idées depuis ce plan</h2>
+          <h2 className="text-sm font-semibold text-foreground ">{t("calendar.editorial.view.generateIdeas")}</h2>
           <button
             type="button"
             onClick={onClose}
             className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
           >
-            Fermer
+            {t("common.close")}
           </button>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Date de départ
+            {t("calendar.generation.startDateLabel")}
             <input
               type="date"
               value={startDate}
@@ -107,7 +109,7 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nombre de semaines
+            {t("calendar.generation.weekCountLabel")}
             <input
               type="number"
               min={1}
@@ -121,12 +123,12 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
 
         {previews.length === 0 ? (
           <p className={WARNING_CLASS}>
-            Aucun jour actif avec une fréquence supérieure à zéro dans ce plan de semaine — rien à générer.
+            {t("calendar.generation.emptyPreview")}
           </p>
         ) : (
           <>
             <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {previews.length} idée{previews.length > 1 ? "s" : ""} seront créées
+              {t("calendar.generation.ideasWillBeCreated", { count: previews.length, plural: previews.length > 1 ? "s" : "" })}
             </p>
             <div className="flex flex-col gap-3">
               {grouped.map(([dateKey, dayPreviews]) => (
@@ -147,7 +149,7 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
                         </span>
                         {preview.isDuplicate && (
                           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                            Doublon possible
+                            {t("calendar.generation.possibleDuplicate")}
                           </span>
                         )}
                       </li>
@@ -165,7 +167,7 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
             onClick={onClose}
             className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            Annuler
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -173,7 +175,7 @@ export function CalendarGenerationModal({ brand, weekPlan, themes, onClose, onCo
             onClick={handleConfirm}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
           >
-            Créer les {previews.length} idée{previews.length > 1 ? "s" : ""}
+            {t("calendar.generation.createIdeasButton", { count: previews.length, plural: previews.length > 1 ? "s" : "" })}
           </button>
         </div>
       </div>

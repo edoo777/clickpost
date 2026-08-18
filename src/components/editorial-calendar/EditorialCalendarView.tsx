@@ -7,7 +7,7 @@ import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { brandEditorialCalendars } from "@/lib/editorial-calendars";
 import { WEEKDAYS } from "@/lib/editorial-constants";
-import { useTranslations } from "@/lib/i18n/locale-provider";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { getActiveThemesForBrand } from "@/lib/themes";
 import { useThemesSession } from "@/lib/themes-store";
 import type { BrandEditorialCalendar, EditorialDayPlan, EditorialWeekPlan } from "@/types/editorial-calendar";
@@ -25,10 +25,10 @@ function cloneWeekPlan(plan: EditorialWeekPlan): EditorialWeekPlan {
   };
 }
 
-function buildEmptyWeekPlan(): EditorialWeekPlan {
+function buildEmptyWeekPlan(t: (key: TranslationKey) => string): EditorialWeekPlan {
   return {
     id: crypto.randomUUID(),
-    label: "Semaine type",
+    label: t("calendar.editorial.view.defaultPlanLabel"),
     days: WEEKDAYS.map((day) => ({ day, enabled: false, themeIds: [], platforms: [], formats: [], frequency: 0 })),
   };
 }
@@ -38,10 +38,10 @@ function buildEmptyWeekPlan(): EditorialWeekPlan {
  * sinon un plan vide que l'utilisateur construit lui-même. Ne jamais réutiliser tel quel un
  * calendrier de démonstration pour un vrai brand : ses thématiques (`theme-nova-1`, etc.) ne
  * correspondent à aucune thématique réelle du workspace. */
-function buildCalendarForBrand(brandId: string): BrandEditorialCalendar {
+function buildCalendarForBrand(brandId: string, t: (key: TranslationKey) => string): BrandEditorialCalendar {
   const seedCalendar = brandEditorialCalendars.find((calendar) => calendar.brandId === brandId);
   if (seedCalendar) return { ...seedCalendar, weekPlans: seedCalendar.weekPlans.map(cloneWeekPlan) };
-  return { brandId, weekPlans: [buildEmptyWeekPlan()] };
+  return { brandId, weekPlans: [buildEmptyWeekPlan(t)] };
 }
 
 export function EditorialCalendarView() {
@@ -49,7 +49,7 @@ export function EditorialCalendarView() {
   const { brands } = useBrandsSession();
   const { themes } = useThemesSession();
   const { addIdea } = useContentWorkspace();
-  const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() => brands.map((brand) => buildCalendarForBrand(brand.id)));
+  const [calendars, setCalendars] = useState<BrandEditorialCalendar[]>(() => brands.map((brand) => buildCalendarForBrand(brand.id, t)));
   const [selectedBrandId, setSelectedBrandId] = useState(brands[0]?.id ?? "");
 
   // Ajustement pendant le rendu (motif déjà utilisé ailleurs dans l'app, ex. AssistantCopilotView)
@@ -61,7 +61,7 @@ export function EditorialCalendarView() {
     setTrackedBrandIdsKey(brandIdsKey);
     const missing = brands.filter((brand) => !calendars.some((calendar) => calendar.brandId === brand.id));
     if (missing.length > 0) {
-      setCalendars((prev) => [...prev, ...missing.map((brand) => buildCalendarForBrand(brand.id))]);
+      setCalendars((prev) => [...prev, ...missing.map((brand) => buildCalendarForBrand(brand.id, t))]);
     }
     if (!selectedBrandId || !brands.some((brand) => brand.id === selectedBrandId)) {
       setSelectedBrandId(brands[0]?.id ?? "");
@@ -92,11 +92,11 @@ export function EditorialCalendarView() {
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.editorialCalendar")}</h1>
           <p className="text-sm text-muted-foreground">
-            Définissez les thématiques récurrentes de chaque marque pour guider la génération de contenu.
+            {t("calendar.editorial.view.subtitle")}
           </p>
         </header>
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16]">
-          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour définir un calendrier éditorial.
+          {t("calendar.editorial.view.emptyBrands")}
         </p>
       </div>
     );
@@ -152,7 +152,7 @@ export function EditorialCalendarView() {
     const newPlan: EditorialWeekPlan = {
       ...cloneWeekPlan(source),
       id: crypto.randomUUID(),
-      label: `Copie de ${source.label}`,
+      label: t("calendar.editorial.view.copyOfPrefix", { label: source.label }),
     };
     setCalendars((prev) =>
       prev.map((calendar) =>
@@ -180,8 +180,7 @@ export function EditorialCalendarView() {
           {t("pageTitle.editorialCalendar")}
         </h1>
         <p className="text-sm text-muted-foreground ">
-          Définissez les thématiques récurrentes de chaque marque pour guider la génération de
-          contenu.
+          {t("calendar.editorial.view.subtitle")}
         </p>
       </header>
 
@@ -225,14 +224,14 @@ export function EditorialCalendarView() {
                 onClick={cancelEditing}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Annuler
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
                 onClick={saveEditing}
                 className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
               >
-                Enregistrer
+                {t("common.save")}
               </button>
             </>
           ) : (
@@ -242,21 +241,21 @@ export function EditorialCalendarView() {
                 onClick={() => setIsGenerationModalOpen(true)}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Générer les idées depuis ce plan
+                {t("calendar.editorial.view.generateIdeas")}
               </button>
               <button
                 type="button"
                 onClick={duplicatePlan}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Dupliquer cette semaine
+                {t("calendar.editorial.view.duplicateWeek")}
               </button>
               <button
                 type="button"
                 onClick={startEditing}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Modifier
+                {t("common.edit")}
               </button>
             </>
           )}
@@ -266,11 +265,10 @@ export function EditorialCalendarView() {
       {isEditing && (
         <div className="flex flex-col gap-3">
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-            Les modifications restent en mémoire pour cette session uniquement — elles seront
-            perdues au rechargement de la page.
+            {t("calendar.editorial.view.sessionOnlyWarning")}
           </p>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nom de la semaine
+            {t("calendar.editorial.view.weekNameLabel")}
             <input
               value={displayedPlan.label}
               onChange={(event) => handleRenamePlan(event.target.value)}

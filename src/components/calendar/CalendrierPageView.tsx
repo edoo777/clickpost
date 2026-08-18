@@ -107,7 +107,7 @@ export function CalendrierPageView() {
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.editorialCalendar")}</h1>
           <p className="text-sm text-muted-foreground ">
-            {filtered.length} publication{filtered.length > 1 ? "s" : ""} affichée{filtered.length > 1 ? "s" : ""}
+            {t("calendar.page.publicationsDisplayed", { count: filtered.length, plural: filtered.length > 1 ? "s" : "" })}
           </p>
         </div>
         <button
@@ -115,7 +115,7 @@ export function CalendrierPageView() {
           onClick={() => setIsMobilePanelOpen(true)}
           className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-zinc-600 lg:hidden  dark:text-zinc-400"
         >
-          Dates importantes
+          {t("calendar.importantDates.title")}
         </button>
       </header>
 

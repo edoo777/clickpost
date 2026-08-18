@@ -1,9 +1,8 @@
 import type { DragEvent } from "react";
 import { DayCell } from "@/components/calendar/DayCell";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
-
-const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 function buildMonthGrid(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
@@ -47,6 +46,16 @@ export function MonthGrid({
   holidays,
   onSelectHoliday,
 }: MonthGridProps) {
+  const t = useTranslations();
+  const weekdaysShort = [
+    t("calendar.monthGrid.weekdayShort.monday"),
+    t("calendar.monthGrid.weekdayShort.tuesday"),
+    t("calendar.monthGrid.weekdayShort.wednesday"),
+    t("calendar.monthGrid.weekdayShort.thursday"),
+    t("calendar.monthGrid.weekdayShort.friday"),
+    t("calendar.monthGrid.weekdayShort.saturday"),
+    t("calendar.monthGrid.weekdayShort.sunday"),
+  ];
   const cells = buildMonthGrid(year, month);
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
@@ -80,7 +89,7 @@ export function MonthGrid({
   return (
     <div className="rounded-xl border border-border bg-surface p-4  ">
       <div className="grid grid-cols-7 gap-2">
-        {WEEKDAYS.map((day) => (
+        {weekdaysShort.map((day) => (
           <div
             key={day}
             className="pb-2 text-center text-xs font-medium text-muted-foreground "

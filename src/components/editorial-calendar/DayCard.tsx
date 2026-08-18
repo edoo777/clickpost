@@ -2,6 +2,7 @@
 
 import { platformIcons } from "@/components/icons";
 import { CONTENT_FORMATS, useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat, EditorialDayPlan } from "@/types/editorial-calendar";
@@ -25,6 +26,7 @@ interface DayCardProps {
 }
 
 export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
+  const t = useTranslations();
   const WEEKDAY_LABEL = useWeekdayLabel();
   const PLATFORM_LABEL = usePlatformLabel();
   const FORMAT_LABEL = useFormatLabel();
@@ -80,7 +82,7 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
           type="button"
           disabled={!editable}
           onClick={toggleEnabled}
-          aria-label={plan.enabled ? "Désactiver la journée" : "Activer la journée"}
+          aria-label={plan.enabled ? t("calendar.editorial.dayCard.disableDay") : t("calendar.editorial.dayCard.enableDay")}
           className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
             plan.enabled ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"
           } ${editable ? "cursor-pointer" : "cursor-default"}`}
@@ -94,11 +96,13 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
       </div>
 
       {!plan.enabled ? (
-        <p className="text-xs text-muted-foreground ">Jour désactivé</p>
+        <p className="text-xs text-muted-foreground ">{t("calendar.editorial.dayCard.dayDisabled")}</p>
       ) : (
         <>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground ">Thématiques</span>
+            <span className="text-xs font-medium text-muted-foreground ">
+              {t("calendar.editorial.dayCard.themesLabel")}
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {themes.map((theme) => {
                 const isSelected = plan.themeIds.includes(theme.id);
@@ -112,13 +116,13 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
                     title={theme.objective || undefined}
                     className={toggleClass(isSelected, editable)}
                   >
-                    {theme.label || "Sans titre"}
+                    {theme.label || t("dashboard.untitled")}
                   </button>
                 );
               })}
               {themes.length === 0 && (
                 <span className="text-xs text-muted-foreground ">
-                  Aucune thématique active pour cette marque — gérez-les dans « Thématiques ».
+                  {t("calendar.editorial.dayCard.emptyThemes")}
                 </span>
               )}
               {themes.length > 0 && !editable && plan.themeIds.length === 0 && (
@@ -128,7 +132,9 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground ">Réseaux</span>
+            <span className="text-xs font-medium text-muted-foreground ">
+              {t("calendar.editorial.dayCard.networksLabel")}
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {ALL_PLATFORMS.map((platform) => {
                 const Icon = platformIcons[platform];
@@ -154,7 +160,9 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground ">Formats</span>
+            <span className="text-xs font-medium text-muted-foreground ">
+              {t("calendar.editorial.dayCard.formatsLabel")}
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {CONTENT_FORMATS.map((format) => {
                 const isSelected = plan.formats.includes(format);
@@ -178,7 +186,7 @@ export function DayCard({ plan, themes, editable, onChange }: DayCardProps) {
           </div>
 
           <label className="flex items-center justify-between text-xs font-medium text-muted-foreground ">
-            Fréquence (publications/jour)
+            {t("calendar.editorial.dayCard.frequencyLabel")}
             <input
               type="number"
               min={0}

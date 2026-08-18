@@ -1,6 +1,7 @@
 import type { DragEvent } from "react";
 import { HolidayBadge } from "@/components/calendar/HolidayBadge";
 import { PostChip } from "@/components/calendar/PostChip";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { HolidayEvent } from "@/types/holiday";
 import type { Publication } from "@/types/publication";
 
@@ -39,6 +40,7 @@ export function DayCell({
   holidays,
   onSelectHoliday,
 }: DayCellProps) {
+  const t = useTranslations();
   if (day === null) {
     return <div className="min-h-[6.5rem] rounded-lg" />;
   }
@@ -69,7 +71,7 @@ export function DayCell({
           <button
             type="button"
             onClick={onCreateEmpty}
-            aria-label={`Créer une publication ce jour (${day})`}
+            aria-label={t("calendar.dayCell.createOnDay", { day })}
             className="hidden h-5 w-5 items-center justify-center rounded-full text-sm font-semibold text-muted-foreground hover:bg-violet-100 hover:text-violet-700 group-hover:flex dark:hover:bg-violet-500/20 dark:hover:text-violet-300"
           >
             +
@@ -94,7 +96,7 @@ export function DayCell({
         ))}
         {overflow > 0 && (
           <span className="px-1.5 text-xs font-medium text-muted-foreground ">
-            +{overflow} de plus
+            {t("calendar.dayCell.more", { count: overflow })}
           </span>
         )}
       </div>
