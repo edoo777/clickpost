@@ -8,17 +8,19 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { translateAuthError } from "@/lib/auth-errors";
 import { validatePassword, validatePasswordsMatch, validateEmail, validateRequired } from "@/lib/auth-validation";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface FieldErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
+  firstName?: TranslationKey;
+  lastName?: TranslationKey;
+  email?: TranslationKey;
+  password?: TranslationKey;
+  confirmPassword?: TranslationKey;
 }
 
 export function SignUpView() {
+  const t = useTranslations();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,15 +28,15 @@ export function SignUpView() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<TranslationKey | null>(null);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setErrorMessage(null);
 
     const nextErrors: FieldErrors = {
-      firstName: validateRequired(firstName, "Le prénom") ?? undefined,
-      lastName: validateRequired(lastName, "Le nom") ?? undefined,
+      firstName: validateRequired(firstName, "auth.validation.firstNameRequired") ?? undefined,
+      lastName: validateRequired(lastName, "auth.validation.lastNameRequired") ?? undefined,
       email: validateEmail(email) ?? undefined,
       password: validatePassword(password) ?? undefined,
       confirmPassword: validatePasswordsMatch(password, confirmPassword) ?? undefined,
@@ -63,13 +65,11 @@ export function SignUpView() {
 
   if (status === "success") {
     return (
-      <AuthShell title="Vérifiez votre boîte de réception" subtitle="Un courriel de confirmation vient d'être envoyé.">
+      <AuthShell title={t("auth.signup.successTitle")} subtitle={t("auth.signup.successSubtitle")}>
         <div className="flex flex-col gap-4">
-          <AuthMessage kind="success">
-            Cliquez sur le lien reçu à <strong>{email}</strong> pour confirmer votre adresse et activer votre compte.
-          </AuthMessage>
+          <AuthMessage kind="success">{t("auth.signup.successMessage", { email })}</AuthMessage>
           <Link href="/connexion" className="text-center text-sm font-medium text-violet-600 hover:underline dark:text-violet-400">
-            Retour à la connexion
+            {t("auth.signup.backToLogin")}
           </Link>
         </div>
       </AuthShell>
@@ -77,72 +77,72 @@ export function SignUpView() {
   }
 
   return (
-    <AuthShell title="Créer un compte" subtitle="Rejoignez ClickPost pour gérer vos contenus." footer={
+    <AuthShell title={t("auth.signup.title")} subtitle={t("auth.signup.subtitle")} footer={
       <span>
-        Déjà un compte ?{" "}
+        {t("auth.signup.alreadyHaveAccount")}{" "}
         <Link href="/connexion" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
-          Se connecter
+          {t("auth.signup.signInLink")}
         </Link>
       </span>
     }>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
-            label="Prénom"
+            label={t("auth.signup.firstNameLabel")}
             id="firstName"
             name="firstName"
             autoComplete="given-name"
             value={firstName}
             onChange={(event) => setFirstName(event.target.value)}
-            error={errors.firstName}
+            error={errors.firstName ? t(errors.firstName) : undefined}
           />
           <FormField
-            label="Nom"
+            label={t("auth.signup.lastNameLabel")}
             id="lastName"
             name="lastName"
             autoComplete="family-name"
             value={lastName}
             onChange={(event) => setLastName(event.target.value)}
-            error={errors.lastName}
+            error={errors.lastName ? t(errors.lastName) : undefined}
           />
         </div>
         <FormField
-          label="Adresse courriel"
+          label={t("auth.emailLabel")}
           id="email"
           name="email"
           type="email"
           autoComplete="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          error={errors.email}
+          error={errors.email ? t(errors.email) : undefined}
         />
         <PasswordField
-          label="Mot de passe"
+          label={t("auth.passwordLabel")}
           id="password"
           name="password"
           autoComplete="new-password"
           value={password}
           onChange={setPassword}
-          error={errors.password}
+          error={errors.password ? t(errors.password) : undefined}
         />
         <PasswordField
-          label="Confirmer le mot de passe"
+          label={t("auth.signup.confirmPasswordLabel")}
           id="confirmPassword"
           name="confirmPassword"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={setConfirmPassword}
-          error={errors.confirmPassword}
+          error={errors.confirmPassword ? t(errors.confirmPassword) : undefined}
         />
 
-        {errorMessage && <AuthMessage kind="error">{errorMessage}</AuthMessage>}
+        {errorMessage && <AuthMessage kind="error">{t(errorMessage)}</AuthMessage>}
 
         <button
           type="submit"
           disabled={status === "submitting"}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "submitting" ? "Création du compte…" : "Créer mon compte"}
+          {status === "submitting" ? t("auth.signup.submitting") : t("auth.signup.submit")}
         </button>
       </form>
     </AuthShell>

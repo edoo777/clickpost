@@ -1,20 +1,21 @@
-const KNOWN_MESSAGES: Record<string, string> = {
-  "Invalid login credentials": "Adresse courriel ou mot de passe incorrect.",
-  "User already registered": "Un compte existe déjà avec cette adresse courriel.",
-  "Email not confirmed": "Veuillez confirmer votre adresse courriel avant de vous connecter.",
-  "Password should be at least 6 characters": "Le mot de passe doit contenir au moins 6 caractères.",
-  "Password should be at least 8 characters": "Le mot de passe doit contenir au moins 8 caractères.",
-  "Auth session missing!": "Votre session a expiré. Merci de recommencer.",
-  "New password should be different from the old password.":
-    "Le nouveau mot de passe doit être différent de l'ancien.",
-  "Signup requires a valid password": "Veuillez saisir un mot de passe valide.",
-  "Unable to validate email address: invalid format": "Adresse courriel invalide.",
-  "For security purposes, you can only request this after some time.":
-    "Pour des raisons de sécurité, veuillez patienter avant de réessayer.",
+import type { TranslationKey } from "@/lib/i18n/locale-provider";
+
+const KNOWN_MESSAGES: Record<string, TranslationKey> = {
+  "Invalid login credentials": "auth.errors.invalidCredentials",
+  "User already registered": "auth.errors.userAlreadyRegistered",
+  "Email not confirmed": "auth.errors.emailNotConfirmed",
+  "Password should be at least 6 characters": "auth.validation.passwordTooShort",
+  "Password should be at least 8 characters": "auth.validation.passwordTooShort",
+  "Auth session missing!": "auth.errors.sessionExpired",
+  "New password should be different from the old password.": "auth.errors.samePassword",
+  "Signup requires a valid password": "auth.errors.invalidPassword",
+  "Unable to validate email address: invalid format": "auth.errors.invalidEmailFormat",
+  "For security purposes, you can only request this after some time.": "auth.errors.rateLimited",
 };
 
-/** Traduit les messages d'erreur Supabase Auth connus en français ; laisse passer les autres tels quels. */
-export function translateAuthError(message: string | undefined | null): string {
-  if (!message) return "Une erreur inattendue est survenue. Veuillez réessayer.";
-  return KNOWN_MESSAGES[message] ?? message;
+/** Traduit les messages d'erreur Supabase Auth connus en clé de dictionnaire i18n ; renvoie une
+ * clé générique pour les messages non reconnus (jamais le message anglais brut de Supabase). */
+export function translateAuthError(message: string | undefined | null): TranslationKey {
+  if (!message) return "auth.errors.unknown";
+  return KNOWN_MESSAGES[message] ?? "auth.errors.unknown";
 }

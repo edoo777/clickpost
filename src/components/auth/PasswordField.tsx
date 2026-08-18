@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { IconEye, IconEyeOff } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface PasswordFieldProps {
   label: string;
@@ -17,6 +18,7 @@ const FIELD_CLASS =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 pr-10 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:text-zinc-200";
 
 export function PasswordField({ label, id, name, value, onChange, error, autoComplete }: PasswordFieldProps) {
+  const t = useTranslations();
   const [isVisible, setIsVisible] = useState(false);
   const errorId = error ? `${id}-error` : undefined;
 
@@ -38,7 +40,7 @@ export function PasswordField({ label, id, name, value, onChange, error, autoCom
         <button
           type="button"
           onClick={() => setIsVisible((prev) => !prev)}
-          aria-label={isVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-label={isVisible ? t("auth.hidePassword") : t("auth.showPassword")}
           aria-pressed={isVisible}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground"
         >

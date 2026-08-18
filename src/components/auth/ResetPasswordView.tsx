@@ -8,19 +8,21 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { translateAuthError } from "@/lib/auth-errors";
 import { validatePassword, validatePasswordsMatch } from "@/lib/auth-validation";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type SessionState = "checking" | "valid" | "invalid";
 
 export function ResetPasswordView() {
   const router = useRouter();
+  const t = useTranslations();
   const [sessionState, setSessionState] = useState<SessionState>("checking");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<TranslationKey | null>(null);
+  const [confirmError, setConfirmError] = useState<TranslationKey | null>(null);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<TranslationKey | null>(null);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -57,24 +59,22 @@ export function ResetPasswordView() {
 
   if (sessionState === "checking") {
     return (
-      <AuthShell title="Réinitialiser le mot de passe">
-        <p className="text-center text-sm text-muted-foreground">Vérification du lien…</p>
+      <AuthShell title={t("auth.resetPassword.title")}>
+        <p className="text-center text-sm text-muted-foreground">{t("auth.resetPassword.checkingLink")}</p>
       </AuthShell>
     );
   }
 
   if (sessionState === "invalid") {
     return (
-      <AuthShell title="Lien invalide">
+      <AuthShell title={t("auth.resetPassword.invalidLinkTitle")}>
         <div className="flex flex-col gap-4">
-          <AuthMessage kind="error">
-            Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.
-          </AuthMessage>
+          <AuthMessage kind="error">{t("auth.resetPassword.invalidLinkMessage")}</AuthMessage>
           <Link
             href="/mot-de-passe-oublie"
             className="text-center text-sm font-medium text-violet-600 hover:underline dark:text-violet-400"
           >
-            Redemander un lien
+            {t("auth.resetPassword.requestNewLink")}
           </Link>
         </div>
       </AuthShell>
@@ -82,35 +82,35 @@ export function ResetPasswordView() {
   }
 
   return (
-    <AuthShell title="Réinitialiser le mot de passe" subtitle="Choisissez un nouveau mot de passe.">
+    <AuthShell title={t("auth.resetPassword.title")} subtitle={t("auth.resetPassword.subtitle")}>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <PasswordField
-          label="Nouveau mot de passe"
+          label={t("auth.resetPassword.newPasswordLabel")}
           id="password"
           name="password"
           autoComplete="new-password"
           value={password}
           onChange={setPassword}
-          error={passwordError}
+          error={passwordError ? t(passwordError) : null}
         />
         <PasswordField
-          label="Confirmer le nouveau mot de passe"
+          label={t("auth.resetPassword.confirmNewPasswordLabel")}
           id="confirmPassword"
           name="confirmPassword"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={setConfirmPassword}
-          error={confirmError}
+          error={confirmError ? t(confirmError) : null}
         />
 
-        {errorMessage && <AuthMessage kind="error">{errorMessage}</AuthMessage>}
+        {errorMessage && <AuthMessage kind="error">{t(errorMessage)}</AuthMessage>}
 
         <button
           type="submit"
           disabled={status === "submitting"}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "submitting" ? "Mise à jour…" : "Mettre à jour le mot de passe"}
+          {status === "submitting" ? t("auth.resetPassword.submitting") : t("auth.resetPassword.submit")}
         </button>
       </form>
     </AuthShell>

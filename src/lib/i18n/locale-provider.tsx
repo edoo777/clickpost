@@ -15,14 +15,16 @@ type DotPaths<T, Prefix extends string = ""> = {
 }[keyof T & string];
 export type TranslationKey = DotPaths<Dictionary>;
 
-function resolve(dictionary: Dictionary, key: string): string {
+function resolve(dictionary: Dictionary, key: string, vars?: Record<string, string | number>): string {
   const parts = key.split(".");
   let value: unknown = dictionary;
   for (const part of parts) {
     if (typeof value !== "object" || value === null) return key;
     value = (value as Record<string, unknown>)[part];
   }
-  return typeof value === "string" ? value : key;
+  if (typeof value !== "string") return key;
+  if (!vars) return value;
+  return value.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match));
 }
 
 interface LocaleContextValue {
@@ -31,7 +33,8 @@ interface LocaleContextValue {
    * synchronisation avec `profiles.ui_locale` (utilisateur authentifié) est à la charge de
    * l'appelant, voir LanguageSwitcher.tsx, pour ne jamais coupler ce module au client Supabase. */
   setLocale: (locale: Locale) => void;
-  t: (key: TranslationKey) => string;
+  /** `vars` permet une interpolation simple `{nom}` dans la chaîne traduite (ex. "Bonjour {name}"). */
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -88,7 +91,10 @@ export function LocaleProvider({ children, initialLocale }: { children: ReactNod
   }, []);
 
   const dictionary = DICTIONARIES[locale];
-  const t = useCallback((key: TranslationKey) => resolve(dictionary, key), [dictionary]);
+  const t = useCallback(
+    (key: TranslationKey, vars?: Record<string, string | number>) => resolve(dictionary, key, vars),
+    [dictionary]
+  );
 
   const value = useMemo<LocaleContextValue>(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
