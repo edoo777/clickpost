@@ -14,18 +14,35 @@ async function getAdminData() {
     supabase.from("brands").select("id, name, workspace_id, status, created_at").is("deleted_at", null).order("created_at", { ascending: false }),
   ]);
 
+  const errors = [usersResult.error?.message, workspacesResult.error?.message, brandsResult.error?.message].filter(
+    (message): message is string => Boolean(message)
+  );
+
   return {
     users: usersResult.data?.users ?? [],
     workspaces: workspacesResult.data ?? [],
     brands: brandsResult.data ?? [],
+    errors,
   };
 }
 
 /** Vue de lecture simple — pas de CRM, pas d'action de gestion complexe. Utilise service_role
  * uniquement pour lire (jamais écrire) ces trois listes ; réservé à cette page admin déjà gardée
- * par isPlatformAdminEmail() au niveau du layout. */
+ * par isPlatformAdminEmail() au niveau du layout. Une erreur Supabase sur l'un des trois appels ne
+ * doit jamais se confondre avec un état vide légitime — voir la bannière ci-dessous. */
 export default async function AdminUsersPage() {
-  const { users, workspaces, brands } = await getAdminData();
+  let data: Awaited<ReturnType<typeof getAdminData>>;
+  try {
+    data = await getAdminData();
+  } catch (error) {
+    data = {
+      users: [],
+      workspaces: [],
+      brands: [],
+      errors: [error instanceof Error ? error.message : "Erreur inconnue lors du chargement des données."],
+    };
+  }
+  const { users, workspaces, brands, errors } = data;
   const brandCountByWorkspace = new Map<string, number>();
   for (const brand of brands) {
     const key = brand.workspace_id as string;
@@ -38,6 +55,17 @@ export default async function AdminUsersPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Utilisateurs & workspaces</h1>
         <p className="text-sm text-muted-foreground">Vue de lecture simple — aucune action de gestion complexe.</p>
       </header>
+
+      {errors.length > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
+          <p className="font-medium">Certaines données n&apos;ont pas pu être chargées :</p>
+          <ul className="mt-1 list-inside list-disc">
+            {errors.map((message) => (
+              <li key={message}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-foreground">Utilisateurs ({users.length})</h2>

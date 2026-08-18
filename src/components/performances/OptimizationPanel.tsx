@@ -25,6 +25,9 @@ const KIND_STYLE: Record<OptimizationRecommendation["kind"], string> = {
 
 interface OptimizationPanelProps {
   recommendations: OptimizationRecommendation[];
+  /** Marque actuellement filtrée sur la page Performances — les idées créées depuis une action
+   * doivent atterrir sur cette marque, jamais sur la première marque du workspace par défaut. */
+  brandId?: string;
 }
 
 /**
@@ -33,7 +36,7 @@ interface OptimizationPanelProps {
  * Chaque action crée réellement une idée et ouvre l'Atelier existant ; "Ignorer" ne fait
  * disparaître la carte que localement, sans jamais supprimer de donnée.
  */
-export function OptimizationPanel({ recommendations }: OptimizationPanelProps) {
+export function OptimizationPanel({ recommendations, brandId }: OptimizationPanelProps) {
   const router = useRouter();
   const { brands } = useBrandsSession();
   const { addIdea } = useContentWorkspace();
@@ -43,7 +46,7 @@ export function OptimizationPanel({ recommendations }: OptimizationPanelProps) {
   const visible = recommendations.filter((recommendation) => !dismissedIds.has(recommendation.id));
 
   function resolveBrandId(): string {
-    return brands[0]?.id ?? "";
+    return brandId ?? brands[0]?.id ?? "";
   }
 
   function handleAction(recommendation: OptimizationRecommendation, action: OptimizationActionKey) {

@@ -248,7 +248,7 @@ export function PerformancesView() {
           />
         </>
       ) : (
-        <OptimizationPanel recommendations={recommendations} />
+        <OptimizationPanel recommendations={recommendations} brandId={activeBrand?.id} />
       )}
     </div>
   );

@@ -74,6 +74,23 @@ export function approvePublication(publication: Publication, actorName: string):
   return appendHistory({ ...publication, status: "approved" }, "Approuvée", actorName);
 }
 
+/** Fait passer une publication tout juste approuvée directement à "ready_to_schedule" ou
+ * "scheduled" selon `postApprovalBehavior` (réglages d'équipe, voir WorkflowSection.tsx) — un
+ * second changement d'état délibéré (jamais fusionné dans `approvePublication`) pour que le
+ * verrou de transition en base (`publications_check_status_transition`, qui exige "approved" comme
+ * état intermédiaire avant "scheduled") reste satisfait, et que l'historique garde une entrée
+ * distincte pour chaque étape réelle. */
+export function applyPostApprovalBehavior(
+  publication: Publication,
+  actorName: string,
+  postApprovalBehavior: "ready_to_schedule" | "scheduled"
+): Publication {
+  if (postApprovalBehavior === "ready_to_schedule") {
+    return appendHistory({ ...publication, status: "ready_to_schedule" }, "Prête à programmer", actorName);
+  }
+  return appendHistory({ ...publication, status: "scheduled" }, "Programmée", actorName);
+}
+
 export function requestChanges(publication: Publication, note: string, actorName: string): Publication {
   const withComment: Publication = {
     ...publication,

@@ -263,7 +263,7 @@ export function PublicationsTable({
                 disabled={
                   (status === "approved" && post.status !== "approved") ||
                   (status === "published" && post.status !== "published") ||
-                  (status === "scheduled" && !["approved", "scheduled", "failed"].includes(post.status))
+                  (status === "scheduled" && !["approved", "ready_to_schedule", "scheduled", "failed"].includes(post.status))
                 }
               >
                 {STATUS_LABEL[status]}

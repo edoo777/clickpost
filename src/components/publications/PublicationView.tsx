@@ -17,7 +17,7 @@ import { PublicationModeToggle, type PublicationCreationMode } from "@/component
 import { PublicationPreview } from "@/components/publications/PublicationPreview";
 import { RepurposeContentModal, type RepurposeChoice } from "@/components/publications/RepurposeContentModal";
 import { useAccountsSession } from "@/lib/accounts-store";
-import { approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
+import { applyPostApprovalBehavior, approvePublication, hasApprovedContentChanged, rejectPublication, requestChanges } from "@/lib/approval";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { buildIdeaFromSeed, useDevelopIdea } from "@/lib/develop-idea";
@@ -235,7 +235,8 @@ export function PublicationView({ mode, id }: PublicationViewProps) {
 
   function handleApprove() {
     if (!existing) return;
-    const updated = approvePublication(existing, currentUserName);
+    const approved = approvePublication(existing, currentUserName);
+    const updated = applyPostApprovalBehavior(approved, currentUserName, settings.workflow.postApprovalBehavior);
     updatePost(updated.id, updated);
     syncToIdea(existing, updated);
     if (isEditing) setDraft(updated);

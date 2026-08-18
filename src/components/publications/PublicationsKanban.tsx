@@ -103,7 +103,7 @@ export function PublicationsKanban({ publications, onOpen }: PublicationsKanbanP
     // silencieusement à sa place, comme pour les deux règles ci-dessus. Appliqué en dernier
     // recours par un verrou côté base de données (voir la migration
     // publications_status_transition_guard), jamais uniquement ici.
-    if (status === "scheduled" && !["approved", "scheduled", "failed"].includes(dragged.status)) return;
+    if (status === "scheduled" && !["approved", "ready_to_schedule", "scheduled", "failed"].includes(dragged.status)) return;
     const scheduledFor = computeReorderedScheduledFor(columnPosts(status), target, id);
     if (dragged.status !== status) {
       changeStatus(id, status, currentUserName);
