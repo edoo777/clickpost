@@ -1,25 +1,12 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { Report, ReportStatus, ReportType } from "@/types/report";
 
-const REPORT_STATUS_LABEL: Record<ReportStatus, string> = {
-  draft: "Brouillon",
-  ready: "Prêt",
-  generating_pdf: "PDF en cours",
-  pdf_ready: "PDF prêt",
-  pdf_failed: "Échec PDF",
-};
-
-const REPORT_TYPE_LABEL: Record<ReportType, string> = {
-  internal: "Rapport interne",
-  client: "Rapport client",
-  executive: "Rapport exécutif",
-};
-
-function formatPlatforms(platform: string, platformLabel: Record<SocialPlatform, string>): string {
-  if (platform === "all" || platform === "") return "Toutes plateformes";
+function formatPlatforms(platform: string, platformLabel: Record<SocialPlatform, string>, allPlatformsLabel: string): string {
+  if (platform === "all" || platform === "") return allPlatformsLabel;
   return platform
     .split(",")
     .map((value) => platformLabel[value as SocialPlatform] ?? value)
@@ -27,14 +14,27 @@ function formatPlatforms(platform: string, platformLabel: Record<SocialPlatform,
 }
 
 export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOpen: (report: Report) => void }) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
+  const REPORT_STATUS_LABEL: Record<ReportStatus, string> = {
+    draft: t("reports.status.draft"),
+    ready: t("reports.status.ready"),
+    generating_pdf: t("reports.status.generating_pdf"),
+    pdf_ready: t("reports.status.pdf_ready"),
+    pdf_failed: t("reports.status.pdf_failed"),
+  };
+  const REPORT_TYPE_LABEL: Record<ReportType, string> = {
+    internal: t("reports.reportType.internal"),
+    client: t("reports.reportType.client"),
+    executive: t("reports.reportType.executive"),
+  };
   const sorted = [...reports].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
-      <h2 className="text-sm font-semibold text-foreground">Rapports précédents</h2>
+      <h2 className="text-sm font-semibold text-foreground">{t("reports.history.title")}</h2>
       {sorted.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucun rapport enregistré pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground">{t("reports.history.empty")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {sorted.map((report) => (
@@ -44,7 +44,7 @@ export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOp
                   {report.periodStart} → {report.periodEnd}
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {REPORT_TYPE_LABEL[report.reportType]} · {formatPlatforms(report.platform, PLATFORM_LABEL)} · {REPORT_STATUS_LABEL[report.status]}
+                  {REPORT_TYPE_LABEL[report.reportType]} · {formatPlatforms(report.platform, PLATFORM_LABEL, t("reports.history.allPlatforms"))} · {REPORT_STATUS_LABEL[report.status]}
                 </span>
                 {report.document?.narrative.executiveSummary.narrative && (
                   <span className="mt-1 truncate text-xs text-muted-foreground">
@@ -59,7 +59,7 @@ export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOp
                     onClick={() => onOpen(report)}
                     className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
                   >
-                    Ouvrir
+                    {t("reports.history.open")}
                   </button>
                 )}
                 {report.storedFileUrl && (
@@ -69,7 +69,7 @@ export function ReportHistoryList({ reports, onOpen }: { reports: Report[]; onOp
                     rel="noreferrer"
                     className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
                   >
-                    PDF
+                    {t("reports.history.pdfLink")}
                   </a>
                 )}
               </div>

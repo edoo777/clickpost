@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { NOTIFICATION_LABEL } from "@/lib/settings-data";
 import type { NotificationKey } from "@/types/settings";
 
@@ -17,6 +20,7 @@ interface NotificationsSectionProps {
 }
 
 export function NotificationsSection({ notifications, editable, onChange }: NotificationsSectionProps) {
+  const t = useTranslations();
   function toggle(key: NotificationKey) {
     if (!editable) return;
     onChange({ ...notifications, [key]: !notifications[key] });
@@ -25,9 +29,9 @@ export function NotificationsSection({ notifications, editable, onChange }: Noti
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold text-foreground ">Notifications</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("settings.notifications.title")}</h2>
         <p className="text-xs text-muted-foreground ">
-          Simulation — aucune notification réelle n&apos;est envoyée.
+          {t("settings.notifications.description")}
         </p>
       </div>
 
@@ -42,7 +46,7 @@ export function NotificationsSection({ notifications, editable, onChange }: Noti
               type="button"
               disabled={!editable}
               onClick={() => toggle(key)}
-              aria-label={notifications[key] ? "Désactiver" : "Activer"}
+              aria-label={notifications[key] ? t("settings.notifications.disableAria") : t("settings.notifications.enableAria")}
               className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
                 notifications[key] ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"
               } ${editable ? "cursor-pointer" : "cursor-default"}`}

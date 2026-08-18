@@ -77,14 +77,14 @@ export function SettingsView() {
                   onClick={handleCancel}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Annuler
+                  {t("settings.view.cancelButton")}
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
                   className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
                 >
-                  Enregistrer
+                  {t("settings.view.saveButton")}
                 </button>
               </>
             ) : (
@@ -93,7 +93,7 @@ export function SettingsView() {
                 onClick={handleEditClick}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Modifier
+                {t("settings.view.editButton")}
               </button>
             )}
           </div>
@@ -102,7 +102,7 @@ export function SettingsView() {
 
       {isWorkspaceLoading && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Chargement de votre workspace et de votre rôle…
+          {t("settings.view.loadingWorkspace")}
         </p>
       )}
 
@@ -110,14 +110,13 @@ export function SettingsView() {
 
       {!isWorkspaceLoading && !workspaceError && !canEdit && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Réservé aux rôles Propriétaire et Administrateur — lecture seule pour votre rôle actuel.
+          {t("settings.view.readOnlyNotice")}
         </p>
       )}
 
       {isEditing && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Cliquez sur « Enregistrer » pour appliquer vos modifications — elles seront ensuite
-          sauvegardées automatiquement sur cet appareil.
+          {t("settings.view.editingNotice")}
         </p>
       )}
 

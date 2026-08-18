@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { ActionPlanSection } from "@/components/reports/ActionPlanSection";
 import { ContentProductionSection } from "@/components/reports/ContentProductionSection";
 import { NarrativeBlock } from "@/components/reports/NarrativeBlock";
@@ -33,6 +34,7 @@ export function ReportPreview({
   onNarrativeChange: (next: ReportNarrativeContent) => void;
   onAddTopic: (title: string) => void;
 }) {
+  const t = useTranslations();
   const { cover, kpi, narrative } = reportDocument;
 
   function patchNarrative(patch: Partial<ReportNarrativeContent>) {
@@ -46,9 +48,9 @@ export function ReportPreview({
       <ObjectivesSection goals={kpi.qualitativeGoals} />
 
       <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5">
-        <h2 className="text-sm font-semibold text-foreground">Résumé exécutif</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("reports.preview.executiveSummaryTitle")}</h2>
         <NarrativeBlock
-          title="Synthèse"
+          title={t("reports.preview.synthesisLabel")}
           narrative={narrative.executiveSummary.narrative}
           editable={editable}
           onChange={(text) => patchNarrative({ executiveSummary: { ...narrative.executiveSummary, narrative: text } })}
@@ -67,7 +69,7 @@ export function ReportPreview({
       <section className="flex flex-col gap-4">
         <WorkDoneSection current={kpi.workDone} previous={kpi.previousWorkDone} />
         <NarrativeBlock
-          title="Constat"
+          title={t("reports.preview.findingLabel")}
           narrative={narrative.workDoneNarrative}
           editable={editable}
           onChange={(text) => patchNarrative({ workDoneNarrative: text })}
@@ -75,7 +77,7 @@ export function ReportPreview({
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-foreground">Performance globale</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("reports.preview.globalPerformanceTitle")}</h2>
         <KpiGrid
           totals={kpi.performance.totals}
           previousTotals={kpi.performance.previousTotals}
@@ -84,7 +86,7 @@ export function ReportPreview({
           sources={kpi.performance.sources}
         />
         <NarrativeBlock
-          title="Constat"
+          title={t("reports.preview.findingLabel")}
           narrative={narrative.performanceOverviewNarrative}
           editable={editable}
           onChange={(text) => patchNarrative({ performanceOverviewNarrative: text })}
@@ -92,10 +94,10 @@ export function ReportPreview({
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-foreground">Performance par plateforme</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("reports.preview.platformPerformanceTitle")}</h2>
         <PlatformPerformanceChart data={kpi.performance.platformPerformance} />
         <NarrativeBlock
-          title="Constat"
+          title={t("reports.preview.findingLabel")}
           narrative={narrative.performanceByPlatformNarrative}
           editable={editable}
           onChange={(text) => patchNarrative({ performanceByPlatformNarrative: text })}
@@ -103,7 +105,7 @@ export function ReportPreview({
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-foreground">Performance des contenus</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("reports.preview.contentPerformanceTitle")}</h2>
         <ContentProductionSection breakdown={kpi.contentProduction} />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <FormatPerformanceChart data={kpi.performance.formatPerformance} />
@@ -111,7 +113,7 @@ export function ReportPreview({
         </div>
         <TopContentSection top={kpi.performance.topPublications} worst={kpi.performance.worstPublications} />
         <NarrativeBlock
-          title="Constat"
+          title={t("reports.preview.findingLabel")}
           narrative={narrative.contentPerformanceNarrative}
           editable={editable}
           onChange={(text) => patchNarrative({ contentPerformanceNarrative: text })}
@@ -119,16 +121,16 @@ export function ReportPreview({
       </section>
 
       <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
-        <h2 className="text-sm font-semibold text-foreground">Analyse IA</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("reports.preview.aiAnalysisTitle")}</h2>
         <NarrativeBlock
-          title="Interprétation — pas une donnée mesurée"
+          title={t("reports.preview.interpretationLabel")}
           narrative={narrative.aiAnalysis.narrative}
           editable={editable}
           onChange={(text) => patchNarrative({ aiAnalysis: { ...narrative.aiAnalysis, narrative: text } })}
         />
         {narrative.aiAnalysis.insights.length > 0 && (
           <div className="flex flex-col gap-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Constats</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("reports.preview.insightsLabel")}</h3>
             <ul className="list-disc space-y-1 pl-4 text-sm text-foreground">
               {narrative.aiAnalysis.insights.map((item, index) => (
                 <li key={index}>{item}</li>
@@ -138,7 +140,7 @@ export function ReportPreview({
         )}
         {narrative.aiAnalysis.anomalies.length > 0 && (
           <div className="flex flex-col gap-1">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Anomalies</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("reports.preview.anomaliesLabel")}</h3>
             <ul className="list-disc space-y-1 pl-4 text-sm text-foreground">
               {narrative.aiAnalysis.anomalies.map((item, index) => (
                 <li key={index}>{item}</li>

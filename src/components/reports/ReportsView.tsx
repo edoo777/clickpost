@@ -60,6 +60,7 @@ function buildCoverMeta(params: {
  * éditable (9 sections) → Enregistrer → export PDF Gamma (facultatif, désactivé sans clé).
  */
 export function ReportsView() {
+  const t = useTranslations();
   const { brands, activeBrand } = useBrandsSession();
   const { accounts } = useAccountsSession();
   const { ideas, topics, topicBatches, contentVersions, addIdea } = useContentWorkspace();
@@ -156,7 +157,7 @@ export function ReportsView() {
     if (!brand) return;
     const idea = buildIdeaFromSeed({ brandId: brand.id, title });
     addIdea(idea);
-    setSaveConfirmation(`« ${title} » ajouté à la Banque d'idées.`);
+    setSaveConfirmation(t("reports.view.addedToBank", { title }));
     setTimeout(() => setSaveConfirmation(null), 3000);
   }
 
@@ -167,7 +168,7 @@ export function ReportsView() {
     // produirait une ligne invalide (colonnes uuid NOT NULL) qui échouerait silencieusement à la
     // synchronisation plutôt que d'échouer visiblement ici (même risque que le bug theme-nova-1).
     if (!workspace?.id || !userId) {
-      setSaveError("Espace de travail en cours de chargement — réessayez dans un instant.");
+      setSaveError(t("reports.view.workspaceLoadingError"));
       return;
     }
     const now = new Date().toISOString();
@@ -175,7 +176,7 @@ export function ReportsView() {
 
     if (savedReportId) {
       updateReport(savedReportId, { document: reportDocument, summary: reportDocument.narrative.executiveSummary.narrative });
-      setSaveConfirmation("Rapport mis à jour.");
+      setSaveConfirmation(t("reports.view.reportUpdated"));
     } else {
       const id = crypto.randomUUID();
       addReport({
@@ -195,7 +196,7 @@ export function ReportsView() {
         revision: 1,
       });
       setSavedReportId(id);
-      setSaveConfirmation("Rapport enregistré.");
+      setSaveConfirmation(t("reports.view.reportSaved"));
     }
     setTimeout(() => setSaveConfirmation(null), 3000);
   }
@@ -207,7 +208,7 @@ export function ReportsView() {
       <div className="flex flex-col gap-6">
         <Header />
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16]">
-          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour générer un rapport.
+          {t("reports.view.noBrandsNotice")}
         </p>
       </div>
     );
@@ -218,16 +219,13 @@ export function ReportsView() {
       <Header />
 
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-        Le travail réalisé et la production de contenu sont toujours des comptages réels. Les
-        métriques de performance proviennent uniquement d&apos;un import CSV manuel ou, si activées,
-        de données de démonstration clairement identifiées. Claude ne fait qu&apos;interpréter ces
-        données mesurées — jamais en inventer.
+        {t("reports.view.dataDisclaimer")}
       </p>
 
       <ReportsFilters value={filters} brands={brands} onChange={handleFiltersChange} />
 
       {!brand ? (
-        <p className="text-sm text-muted-foreground">Sélectionnez une marque pour générer un rapport.</p>
+        <p className="text-sm text-muted-foreground">{t("reports.view.selectBrandPrompt")}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface p-5">
@@ -237,7 +235,11 @@ export function ReportsView() {
               disabled={generation.status === "loading"}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {generation.status === "loading" ? "Génération en cours…" : reportDocument ? "Régénérer le rapport" : "Générer le rapport"}
+              {generation.status === "loading"
+                ? t("reports.view.generating")
+                : reportDocument
+                  ? t("reports.view.regenerateButton")
+                  : t("reports.view.generateButton")}
             </button>
             {generation.status === "error" && <span className="text-xs text-red-600 dark:text-red-400">{generation.message}</span>}
           </div>
@@ -257,7 +259,7 @@ export function ReportsView() {
                   onClick={handleSaveReport}
                   className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-500"
                 >
-                  {savedReportId ? "Mettre à jour le rapport" : "Enregistrer le rapport"}
+                  {savedReportId ? t("reports.view.updateButton") : t("reports.view.saveButton")}
                 </button>
                 {saveConfirmation && <span className="text-xs text-emerald-600 dark:text-emerald-400">{saveConfirmation}</span>}
                 {saveError && <span className="text-xs text-red-600 dark:text-red-400">{saveError}</span>}
@@ -278,10 +280,7 @@ function Header() {
   return (
     <header className="flex flex-col gap-1">
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.reports")}</h1>
-      <p className="text-sm text-muted-foreground">
-        Générez un rapport professionnel — interne, client ou exécutif — sur le travail réalisé et
-        la performance d&apos;une marque.
-      </p>
+      <p className="text-sm text-muted-foreground">{t("reports.view.subtitle")}</p>
     </header>
   );
 }

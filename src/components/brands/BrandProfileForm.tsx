@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { platformIcons } from "@/components/icons";
 import { ALL_CONTENT_TYPES, CONTENT_TYPE_LABEL, type ContentType } from "@/lib/content-types";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { Brand, ContentExample } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -80,6 +81,7 @@ function ListField({
   editable: boolean;
   onChange: (value: string[]) => void;
 }) {
+  const t = useTranslations();
   return (
     <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
       {label}
@@ -87,7 +89,7 @@ function ListField({
         rows={3}
         disabled={!editable}
         value={value.join("\n")}
-        placeholder="Une valeur par ligne"
+        placeholder={t("publications.form.onePerLine")}
         onChange={(event) => onChange(event.target.value.split("\n"))}
         className={INPUT_CLASS}
       />
@@ -233,6 +235,7 @@ function ContentExamplesField({
   }
 
   const PLATFORM_LABEL = usePlatformLabel();
+  const t = useTranslations();
 
   return (
     <div className="col-span-1 flex flex-col gap-3 md:col-span-2">
@@ -260,14 +263,14 @@ function ContentExamplesField({
                   onClick={() => removeExample(example.id)}
                   className="ml-auto text-xs font-medium text-red-500 hover:underline"
                 >
-                  Supprimer
+                  {t("brands.profileForm.removeExampleButton")}
                 </button>
               )}
             </div>
             <input
               disabled={!editable}
               value={example.title}
-              placeholder="Titre"
+              placeholder={t("brands.profileForm.titlePlaceholder")}
               onChange={(event) => updateExample(example.id, { title: event.target.value })}
               className={INPUT_CLASS}
             />
@@ -275,7 +278,7 @@ function ContentExamplesField({
               disabled={!editable}
               rows={2}
               value={example.excerpt}
-              placeholder="Extrait du contenu"
+              placeholder={t("brands.profileForm.excerptPlaceholder")}
               onChange={(event) => updateExample(example.id, { excerpt: event.target.value })}
               className={INPUT_CLASS}
             />
@@ -288,10 +291,10 @@ function ContentExamplesField({
           onClick={addExample}
           className="w-fit rounded-lg border border-dashed border-zinc-400 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:border-zinc-500 dark:border-white/[.16] "
         >
-          + Ajouter un exemple
+          {t("brands.profileForm.addExampleButton")}
         </button>
       )}
-      {value.length === 0 && !editable && <p className="text-sm text-muted-foreground ">Aucun exemple renseigné.</p>}
+      {value.length === 0 && !editable && <p className="text-sm text-muted-foreground ">{t("brands.profileForm.noExamplesText")}</p>}
     </div>
   );
 }
@@ -308,6 +311,7 @@ interface BrandProfileFormProps {
 
 export function BrandProfileForm({ profile, editable, onChange, section }: BrandProfileFormProps) {
   const FORMAT_LABEL = useFormatLabel();
+  const t = useTranslations();
 
   function set<K extends keyof Brand>(key: K, value: Brand[K]) {
     onChange({ ...profile, [key]: value });
@@ -317,21 +321,21 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
     <div className="flex flex-col gap-4">
       {section === "identity" && (
         <>
-          <Section title="Identité">
-            <TextField label="Nom de la marque" value={profile.name} editable={editable} onChange={(v) => set("name", v)} />
-            <TextField label="Site Web (optionnel)" value={profile.website ?? ""} editable={editable} onChange={(v) => set("website", v)} />
+          <Section title={t("brands.profileForm.identitySectionTitle")}>
+            <TextField label={t("brands.profileForm.brandNameLabel")} value={profile.name} editable={editable} onChange={(v) => set("name", v)} />
+            <TextField label={t("brands.profileForm.websiteLabel")} value={profile.website ?? ""} editable={editable} onChange={(v) => set("website", v)} />
             <div className="md:col-span-2">
-              <TextField label="Description" value={profile.description} editable={editable} multiline onChange={(v) => set("description", v)} />
+              <TextField label={t("brands.profileForm.descriptionLabel")} value={profile.description} editable={editable} multiline onChange={(v) => set("description", v)} />
             </div>
             <div className="md:col-span-2">
-              <ListField label="Produits et services" value={profile.productsAndServices} editable={editable} onChange={(v) => set("productsAndServices", v)} />
+              <ListField label={t("brands.profileForm.productsServicesLabel")} value={profile.productsAndServices} editable={editable} onChange={(v) => set("productsAndServices", v)} />
             </div>
           </Section>
 
-          <Section title="Image de marque">
-            <TextField label="Logo — URL (optionnel)" value={profile.logoUrl ?? ""} editable={editable} onChange={(v) => set("logoUrl", v)} />
+          <Section title={t("brands.profileForm.brandImageSectionTitle")}>
+            <TextField label={t("brands.profileForm.logoUrlLabel")} value={profile.logoUrl ?? ""} editable={editable} onChange={(v) => set("logoUrl", v)} />
             <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Couleur de marque (optionnel)
+              {t("brands.profileForm.brandColorLabel")}
               <input
                 type="color"
                 disabled={!editable}
@@ -346,19 +350,19 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
 
       {section === "positioning" && (
         <>
-          <Section title="Niche">
-            <TextField label="Niche (secteur général)" value={profile.industry} editable={editable} onChange={(v) => set("industry", v)} />
-            <TextField label="Sous-niche (optionnel)" value={profile.subNiche ?? ""} editable={editable} onChange={(v) => set("subNiche", v)} />
-            <TextField label="Pays / marché (optionnel)" value={profile.market ?? ""} editable={editable} onChange={(v) => set("market", v)} />
+          <Section title={t("brands.profileForm.nicheSectionTitle")}>
+            <TextField label={t("brands.profileForm.industryLabel")} value={profile.industry} editable={editable} onChange={(v) => set("industry", v)} />
+            <TextField label={t("brands.profileForm.subNicheLabel")} value={profile.subNiche ?? ""} editable={editable} onChange={(v) => set("subNiche", v)} />
+            <TextField label={t("brands.profileForm.marketLabel")} value={profile.market ?? ""} editable={editable} onChange={(v) => set("market", v)} />
           </Section>
 
-          <Section title="Positionnement">
+          <Section title={t("brands.profileForm.positioningSectionTitle")}>
             <div className="md:col-span-2">
-              <TextField label="Positionnement" value={profile.positioning ?? ""} editable={editable} multiline onChange={(v) => set("positioning", v)} />
+              <TextField label={t("brands.profileForm.positioningLabel")} value={profile.positioning ?? ""} editable={editable} multiline onChange={(v) => set("positioning", v)} />
             </div>
             <div className="md:col-span-2">
               <TextField
-                label="Proposition de valeur"
+                label={t("brands.profileForm.valuePropositionLabel")}
                 value={profile.valueProposition ?? ""}
                 editable={editable}
                 multiline
@@ -367,40 +371,40 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
             </div>
           </Section>
 
-          <Section title="Audience & objectifs">
+          <Section title={t("brands.profileForm.audienceGoalsSectionTitle")}>
             <div className="md:col-span-2">
-              <TextField label="Clientèle cible" value={profile.targetAudience} editable={editable} multiline onChange={(v) => set("targetAudience", v)} />
+              <TextField label={t("brands.profileForm.targetAudienceLabel")} value={profile.targetAudience} editable={editable} multiline onChange={(v) => set("targetAudience", v)} />
             </div>
             <div className="md:col-span-2">
               <ListField
-                label="Problèmes de l'audience"
+                label={t("brands.profileForm.audiencePainPointsLabel")}
                 value={profile.audiencePainPoints}
                 editable={editable}
                 onChange={(v) => set("audiencePainPoints", v)}
               />
             </div>
             <div className="md:col-span-2">
-              <ListField label="Objectifs de communication" value={profile.communicationGoals} editable={editable} onChange={(v) => set("communicationGoals", v)} />
+              <ListField label={t("brands.profileForm.communicationGoalsLabel")} value={profile.communicationGoals} editable={editable} onChange={(v) => set("communicationGoals", v)} />
             </div>
             <div className="md:col-span-2">
-              <ListField label="Indicateurs de réussite" value={profile.successMetrics} editable={editable} onChange={(v) => set("successMetrics", v)} />
+              <ListField label={t("brands.profileForm.successMetricsLabel")} value={profile.successMetrics} editable={editable} onChange={(v) => set("successMetrics", v)} />
             </div>
           </Section>
 
-          <Section title="Ton & langues">
-            <TextField label="Ton de voix" value={profile.toneOfVoice} editable={editable} multiline onChange={(v) => set("toneOfVoice", v)} />
-            <ListField label="Langues utilisées" value={profile.languages} editable={editable} onChange={(v) => set("languages", v)} />
+          <Section title={t("brands.profileForm.toneLanguagesSectionTitle")}>
+            <TextField label={t("brands.profileForm.toneOfVoiceLabel")} value={profile.toneOfVoice} editable={editable} multiline onChange={(v) => set("toneOfVoice", v)} />
+            <ListField label={t("brands.profileForm.languagesLabel")} value={profile.languages} editable={editable} onChange={(v) => set("languages", v)} />
           </Section>
 
-          <Section title="Rythme de publication">
+          <Section title={t("brands.profileForm.publishingRhythmSectionTitle")}>
             <TextField
-              label="Fréquence visée (ex. « 3 fois par semaine »)"
+              label={t("brands.profileForm.publishingFrequencyLabel")}
               value={profile.publishingFrequency ?? ""}
               editable={editable}
               onChange={(v) => set("publishingFrequency", v)}
             />
             <NumberField
-              label="Objectif mensuel de publications"
+              label={t("brands.profileForm.monthlyGoalLabel")}
               value={profile.monthlyPublishingGoal ?? 0}
               editable={editable}
               onChange={(v) => set("monthlyPublishingGoal", v)}
@@ -411,25 +415,25 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
 
       {section === "editorial" && (
         <>
-          <Section title="Sujets & mots-clés">
-            <ListField label="Sujets prioritaires" value={profile.priorityTopics} editable={editable} onChange={(v) => set("priorityTopics", v)} />
-            <ListField label="Sujets à éviter" value={profile.topicsToAvoid} editable={editable} onChange={(v) => set("topicsToAvoid", v)} />
-            <ListField label="Mots et expressions à privilégier" value={profile.preferredPhrases} editable={editable} onChange={(v) => set("preferredPhrases", v)} />
-            <ListField label="Mots interdits" value={profile.forbiddenWords} editable={editable} onChange={(v) => set("forbiddenWords", v)} />
+          <Section title={t("brands.profileForm.topicsKeywordsSectionTitle")}>
+            <ListField label={t("brands.profileForm.priorityTopicsLabel")} value={profile.priorityTopics} editable={editable} onChange={(v) => set("priorityTopics", v)} />
+            <ListField label={t("brands.profileForm.topicsToAvoidLabel")} value={profile.topicsToAvoid} editable={editable} onChange={(v) => set("topicsToAvoid", v)} />
+            <ListField label={t("brands.profileForm.preferredPhrasesLabel")} value={profile.preferredPhrases} editable={editable} onChange={(v) => set("preferredPhrases", v)} />
+            <ListField label={t("brands.profileForm.forbiddenWordsLabel")} value={profile.forbiddenWords} editable={editable} onChange={(v) => set("forbiddenWords", v)} />
             <div className="md:col-span-2">
-              <ListField label="Appels à l'action préférés" value={profile.preferredCtas} editable={editable} onChange={(v) => set("preferredCtas", v)} />
+              <ListField label={t("brands.profileForm.preferredCtasLabel")} value={profile.preferredCtas} editable={editable} onChange={(v) => set("preferredCtas", v)} />
             </div>
           </Section>
 
-          <Section title="Réseaux utilisés">
+          <Section title={t("brands.profileForm.networksUsedSectionTitle")}>
             <div className="md:col-span-2">
               <PlatformField value={profile.socialPlatforms} editable={editable} onChange={(v) => set("socialPlatforms", v)} />
             </div>
           </Section>
 
-          <Section title="Contenu privilégié">
+          <Section title={t("brands.profileForm.preferredContentSectionTitle")}>
             <ChipMultiSelect<ContentType>
-              label="Types de contenu privilégiés"
+              label={t("brands.profileForm.preferredContentTypesLabel")}
               value={profile.preferredContentTypes}
               options={ALL_CONTENT_TYPES}
               labels={CONTENT_TYPE_LABEL}
@@ -437,7 +441,7 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
               onChange={(v) => set("preferredContentTypes", v)}
             />
             <ChipMultiSelect<ContentFormat>
-              label="Formats privilégiés"
+              label={t("brands.profileForm.preferredFormatsLabel")}
               value={profile.preferredFormats}
               options={CONTENT_FORMATS}
               labels={FORMAT_LABEL}
@@ -446,7 +450,7 @@ export function BrandProfileForm({ profile, editable, onChange, section }: Brand
             />
           </Section>
 
-          <Section title="Exemples de contenus représentatifs">
+          <Section title={t("brands.profileForm.contentExamplesSectionTitle")}>
             <ContentExamplesField value={profile.contentExamples} editable={editable} onChange={(v) => set("contentExamples", v)} />
           </Section>
         </>

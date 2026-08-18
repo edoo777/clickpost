@@ -2,27 +2,13 @@
 
 import { useState } from "react";
 import { isLowContrast } from "@/lib/color-contrast";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { CLICKPOST_DEFAULT_BRANDING, type BrandingRadius, type BrandingThemeMode, type WorkspaceBrandingRow } from "@/lib/supabase/types";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
 const LABEL_CLASS = "flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300";
 const FIELD_CLASS =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-violet-500/30 dark:text-zinc-200";
-
-const RADIUS_OPTIONS: { value: BrandingRadius; label: string }[] = [
-  { value: "none", label: "Aucun" },
-  { value: "sm", label: "Léger" },
-  { value: "md", label: "Moyen" },
-  { value: "lg", label: "Confortable" },
-  { value: "xl", label: "Prononcé" },
-  { value: "full", label: "Complet" },
-];
-
-const THEME_MODE_OPTIONS: { value: BrandingThemeMode; label: string }[] = [
-  { value: "light", label: "Clair" },
-  { value: "dark", label: "Sombre" },
-  { value: "system", label: "Système" },
-];
 
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
@@ -44,6 +30,20 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 
 /** Paramètres → Identité visuelle : personnalisation complète, réservée aux owner/admin. */
 export function BrandingSection() {
+  const t = useTranslations();
+  const RADIUS_OPTIONS: { value: BrandingRadius; label: string }[] = [
+    { value: "none", label: t("settings.branding.radiusOptions.none") },
+    { value: "sm", label: t("settings.branding.radiusOptions.sm") },
+    { value: "md", label: t("settings.branding.radiusOptions.md") },
+    { value: "lg", label: t("settings.branding.radiusOptions.lg") },
+    { value: "xl", label: t("settings.branding.radiusOptions.xl") },
+    { value: "full", label: t("settings.branding.radiusOptions.full") },
+  ];
+  const THEME_MODE_OPTIONS: { value: BrandingThemeMode; label: string }[] = [
+    { value: "light", label: t("settings.branding.themeModeOptions.light") },
+    { value: "dark", label: t("settings.branding.themeModeOptions.dark") },
+    { value: "system", label: t("settings.branding.themeModeOptions.system") },
+  ];
   const { workspace, branding, isAdmin, updateBranding } = useWorkspaceSession();
   const [draft, setDraft] = useState<WorkspaceBrandingRow | null>(null);
   const [initializedFromWorkspaceId, setInitializedFromWorkspaceId] = useState<string | null>(null);
@@ -58,8 +58,8 @@ export function BrandingSection() {
   if (!branding || !workspace || !draft) {
     return (
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Identité visuelle</h2>
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("settings.branding.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("settings.branding.loading")}</p>
       </section>
     );
   }
@@ -109,9 +109,9 @@ export function BrandingSection() {
   if (!isAdmin) {
     return (
       <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Identité visuelle</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("settings.branding.title")}</h2>
         <p className="text-sm text-muted-foreground">
-          Réservée aux rôles Propriétaire et Administrateur de l&apos;espace de travail.
+          {t("settings.branding.adminOnlyNotice")}
         </p>
       </section>
     );
@@ -120,44 +120,43 @@ export function BrandingSection() {
   return (
     <section className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold text-foreground">Identité visuelle</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("settings.branding.title")}</h2>
         <p className="text-xs text-muted-foreground">
-          Personnalisez l&apos;apparence de votre espace de travail. Les modifications s&apos;appliquent après
-          enregistrement.
+          {t("settings.branding.description")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <ColorField label="Couleur principale" value={draft.color_primary} onChange={(value) => set("color_primary", value)} />
-        <ColorField label="Couleur secondaire" value={draft.color_secondary} onChange={(value) => set("color_secondary", value)} />
-        <ColorField label="Couleur d'accent" value={draft.color_accent} onChange={(value) => set("color_accent", value)} />
-        <ColorField label="Couleur de la sidebar" value={draft.color_sidebar} onChange={(value) => set("color_sidebar", value)} />
-        <ColorField label="Couleur des boutons" value={draft.color_button} onChange={(value) => set("color_button", value)} />
-        <ColorField label="Couleur des liens" value={draft.color_link} onChange={(value) => set("color_link", value)} />
+        <ColorField label={t("settings.branding.primaryColorLabel")} value={draft.color_primary} onChange={(value) => set("color_primary", value)} />
+        <ColorField label={t("settings.branding.secondaryColorLabel")} value={draft.color_secondary} onChange={(value) => set("color_secondary", value)} />
+        <ColorField label={t("settings.branding.accentColorLabel")} value={draft.color_accent} onChange={(value) => set("color_accent", value)} />
+        <ColorField label={t("settings.branding.sidebarColorLabel")} value={draft.color_sidebar} onChange={(value) => set("color_sidebar", value)} />
+        <ColorField label={t("settings.branding.buttonColorLabel")} value={draft.color_button} onChange={(value) => set("color_button", value)} />
+        <ColorField label={t("settings.branding.linkColorLabel")} value={draft.color_link} onChange={(value) => set("color_link", value)} />
       </div>
 
       {(sidebarContrastLow || buttonContrastLow) && (
         <div className="flex flex-col gap-1 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
-          <span>⚠ Combinaison de couleurs peu lisible :</span>
-          {sidebarContrastLow && <span>— la couleur de la sidebar offre un contraste insuffisant avec un texte blanc.</span>}
-          {buttonContrastLow && <span>— la couleur des boutons offre un contraste insuffisant avec un texte blanc.</span>}
+          <span>{t("settings.branding.lowContrastWarningTitle")}</span>
+          {sidebarContrastLow && <span>{t("settings.branding.sidebarContrastWarning")}</span>}
+          {buttonContrastLow && <span>{t("settings.branding.buttonContrastWarning")}</span>}
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Typographie des titres
+          {t("settings.branding.headingFontLabel")}
           <input value={draft.font_heading} onChange={(event) => set("font_heading", event.target.value)} className={FIELD_CLASS} />
         </label>
         <label className={LABEL_CLASS}>
-          Typographie du texte
+          {t("settings.branding.bodyFontLabel")}
           <input value={draft.font_body} onChange={(event) => set("font_body", event.target.value)} className={FIELD_CLASS} />
         </label>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Arrondi des cartes et boutons
+          {t("settings.branding.radiusLabel")}
           <select value={draft.radius} onChange={(event) => set("radius", event.target.value as BrandingRadius)} className={FIELD_CLASS}>
             {RADIUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -167,7 +166,7 @@ export function BrandingSection() {
           </select>
         </label>
         <label className={LABEL_CLASS}>
-          Apparence par défaut
+          {t("settings.branding.themeModeLabel")}
           <select
             value={draft.default_theme_mode}
             onChange={(event) => set("default_theme_mode", event.target.value as BrandingThemeMode)}
@@ -183,7 +182,7 @@ export function BrandingSection() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aperçu instantané</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("settings.branding.livePreviewLabel")}</span>
         <div
           className="flex flex-col gap-3 rounded-xl border border-border p-4"
           style={{ borderRadius: RADIUS_PREVIEW[draft.radius] }}
@@ -199,13 +198,13 @@ export function BrandingSection() {
               className="rounded-full px-3 py-1 text-xs font-semibold text-white"
               style={{ background: `linear-gradient(to right, ${draft.color_primary}, ${draft.color_secondary})`, borderRadius: RADIUS_PREVIEW.full }}
             >
-              Actif
+              {t("settings.branding.activeBadge")}
             </span>
           </div>
           <p className="text-sm text-foreground" style={{ fontFamily: draft.font_body }}>
-            Exemple de texte utilisant la typographie sélectionnée, avec un{" "}
+            {t("settings.branding.previewText")}{" "}
             <a href="#" onClick={(event) => event.preventDefault()} style={{ color: draft.color_link }} className="underline">
-              lien d&apos;exemple
+              {t("settings.branding.previewLinkText")}
             </a>
             .
           </p>
@@ -215,7 +214,7 @@ export function BrandingSection() {
             className="w-fit px-4 py-2 text-sm font-semibold text-white"
             style={{ backgroundColor: draft.color_button, borderRadius: RADIUS_PREVIEW[draft.radius] }}
           >
-            Bouton principal
+            {t("settings.branding.previewButtonText")}
           </button>
         </div>
       </div>
@@ -227,7 +226,7 @@ export function BrandingSection() {
       )}
       {status === "saved" && (
         <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-          Identité visuelle enregistrée et appliquée.
+          {t("settings.branding.savedNotice")}
         </p>
       )}
 
@@ -238,21 +237,21 @@ export function BrandingSection() {
           disabled={status === "saving"}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "saving" ? "Enregistrement…" : "Enregistrer les modifications"}
+          {status === "saving" ? t("settings.branding.saving") : t("settings.branding.saveButton")}
         </button>
         <button
           type="button"
           onClick={handleCancel}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Annuler
+          {t("settings.branding.cancelButton")}
         </button>
         <button
           type="button"
           onClick={handleRestoreDefaults}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Restaurer l&apos;identité ClickPost
+          {t("settings.branding.restoreDefaultsButton")}
         </button>
       </div>
     </section>

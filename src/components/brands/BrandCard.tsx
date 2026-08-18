@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { CompletenessBar } from "@/components/brands/CompletenessBar";
 import { platformIcons } from "@/components/icons";
 import { getBrandCompleteness } from "@/lib/brand-completeness";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { platformColors } from "@/lib/platform-colors";
 import type { Brand } from "@/types/brand";
 
@@ -11,6 +14,7 @@ interface BrandCardProps {
 }
 
 export function BrandCard({ brand, isActive }: BrandCardProps) {
+  const t = useTranslations();
   const { percent } = getBrandCompleteness(brand);
   const isArchived = brand.status === "archived";
 
@@ -24,17 +28,17 @@ export function BrandCard({ brand, isActive }: BrandCardProps) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h2 className="text-base font-semibold text-foreground ">{brand.name}</h2>
-          <p className="text-sm text-muted-foreground ">{brand.industry || "Secteur non renseigné"}</p>
+          <p className="text-sm text-muted-foreground ">{brand.industry || t("brands.card.industryFallback")}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {isActive && (
             <span className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[11px] font-semibold text-white">
-              Marque active
+              {t("brands.card.activeBadge")}
             </span>
           )}
           {isArchived && (
             <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-              Archivée
+              {t("brands.card.archivedBadge")}
             </span>
           )}
         </div>
@@ -56,7 +60,7 @@ export function BrandCard({ brand, isActive }: BrandCardProps) {
           );
         })}
         {brand.socialPlatforms.length === 0 && (
-          <span className="text-xs text-muted-foreground ">Aucun réseau associé</span>
+          <span className="text-xs text-muted-foreground ">{t("brands.card.noNetworks")}</span>
         )}
       </div>
     </Link>

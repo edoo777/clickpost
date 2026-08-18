@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CONFLICT_ENTITY_LABEL } from "@/lib/conflict-display";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { journalKey } from "@/lib/sync/local-import-runner";
 import type { SyncEntityType } from "@/lib/sync/types";
 import type { DuplicateAction, ImportCandidate, ImportScanResult } from "@/types/import-wizard";
@@ -35,6 +36,7 @@ export function ImportReviewStep({
   onNext,
   onCancel,
 }: ImportReviewStepProps) {
+  const t = useTranslations();
   const { selectableBrands, canManageBrands } = useBrandsSession();
   const [search, setSearch] = useState("");
   const [entityFilter, setEntityFilter] = useState<SyncEntityType | "all">("all");
@@ -106,15 +108,15 @@ export function ImportReviewStep({
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Candidats trouvés" value={scanResult.candidates.length} />
-        <SummaryStat label="Sélectionnés" value={selectedCount} accent />
-        <SummaryStat label="Exclus (démonstration)" value={excludedDemoTotal} />
-        <SummaryStat label="Déjà synchronisés" value={alreadySyncedTotal} />
+        <SummaryStat label={t("settings.importWizard.reviewStep.foundLabel")} value={scanResult.candidates.length} />
+        <SummaryStat label={t("settings.importWizard.reviewStep.selectedLabel")} value={selectedCount} accent />
+        <SummaryStat label={t("settings.importWizard.reviewStep.excludedDemoLabel")} value={excludedDemoTotal} />
+        <SummaryStat label={t("settings.importWizard.reviewStep.alreadySyncedLabel")} value={alreadySyncedTotal} />
       </div>
 
       {scanResult.candidates.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12]">
-          Aucune ancienne donnée locale à importer n&apos;a été trouvée.
+          {t("settings.importWizard.reviewStep.emptyState")}
         </p>
       ) : (
         <>
@@ -131,10 +133,10 @@ export function ImportReviewStep({
                     {selectedInCategory}/{count}
                   </span>
                   <button type="button" onClick={() => toggleCategory(entityType, true)} className="text-violet-600 hover:underline dark:text-violet-400">
-                    Tout
+                    {t("settings.importWizard.reviewStep.selectAll")}
                   </button>
                   <button type="button" onClick={() => toggleCategory(entityType, false)} className="text-muted-foreground hover:underline">
-                    Aucun
+                    {t("settings.importWizard.reviewStep.selectNone")}
                   </button>
                 </div>
               );
@@ -146,11 +148,11 @@ export function ImportReviewStep({
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Rechercher…"
+              placeholder={t("settings.importWizard.reviewStep.searchPlaceholder")}
               className={`${FIELD_CLASS} w-full sm:w-56`}
             />
             <select value={entityFilter} onChange={(event) => setEntityFilter(event.target.value as SyncEntityType | "all")} className={FIELD_CLASS}>
-              <option value="all">Tous les types</option>
+              <option value="all">{t("settings.importWizard.reviewStep.allTypesOption")}</option>
               {entityTypesPresent.map((entityType) => (
                 <option key={entityType} value={entityType}>
                   {CONFLICT_ENTITY_LABEL[entityType]}
@@ -182,7 +184,7 @@ export function ImportReviewStep({
                     <span className="truncate font-medium text-foreground">{candidate.title}</span>
                     {isDuplicate && (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                        Doublon potentiel
+                        {t("settings.importWizard.reviewStep.potentialDuplicate")}
                       </span>
                     )}
                   </div>
@@ -194,8 +196,11 @@ export function ImportReviewStep({
                           key={dep.field}
                           className={dep.status === "missing" && dep.required ? "font-medium text-amber-700 dark:text-amber-400" : ""}
                         >
-                          {dep.field} : {dep.status === "present" ? "présent" : "manquant"}
-                          {dep.required ? "" : " (optionnel)"}
+                          {dep.field} :{" "}
+                          {dep.status === "present"
+                            ? t("settings.importWizard.reviewStep.dependencyPresent")
+                            : t("settings.importWizard.reviewStep.dependencyMissing")}
+                          {dep.required ? "" : t("settings.importWizard.reviewStep.dependencyOptionalSuffix")}
                         </span>
                       ))}
                     </div>
@@ -203,18 +208,18 @@ export function ImportReviewStep({
 
                   {missingBrandDep && !canManageBrands && (
                     <p className="pl-6 text-[11px] text-muted-foreground">
-                      Seuls les administrateurs peuvent rattacher une marque de destination.
+                      {t("settings.importWizard.reviewStep.brandDestinationAdminOnly")}
                     </p>
                   )}
                   {missingBrandDep && canManageBrands && (
                     <label className="flex items-center gap-2 pl-6 text-[11px] text-muted-foreground">
-                      Marque de destination
+                      {t("settings.importWizard.reviewStep.brandDestinationLabel")}
                       <select
                         value={brandOverrides.get(key) ?? ""}
                         onChange={(event) => setBrandOverride(candidate, event.target.value)}
                         className={FIELD_CLASS}
                       >
-                        <option value="">Choisir…</option>
+                        <option value="">{t("settings.importWizard.reviewStep.chooseOption")}</option>
                         {selectableBrands.map((brand) => (
                           <option key={brand.id} value={brand.id}>
                             {brand.name}
@@ -226,16 +231,16 @@ export function ImportReviewStep({
 
                   {isDuplicate && (
                     <div className="flex items-center gap-2 pl-6 text-[11px]">
-                      <span className="text-muted-foreground">Doublon :</span>
+                      <span className="text-muted-foreground">{t("settings.importWizard.reviewStep.duplicateLabel")}</span>
                       <select
                         value={duplicateActions.get(key) ?? ""}
                         onChange={(event) => setDuplicateAction(candidate, event.target.value as DuplicateAction)}
                         className={FIELD_CLASS}
                       >
-                        <option value="">Par défaut (importer comme nouveau)</option>
-                        <option value="ignore">Ignorer l&apos;élément local</option>
-                        <option value="import_as_new">Importer comme nouvel élément</option>
-                        <option value="associate_existing">Associer à l&apos;élément distant existant</option>
+                        <option value="">{t("settings.importWizard.reviewStep.duplicateDefaultOption")}</option>
+                        <option value="ignore">{t("settings.importWizard.reviewStep.duplicateIgnoreOption")}</option>
+                        <option value="import_as_new">{t("settings.importWizard.reviewStep.duplicateImportAsNewOption")}</option>
+                        <option value="associate_existing">{t("settings.importWizard.reviewStep.duplicateAssociateOption")}</option>
                       </select>
                     </div>
                   )}
@@ -244,7 +249,7 @@ export function ImportReviewStep({
             })}
             {filtered.length === 0 && (
               <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-6 text-center text-xs text-muted-foreground dark:border-white/[.12]">
-                Aucun élément ne correspond à ces filtres.
+                {t("settings.importWizard.reviewStep.noMatchNotice")}
               </p>
             )}
           </div>
@@ -257,7 +262,7 @@ export function ImportReviewStep({
           onClick={onCancel}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Annuler
+          {t("settings.importWizard.reviewStep.cancelButton")}
         </button>
         <button
           type="button"
@@ -265,7 +270,7 @@ export function ImportReviewStep({
           onClick={onNext}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Continuer ({selectedCount})
+          {t("settings.importWizard.reviewStep.continueButton", { count: selectedCount })}
         </button>
       </div>
     </div>

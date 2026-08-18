@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CONFLICT_ENTITY_LABEL } from "@/lib/conflict-display";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { journalKey, runImport } from "@/lib/sync/local-import-runner";
 import type { DuplicateAction, ImportItemState, ImportJournalEntry, ImportScanResult } from "@/types/import-wizard";
 
@@ -13,17 +14,6 @@ interface ImportProgressStepProps {
   onJournalUpdate: (entry: ImportJournalEntry) => void;
   onComplete: () => void;
 }
-
-const STATE_LABEL: Record<ImportItemState, string> = {
-  ready: "Prêt",
-  importing: "En cours",
-  imported: "Importé",
-  skipped: "Ignoré",
-  duplicate: "Doublon",
-  conflict: "Conflit",
-  error: "Erreur",
-  to_retry: "À reprendre",
-};
 
 const STATE_CLASS: Record<ImportItemState, string> = {
   ready: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
@@ -46,6 +36,17 @@ export function ImportProgressStep({
   onJournalUpdate,
   onComplete,
 }: ImportProgressStepProps) {
+  const t = useTranslations();
+  const STATE_LABEL: Record<ImportItemState, string> = {
+    ready: t("settings.importWizard.progressStep.states.ready"),
+    importing: t("settings.importWizard.progressStep.states.importing"),
+    imported: t("settings.importWizard.progressStep.states.imported"),
+    skipped: t("settings.importWizard.progressStep.states.skipped"),
+    duplicate: t("settings.importWizard.progressStep.states.duplicate"),
+    conflict: t("settings.importWizard.progressStep.states.conflict"),
+    error: t("settings.importWizard.progressStep.states.error"),
+    to_retry: t("settings.importWizard.progressStep.states.to_retry"),
+  };
   const [entries, setEntries] = useState<Map<string, ImportJournalEntry>>(new Map());
   const [isDone, setIsDone] = useState(false);
   const hasStarted = useRef(false);
@@ -81,7 +82,9 @@ export function ImportProgressStep({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm font-medium text-foreground">
-        Importation {isDone ? "terminée" : "en cours"} — {settledCount}/{selected.length}
+        {isDone
+          ? t("settings.importWizard.progressStep.statusLineDone", { done: settledCount, total: selected.length })
+          : t("settings.importWizard.progressStep.statusLineInProgress", { done: settledCount, total: selected.length })}
       </p>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
         <div
@@ -92,8 +95,7 @@ export function ImportProgressStep({
 
       {isOffline && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Hors ligne : les éléments restent « à reprendre » et seront envoyés automatiquement au retour de la
-          connexion — aucun n&apos;est marqué importé sans confirmation de Supabase.
+          {t("settings.importWizard.progressStep.offlineNotice")}
         </p>
       )}
 
@@ -125,7 +127,7 @@ export function ImportProgressStep({
             onClick={onComplete}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500"
           >
-            Voir le rapport
+            {t("settings.importWizard.progressStep.viewReportButton")}
           </button>
         </div>
       )}

@@ -11,6 +11,7 @@ import { useAccountsSession } from "@/lib/accounts-store";
 import { getBrandCompleteness } from "@/lib/brand-completeness";
 import { getBrandConfigurationProgress } from "@/lib/brand-configuration-progress";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useThemesSession } from "@/lib/themes-store";
 import type { Brand } from "@/types/brand";
 
@@ -20,15 +21,15 @@ interface BrandProfileViewProps {
 
 type Tab = "identity" | "positioning" | "accounts" | "themes" | "editorial";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "identity", label: "Identité" },
-  { id: "positioning", label: "Positionnement" },
-  { id: "accounts", label: "Comptes affiliés" },
-  { id: "themes", label: "Thématiques" },
-  { id: "editorial", label: "Préférences éditoriales" },
-];
-
 export function BrandProfileView({ brand }: BrandProfileViewProps) {
+  const t = useTranslations();
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "identity", label: t("brands.profileView.tabIdentity") },
+    { id: "positioning", label: t("brands.profileView.tabPositioning") },
+    { id: "accounts", label: t("brands.profileView.tabAccounts") },
+    { id: "themes", label: t("brands.profileView.tabThemes") },
+    { id: "editorial", label: t("brands.profileView.tabEditorial") },
+  ];
   const router = useRouter();
   const { canManageBrands, activeBrandId, setActiveBrandId, updateBrand, archiveBrand, restoreBrand, deleteBrand } =
     useBrandsSession();
@@ -62,11 +63,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
   }
 
   function handleArchive() {
-    if (
-      window.confirm(
-        `Archiver la marque « ${brand.name} » ? Elle restera consultable mais ne pourra plus être sélectionnée comme marque active.`
-      )
-    ) {
+    if (window.confirm(t("brands.profileView.confirmArchive", { name: brand.name }))) {
       archiveBrand(brand.id);
     }
   }
@@ -76,7 +73,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
   }
 
   function handleDelete() {
-    if (window.confirm(`Supprimer définitivement la marque « ${brand.name} » ? Cette action est irréversible.`)) {
+    if (window.confirm(t("brands.profileView.confirmDelete", { name: brand.name }))) {
       deleteBrand(brand.id);
       router.push("/marques");
     }
@@ -86,18 +83,21 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground ">Profil de marque</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground ">{t("brands.profileView.eyebrow")}</span>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{draft.name}</h1>
-          <p className="text-sm text-muted-foreground ">Niche : {draft.industry || "Non précisée"}</p>
+          <p className="text-sm text-muted-foreground ">
+            {t("brands.profileView.nichePrefix")}
+            {draft.industry || t("brands.profileView.nicheNotSpecified")}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             {isActive && (
               <span className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[11px] font-semibold text-white">
-                Marque active
+                {t("brands.profileView.activeBadge")}
               </span>
             )}
             {isArchived && (
               <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                Archivée
+                {t("brands.profileView.archivedBadge")}
               </span>
             )}
           </div>
@@ -114,7 +114,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
               onClick={() => setActiveBrandId(brand.id)}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Définir comme marque active
+              {t("brands.profileView.setActiveButton")}
             </button>
           )}
 
@@ -126,7 +126,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
                   onClick={handleRestore}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 dark:text-zinc-400 dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
                 >
-                  Restaurer
+                  {t("brands.profileView.restoreButton")}
                 </button>
               ) : (
                 <button
@@ -134,7 +134,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
                   onClick={handleArchive}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700 dark:text-zinc-400 dark:hover:border-amber-500/30 dark:hover:bg-amber-500/10 dark:hover:text-amber-300"
                 >
-                  Archiver
+                  {t("brands.profileView.archiveButton")}
                 </button>
               )}
               <button
@@ -142,7 +142,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
                 onClick={handleDelete}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:border-red-200 hover:bg-red-50 dark:text-red-400 dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
               >
-                Supprimer
+                {t("brands.profileView.deleteButton")}
               </button>
             </>
           )}
@@ -155,14 +155,14 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
                   onClick={handleCancel}
                   className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Annuler
+                  {t("brands.profileView.cancelButton")}
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
                   className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
                 >
-                  Enregistrer
+                  {t("brands.profileView.saveButton")}
                 </button>
               </>
             ) : (
@@ -171,7 +171,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
                 onClick={() => setIsEditing(true)}
                 className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
               >
-                Modifier
+                {t("brands.profileView.editButton")}
               </button>
             ))}
         </div>
@@ -179,9 +179,7 @@ export function BrandProfileView({ brand }: BrandProfileViewProps) {
 
       {!canManageBrands && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Votre rôle actuel permet uniquement de consulter cette marque — la création, la
-          modification et l&apos;archivage sont réservés aux rôles Propriétaire et Administrateur du
-          workspace.
+          {t("brands.profileView.readOnlyNotice")}
         </p>
       )}
 

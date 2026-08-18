@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useStatusLabel } from "@/lib/post-status";
 import type { PublicationStatus } from "@/types/publication";
 import type { ApprovalWorkflowSettings } from "@/types/settings";
@@ -18,6 +19,7 @@ interface WorkflowSectionProps {
 }
 
 export function WorkflowSection({ workflow, members, editable, onChange }: WorkflowSectionProps) {
+  const t = useTranslations();
   const STATUS_LABEL = useStatusLabel();
   function set<K extends keyof ApprovalWorkflowSettings>(key: K, value: ApprovalWorkflowSettings[K]) {
     onChange({ ...workflow, [key]: value });
@@ -28,11 +30,11 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Processus de travail</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("settings.workflow.title")}</h2>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Statut initial d&apos;une publication
+          {t("settings.workflow.initialStatusLabel")}
           <select
             disabled={!editable}
             value={workflow.initialStatus}
@@ -48,7 +50,7 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Comportement après approbation
+          {t("settings.workflow.postApprovalBehaviorLabel")}
           <select
             disabled={!editable}
             value={workflow.postApprovalBehavior}
@@ -57,8 +59,8 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
             }
             className={INPUT_CLASS}
           >
-            <option value="ready_to_schedule">Prêt à programmer</option>
-            <option value="scheduled">Programmé automatiquement</option>
+            <option value="ready_to_schedule">{t("settings.workflow.postApprovalReadyOption")}</option>
+            <option value="scheduled">{t("settings.workflow.postApprovalScheduledOption")}</option>
           </select>
         </label>
 
@@ -70,7 +72,7 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
             onChange={(event) => set("internalApprovalRequired", event.target.checked)}
             className="h-4 w-4 rounded border-zinc-300 dark:border-white/[.2]"
           />
-          Approbation interne obligatoire
+          {t("settings.workflow.internalApprovalLabel")}
         </label>
 
         <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -81,11 +83,11 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
             onChange={(event) => set("clientApprovalRequired", event.target.checked)}
             className="h-4 w-4 rounded border-zinc-300 dark:border-white/[.2]"
           />
-          Approbation client obligatoire
+          {t("settings.workflow.clientApprovalLabel")}
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Responsable par défaut
+          {t("settings.workflow.defaultOwnerLabel")}
           <select
             disabled={!editable}
             value={workflow.defaultOwnerId}
@@ -101,7 +103,7 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Approbateur par défaut
+          {t("settings.workflow.defaultApproverLabel")}
           <select
             disabled={!editable}
             value={workflow.defaultApproverId}
@@ -118,9 +120,9 @@ export function WorkflowSection({ workflow, members, editable, onChange }: Workf
       </div>
 
       <p className="text-xs text-muted-foreground ">
-        {"Étapes du processus d'approbation : "}
+        {t("settings.workflow.stepsCountPrefix")}
         <span className="font-medium text-zinc-700 dark:text-zinc-300">{stepsCount}</span>
-        {" (calculé à partir des cases ci-dessus)"}
+        {t("settings.workflow.stepsCountSuffix")}
       </p>
     </section>
   );

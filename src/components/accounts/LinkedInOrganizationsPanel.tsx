@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface AdministeredOrganization {
   organizationUrn: string;
@@ -20,6 +21,7 @@ interface LinkedInOrganizationsPanelProps {
  * cette route pour un compte qui ne les a pas.
  */
 export function LinkedInOrganizationsPanel({ adminAccountId, brandId }: LinkedInOrganizationsPanelProps) {
+  const t = useTranslations();
   const [organizations, setOrganizations] = useState<AdministeredOrganization[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [connectingUrn, setConnectingUrn] = useState<string | null>(null);
@@ -31,14 +33,17 @@ export function LinkedInOrganizationsPanel({ adminAccountId, brandId }: LinkedIn
       .then((body: { status: string; organizations?: AdministeredOrganization[]; message?: string }) => {
         if (cancelled) return;
         if (body.status === "ok" && body.organizations) setOrganizations(body.organizations);
-        else setError(body.message ?? "Pages administrées indisponibles.");
+        else setError(body.message ?? t("accounts.linkedinOrganizations.unavailable"));
       })
       .catch(() => {
-        if (!cancelled) setError("Pages administrées indisponibles (réseau).");
+        if (!cancelled) setError(t("accounts.linkedinOrganizations.unavailableNetwork"));
       });
     return () => {
       cancelled = true;
     };
+    // `t` volontairement exclu : ne re-déclencherait qu'un appel réseau superflu à chaque
+    // changement de langue, jamais une donnée obsolète affichée après un changement de langue.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminAccountId]);
 
   async function handleConnect(org: AdministeredOrganization) {
@@ -53,7 +58,7 @@ export function LinkedInOrganizationsPanel({ adminAccountId, brandId }: LinkedIn
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { message?: string } | null;
-        setError(body?.message ?? "Connexion de la page impossible.");
+        setError(body?.message ?? t("accounts.linkedinOrganizations.connectFailed"));
         return;
       }
       // La nouvelle page a été créée côté serveur, hors du magasin local synchronisé habituel
@@ -61,21 +66,21 @@ export function LinkedInOrganizationsPanel({ adminAccountId, brandId }: LinkedIn
       // apparaître via le pull normal au démarrage, plutôt qu'une logique de fusion ad hoc ici.
       window.location.reload();
     } catch {
-      setError("Connexion de la page impossible (réseau).");
+      setError(t("accounts.linkedinOrganizations.connectFailedNetwork"));
     } finally {
       setConnectingUrn(null);
     }
   }
 
   if (error) return <p className="text-xs font-medium text-red-600 dark:text-red-400">{error}</p>;
-  if (!organizations) return <p className="text-[11px] text-muted-foreground">Recherche des pages administrées…</p>;
+  if (!organizations) return <p className="text-[11px] text-muted-foreground">{t("accounts.linkedinOrganizations.searching")}</p>;
   if (organizations.length === 0) {
-    return <p className="text-[11px] text-muted-foreground">Aucune page LinkedIn administrée trouvée pour ce compte.</p>;
+    return <p className="text-[11px] text-muted-foreground">{t("accounts.linkedinOrganizations.noneFound")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Pages LinkedIn administrées</span>
+      <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{t("accounts.linkedinOrganizations.title")}</span>
       {organizations.map((org) => (
         <div key={org.organizationUrn} className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1.5 text-xs dark:bg-zinc-900">
           <span className="text-zinc-700 dark:text-zinc-300">{org.name}</span>
@@ -85,7 +90,7 @@ export function LinkedInOrganizationsPanel({ adminAccountId, brandId }: LinkedIn
             disabled={connectingUrn === org.organizationUrn}
             className="rounded-md border border-border px-2 py-1 text-[11px] font-medium text-violet-700 hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-violet-300 dark:hover:bg-violet-500/10"
           >
-            {connectingUrn === org.organizationUrn ? "Connexion…" : "Connecter cette page"}
+            {connectingUrn === org.organizationUrn ? t("accounts.linkedinOrganizations.connecting") : t("accounts.linkedinOrganizations.connectButton")}
           </button>
         </div>
       ))}

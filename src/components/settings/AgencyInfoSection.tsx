@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { COUNTRY_OPTIONS, LANGUAGE_OPTIONS, TIME_ZONE_OPTIONS } from "@/lib/settings-data";
 import type { AgencyInfo } from "@/types/settings";
 
@@ -11,20 +14,21 @@ interface AgencyInfoSectionProps {
 }
 
 export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectionProps) {
+  const t = useTranslations();
   function set<K extends keyof AgencyInfo>(key: K, value: AgencyInfo[K]) {
     onChange({ ...info, [key]: value });
   }
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Informations de l&apos;agence</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("settings.agencyInfo.title")}</h2>
 
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-black">
           {info.logoLabel || "?"}
         </span>
         <label className="flex flex-1 flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Logo (simulé — initiales affichées, aucun téléversement réel)
+          {t("settings.agencyInfo.logoLabel")}
           <input
             disabled={!editable}
             value={info.logoLabel}
@@ -37,21 +41,20 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Nom de l&apos;agence
+          {t("settings.agencyInfo.nameLabel")}
           <input disabled={!editable} value={info.name} onChange={(event) => set("name", event.target.value)} className={INPUT_CLASS} />
           <span className="text-xs font-normal text-muted-foreground">
-            Utilisé uniquement dans vos informations d&apos;agence (ex. futurs rapports client) — distinct du nom de
-            l&apos;espace de travail affiché dans la barre latérale et la barre supérieure.
+            {t("settings.agencyInfo.nameHint")}
           </span>
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Site web
+          {t("settings.agencyInfo.websiteLabel")}
           <input disabled={!editable} value={info.website} onChange={(event) => set("website", event.target.value)} className={INPUT_CLASS} />
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Email principal
+          {t("settings.agencyInfo.emailLabel")}
           <input
             type="email"
             disabled={!editable}
@@ -62,13 +65,13 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Téléphone
+          {t("settings.agencyInfo.phoneLabel")}
           <input disabled={!editable} value={info.phone} onChange={(event) => set("phone", event.target.value)} className={INPUT_CLASS} />
         </label>
 
         <div className="md:col-span-2">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Adresse
+            {t("settings.agencyInfo.addressLabel")}
             <input
               disabled={!editable}
               value={info.address}
@@ -79,7 +82,7 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
         </div>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Pays
+          {t("settings.agencyInfo.countryLabel")}
           <select disabled={!editable} value={info.country} onChange={(event) => set("country", event.target.value)} className={INPUT_CLASS}>
             {COUNTRY_OPTIONS.map((country) => (
               <option key={country} value={country}>
@@ -90,7 +93,7 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Langue par défaut
+          {t("settings.agencyInfo.defaultLanguageLabel")}
           <select
             disabled={!editable}
             value={info.defaultLanguage}
@@ -106,7 +109,7 @@ export function AgencyInfoSection({ info, editable, onChange }: AgencyInfoSectio
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Fuseau horaire par défaut
+          {t("settings.agencyInfo.defaultTimeZoneLabel")}
           <select
             disabled={!editable}
             value={info.defaultTimeZone}

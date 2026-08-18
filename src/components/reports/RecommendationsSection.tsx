@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { RECOMMENDATION_CATEGORY_LABEL, type RecommendationCategory, type ReportRecommendation } from "@/types/report";
 
 const CATEGORY_ORDER: RecommendationCategory[] = ["continue", "improve", "test", "stop"];
@@ -20,15 +23,16 @@ export function RecommendationsSection({
   editable: boolean;
   onChange: (next: ReportRecommendation[]) => void;
 }) {
+  const t = useTranslations();
   function handleTextChange(index: number, text: string) {
     onChange(recommendations.map((item, i) => (i === index ? { ...item, text } : item)));
   }
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5">
-      <h2 className="text-sm font-semibold text-foreground">Recommandations stratégiques</h2>
+      <h2 className="text-sm font-semibold text-foreground">{t("reports.recommendations.title")}</h2>
       {recommendations.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucune recommandation disponible.</p>
+        <p className="text-sm text-muted-foreground">{t("reports.recommendations.empty")}</p>
       ) : (
         CATEGORY_ORDER.map((category) => {
           const items = recommendations

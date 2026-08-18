@@ -2,6 +2,7 @@
 
 import { platformIcons } from "@/components/icons";
 import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SocialAccount } from "@/types/dashboard";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -20,6 +21,7 @@ interface AccountCardProps {
 export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCardProps) {
   const Icon = platformIcons[account.platform];
   const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
+  const t = useTranslations();
 
   return (
     <button
@@ -50,14 +52,13 @@ export function AccountCard({ account, scheduledPostsCount, onClick }: AccountCa
         <span>{account.brand}</span>
         <span>
           {account.lastSyncedAt
-            ? `Synchro. ${dateFormatter.format(new Date(account.lastSyncedAt))}`
-            : "Jamais synchronisé"}
+            ? t("accounts.card.syncedPrefix", { date: dateFormatter.format(new Date(account.lastSyncedAt)) })
+            : t("accounts.card.neverSynced")}
         </span>
       </div>
 
       <p className="text-xs text-muted-foreground ">
-        {scheduledPostsCount} publication{scheduledPostsCount > 1 ? "s" : ""} programmée
-        {scheduledPostsCount > 1 ? "s" : ""}
+        {t("accounts.card.scheduledCount", { count: scheduledPostsCount, plural: scheduledPostsCount > 1 ? "s" : "" })}
       </p>
     </button>
   );

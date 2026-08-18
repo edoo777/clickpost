@@ -1,22 +1,23 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ReportCoverMeta, ReportType } from "@/types/report";
 
-const REPORT_TYPE_LABEL: Record<ReportType, string> = {
-  internal: "Rapport interne",
-  client: "Rapport client",
-  executive: "Rapport exécutif",
-};
-
 /** Page de couverture — jamais générée par Claude, uniquement des données réelles (marque,
  * workspace, profil de la personne qui génère). Toujours la première section affichée. */
 export function ReportCoverSection({ cover }: { cover: ReportCoverMeta }) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
+  const REPORT_TYPE_LABEL: Record<ReportType, string> = {
+    internal: t("reports.reportType.internal"),
+    client: t("reports.reportType.client"),
+    executive: t("reports.reportType.executive"),
+  };
   const platformsLabel =
     cover.platforms.length === 0
-      ? "Toutes les plateformes"
+      ? t("reports.coverSection.allPlatforms")
       : cover.platforms.map((platform) => PLATFORM_LABEL[platform as SocialPlatform] ?? platform).join(", ");
 
   return (
@@ -32,17 +33,17 @@ export function ReportCoverSection({ cover }: { cover: ReportCoverMeta }) {
       </div>
       <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-white/60">Période</dt>
+          <dt className="text-white/60">{t("reports.coverSection.periodLabel")}</dt>
           <dd className="font-medium">
             {cover.periodStart} → {cover.periodEnd}
           </dd>
         </div>
         <div>
-          <dt className="text-white/60">Plateformes</dt>
+          <dt className="text-white/60">{t("reports.coverSection.platformsLabel")}</dt>
           <dd className="font-medium">{platformsLabel}</dd>
         </div>
         <div>
-          <dt className="text-white/60">Préparé par</dt>
+          <dt className="text-white/60">{t("reports.coverSection.preparedByLabel")}</dt>
           <dd className="font-medium">
             {cover.generatedByName ? `${cover.generatedByName} · ` : ""}
             {cover.workspaceName}
@@ -50,7 +51,7 @@ export function ReportCoverSection({ cover }: { cover: ReportCoverMeta }) {
         </div>
       </dl>
       <span className="text-xs text-white/60">
-        Généré le{" "}
+        {t("reports.coverSection.generatedOnPrefix")}{" "}
         {new Date(cover.generatedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
       </span>
     </section>

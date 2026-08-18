@@ -1,25 +1,27 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ReportPublicationSummary } from "@/types/report";
 
 function PublicationList({ title, publications }: { title: string; publications: ReportPublicationSummary[] }) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
   return (
     <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       {publications.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground">{t("reports.topContent.notEnoughData")}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {publications.map((publication) => (
             <li key={publication.id} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium text-foreground">{publication.excerpt || "Sans titre"}</span>
+                <span className="truncate text-sm font-medium text-foreground">{publication.excerpt || t("reports.topContent.untitled")}</span>
                 <span className="truncate text-xs text-muted-foreground">
                   {PLATFORM_LABEL[publication.platform as SocialPlatform] ?? publication.platform} · {publication.scheduledFor.slice(0, 10)}
-                  {publication.source === "demo" ? " · démonstration" : ""}
+                  {publication.source === "demo" ? t("reports.topContent.demoSuffix") : ""}
                 </span>
               </div>
               <span className="shrink-0 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
@@ -34,10 +36,11 @@ function PublicationList({ title, publications }: { title: string; publications:
 }
 
 export function TopContentSection({ top, worst }: { top: ReportPublicationSummary[]; worst: ReportPublicationSummary[] }) {
+  const t = useTranslations();
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <PublicationList title="Meilleures publications" publications={top} />
-      <PublicationList title="Publications les moins performantes" publications={worst} />
+      <PublicationList title={t("reports.topContent.bestTitle")} publications={top} />
+      <PublicationList title={t("reports.topContent.worstTitle")} publications={worst} />
     </div>
   );
 }

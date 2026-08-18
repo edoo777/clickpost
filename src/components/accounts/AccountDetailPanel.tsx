@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LinkedInConnectionPanel } from "@/components/accounts/LinkedInConnectionPanel";
 import { platformIcons } from "@/components/icons";
 import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { platformColors } from "@/lib/platform-colors";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialAccount } from "@/types/dashboard";
@@ -41,12 +42,13 @@ export function AccountDetailPanel({
   const isDeactivated = account.status === "disconnected";
   const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
   const PLATFORM_LABEL = usePlatformLabel();
+  const t = useTranslations();
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label="Fermer le panneau"
+        aria-label={t("accounts.detailPanel.closePanelAria")}
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
@@ -66,7 +68,7 @@ export function AccountDetailPanel({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("accounts.detailPanel.closeAria")}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted  "
           >
             ✕
@@ -87,7 +89,7 @@ export function AccountDetailPanel({
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-muted-foreground ">
           {account.profileUrl && (
             <div className="col-span-2">
-              <dt className="font-medium text-muted-foreground ">URL du profil</dt>
+              <dt className="font-medium text-muted-foreground ">{t("accounts.detailPanel.profileUrlLabel")}</dt>
               <dd className="truncate text-zinc-700 dark:text-zinc-300">
                 <a href={account.profileUrl} target="_blank" rel="noreferrer" className="hover:underline">
                   {account.profileUrl}
@@ -97,24 +99,24 @@ export function AccountDetailPanel({
           )}
           {account.language && (
             <div>
-              <dt className="font-medium text-muted-foreground ">Langue</dt>
+              <dt className="font-medium text-muted-foreground ">{t("accounts.detailPanel.languageLabel")}</dt>
               <dd className="text-zinc-700 dark:text-zinc-300">{account.language}</dd>
             </div>
           )}
           {account.audienceOrMarket && (
             <div>
-              <dt className="font-medium text-muted-foreground ">Audience / marché</dt>
+              <dt className="font-medium text-muted-foreground ">{t("accounts.detailPanel.audienceMarketLabel")}</dt>
               <dd className="text-zinc-700 dark:text-zinc-300">{account.audienceOrMarket}</dd>
             </div>
           )}
           <div>
-            <dt className="font-medium text-muted-foreground ">Dernière synchronisation</dt>
+            <dt className="font-medium text-muted-foreground ">{t("accounts.detailPanel.lastSyncLabel")}</dt>
             <dd className="text-zinc-700 dark:text-zinc-300">
-              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : "Jamais"}
+              {account.lastSyncedAt ? dateFormatter.format(new Date(account.lastSyncedAt)) : t("accounts.detailPanel.neverSynced")}
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-muted-foreground ">Publications programmées</dt>
+            <dt className="font-medium text-muted-foreground ">{t("accounts.detailPanel.scheduledPostsLabel")}</dt>
             <dd className="text-zinc-700 dark:text-zinc-300">{scheduledPostsCount}</dd>
           </div>
         </dl>
@@ -123,8 +125,7 @@ export function AccountDetailPanel({
           <LinkedInConnectionPanel account={account} onDisconnected={onLinkedInDisconnected} />
         ) : (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-            Ce profil ne dispose d&apos;aucune connexion API/OAuth réelle — aucune publication ne peut
-            être envoyée automatiquement à ce réseau depuis ClickPost pour l&apos;instant.
+            {t("accounts.detailPanel.noApiConnectionNotice")}
           </p>
         )}
 
@@ -132,7 +133,7 @@ export function AccountDetailPanel({
           {isConfirmingDelete ? (
             <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 dark:bg-red-500/10">
               <p className="text-xs font-medium text-red-700 dark:text-red-400">
-                Supprimer définitivement ce compte de la session ?
+                {t("accounts.detailPanel.confirmDeleteTitle")}
               </p>
               <div className="flex gap-3">
                 <button
@@ -140,14 +141,14 @@ export function AccountDetailPanel({
                   onClick={() => setIsConfirmingDelete(false)}
                   className="flex-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Annuler
+                  {t("accounts.detailPanel.cancelButton")}
                 </button>
                 <button
                   type="button"
                   onClick={onDelete}
                   className="flex-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                 >
-                  Confirmer la suppression
+                  {t("accounts.detailPanel.confirmDeleteButton")}
                 </button>
               </div>
             </div>
@@ -159,7 +160,7 @@ export function AccountDetailPanel({
                   onClick={onReactivate}
                   className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
                 >
-                  Réactiver
+                  {t("accounts.detailPanel.reactivateButton")}
                 </button>
               ) : (
                 <button
@@ -167,7 +168,7 @@ export function AccountDetailPanel({
                   onClick={onDeactivate}
                   className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
                 >
-                  Désactiver
+                  {t("accounts.detailPanel.deactivateButton")}
                 </button>
               )}
               <button
@@ -175,7 +176,7 @@ export function AccountDetailPanel({
                 onClick={() => setIsConfirmingDelete(true)}
                 className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50  dark:hover:bg-red-500/10"
               >
-                Supprimer
+                {t("accounts.detailPanel.deleteButton")}
               </button>
             </div>
           )}

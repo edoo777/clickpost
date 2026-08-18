@@ -1,6 +1,7 @@
 "use client";
 
 import { PERIOD_PRESET_LABEL, type ReportPeriodPreset } from "@/lib/reports/period-presets";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -18,11 +19,6 @@ export interface ReportsFiltersValue {
 
 const ALL_PLATFORMS: SocialPlatform[] = ["instagram", "facebook", "linkedin", "tiktok", "x", "youtube", "threads", "pinterest"];
 const PRESETS: ReportPeriodPreset[] = ["this_week", "last_week", "this_month", "last_month", "30d", "quarter", "custom"];
-const REPORT_TYPES: { value: ReportType; label: string }[] = [
-  { value: "internal", label: "Rapport interne" },
-  { value: "client", label: "Rapport client" },
-  { value: "executive", label: "Rapport exécutif" },
-];
 
 const FIELD_CLASS = "rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300";
 
@@ -33,7 +29,13 @@ interface ReportsFiltersProps {
 }
 
 export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
+  const REPORT_TYPES: { value: ReportType; label: string }[] = [
+    { value: "internal", label: t("reports.reportType.internal") },
+    { value: "client", label: t("reports.reportType.client") },
+    { value: "executive", label: t("reports.reportType.executive") },
+  ];
   function togglePlatform(platform: SocialPlatform) {
     const isSelected = value.platforms.includes(platform);
     onChange({
@@ -49,9 +51,9 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
           value={value.brandId}
           onChange={(event) => onChange({ ...value, brandId: event.target.value })}
           className={FIELD_CLASS}
-          aria-label="Marque"
+          aria-label={t("reports.filters.brandLabel")}
         >
-          {brands.length === 0 && <option value="">Aucune marque</option>}
+          {brands.length === 0 && <option value="">{t("reports.filters.noBrandOption")}</option>}
           {brands.map((brand) => (
             <option key={brand.id} value={brand.id}>
               {brand.name}
@@ -63,7 +65,7 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
           value={value.preset}
           onChange={(event) => onChange({ ...value, preset: event.target.value as ReportPeriodPreset })}
           className={FIELD_CLASS}
-          aria-label="Période"
+          aria-label={t("reports.filters.periodLabel")}
         >
           {PRESETS.map((preset) => (
             <option key={preset} value={preset}>
@@ -78,14 +80,14 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
               type="date"
               value={value.startDate}
               onChange={(event) => onChange({ ...value, startDate: event.target.value })}
-              aria-label="Du"
+              aria-label={t("reports.filters.dateFromLabel")}
               className={FIELD_CLASS}
             />
             <input
               type="date"
               value={value.endDate}
               onChange={(event) => onChange({ ...value, endDate: event.target.value })}
-              aria-label="Au"
+              aria-label={t("reports.filters.dateToLabel")}
               className={FIELD_CLASS}
             />
           </>
@@ -95,7 +97,7 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
           value={value.reportType}
           onChange={(event) => onChange({ ...value, reportType: event.target.value as ReportType })}
           className={FIELD_CLASS}
-          aria-label="Type de rapport"
+          aria-label={t("reports.filters.reportTypeLabel")}
         >
           {REPORT_TYPES.map((type) => (
             <option key={type.value} value={type.value}>
@@ -105,7 +107,7 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
         </select>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Plateformes">
+      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("reports.filters.platformsGroupLabel")}>
         <button
           type="button"
           onClick={() => onChange({ ...value, platforms: [] })}
@@ -115,7 +117,7 @@ export function ReportsFilters({ value, brands, onChange }: ReportsFiltersProps)
               : "border-border text-zinc-600 hover:border-violet-200 hover:bg-violet-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10"
           }`}
         >
-          Toutes les plateformes
+          {t("reports.filters.allPlatformsButton")}
         </button>
         {ALL_PLATFORMS.map((platform) => {
           const isSelected = value.platforms.includes(platform);

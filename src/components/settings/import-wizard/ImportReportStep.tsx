@@ -1,6 +1,7 @@
 "use client";
 
 import { CONFLICT_ENTITY_LABEL } from "@/lib/conflict-display";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { journalKey } from "@/lib/sync/local-import-runner";
 import type { SyncEntityType } from "@/lib/sync/types";
 import type { ImportItemState, ImportJournalEntry, ImportScanResult } from "@/types/import-wizard";
@@ -28,6 +29,7 @@ function emptyCounts(): EntityCounts {
 /** Étape 9 : rapport final (F1.8). Agrège le journal + la classification initiale du
  * balayage — téléchargeable en JSON, comme le reste des exports déjà présents dans l'app. */
 export function ImportReportStep({ scanResult, selectedKeys, journalByKey, onClose }: ImportReportStepProps) {
+  const t = useTranslations();
   const totals = emptyCounts();
   const perEntity: Partial<Record<SyncEntityType, EntityCounts>> = {};
   let attemptedNotSettled = 0;
@@ -95,30 +97,31 @@ export function ImportReportStep({ scanResult, selectedKeys, journalByKey, onClo
   return (
     <div className="flex flex-col gap-5">
       <p className="text-sm text-muted-foreground">
-        Vos données locales restent intactes sur cet appareil, quel que soit le résultat ci-dessous.
+        {t("settings.importWizard.reportStep.intactNotice")}
       </p>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Importés" value={totals.imported} />
-        <Stat label="Ignorés" value={totals.skipped} />
-        <Stat label="Exclus (démonstration)" value={excludedDemo} />
-        <Stat label="Associés à l'existant" value={totals.duplicate} />
-        <Stat label="En conflit" value={totals.conflict} />
-        <Stat label="En erreur" value={totals.error} />
-        <Stat label="Restants uniquement locaux" value={remainingLocalOnly} />
+        <Stat label={t("settings.importWizard.reportStep.importedLabel")} value={totals.imported} />
+        <Stat label={t("settings.importWizard.reportStep.skippedLabel")} value={totals.skipped} />
+        <Stat label={t("settings.importWizard.reportStep.excludedDemoLabel")} value={excludedDemo} />
+        <Stat label={t("settings.importWizard.reportStep.associatedLabel")} value={totals.duplicate} />
+        <Stat label={t("settings.importWizard.reportStep.conflictLabel")} value={totals.conflict} />
+        <Stat label={t("settings.importWizard.reportStep.errorLabel")} value={totals.error} />
+        <Stat label={t("settings.importWizard.reportStep.remainingLocalLabel")} value={remainingLocalOnly} />
       </div>
 
       {totals.conflict > 0 && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          {totals.conflict} élément{totals.conflict > 1 ? "s ont" : " a"} généré un conflit — consultez le Centre des
-          conflits pour les résoudre, vos deux versions sont conservées.
+          {totals.conflict > 1
+            ? t("settings.importWizard.reportStep.conflictNoticePlural", { count: totals.conflict })
+            : t("settings.importWizard.reportStep.conflictNoticeSingular", { count: totals.conflict })}
         </p>
       )}
       {attemptedNotSettled > 0 && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          {attemptedNotSettled} élément{attemptedNotSettled > 1 ? "s restent" : " reste"} à reprendre (hors ligne ou
-          délai dépassé) — relancez l&apos;assistant pour les envoyer, ils seront automatiquement ignorés une fois déjà
-          réussis.
+          {attemptedNotSettled > 1
+            ? t("settings.importWizard.reportStep.toRetryNoticePlural", { count: attemptedNotSettled })
+            : t("settings.importWizard.reportStep.toRetryNoticeSingular", { count: attemptedNotSettled })}
         </p>
       )}
 
@@ -127,8 +130,14 @@ export function ImportReportStep({ scanResult, selectedKeys, journalByKey, onClo
           <div key={entityType} className="flex items-center justify-between px-4 py-2 text-xs">
             <span className="font-medium text-foreground">{CONFLICT_ENTITY_LABEL[entityType]}</span>
             <span className="text-muted-foreground">
-              {counts.imported} importés · {counts.skipped} ignorés · {counts.duplicate} associés · {counts.conflict} conflits ·{" "}
-              {counts.error} erreurs · {counts.toRetry} à reprendre
+              {t("settings.importWizard.reportStep.entityStatsLine", {
+                imported: counts.imported,
+                skipped: counts.skipped,
+                duplicate: counts.duplicate,
+                conflict: counts.conflict,
+                error: counts.error,
+                toRetry: counts.toRetry,
+              })}
             </span>
           </div>
         ))}
@@ -140,14 +149,14 @@ export function ImportReportStep({ scanResult, selectedKeys, journalByKey, onClo
           onClick={downloadReport}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Télécharger le rapport JSON
+          {t("settings.importWizard.reportStep.downloadReportButton")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500"
         >
-          Fermer
+          {t("settings.importWizard.reportStep.closeButton")}
         </button>
       </div>
     </div>

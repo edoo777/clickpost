@@ -5,6 +5,7 @@ import { AccountCard } from "@/components/accounts/AccountCard";
 import { AccountDetailPanel } from "@/components/accounts/AccountDetailPanel";
 import { AddAccountPanel, type NewAccountInput } from "@/components/accounts/AddAccountPanel";
 import { useAccountsSession } from "@/lib/accounts-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePostsSession } from "@/lib/posts-store";
 import type { Brand } from "@/types/brand";
 import type { SocialAccount } from "@/types/dashboard";
@@ -21,6 +22,7 @@ interface BrandAccountsSectionProps {
 /** Comptes affiliés intégrés à la fiche de marque — même store que la page /comptes globale
  * (useAccountsSession), simplement filtré sur cette marque. Aucun second système. */
 export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionProps) {
+  const t = useTranslations();
   const { accounts, addAccount, updateAccount, removeAccount } = useAccountsSession();
   const { posts } = usePostsSession();
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -55,10 +57,9 @@ export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionP
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h2 className="text-sm font-semibold text-foreground ">Comptes affiliés</h2>
+          <h2 className="text-sm font-semibold text-foreground ">{t("brands.accountsSection.title")}</h2>
           <p className="text-xs text-muted-foreground ">
-            Profils de réseaux sociaux associés à {brand.name} — connexion API réelle disponible
-            pour LinkedIn (pilote), enregistrement du profil uniquement pour les autres réseaux.
+            {t("brands.accountsSection.description", { name: brand.name })}
           </p>
         </div>
         {canManage && (
@@ -67,14 +68,14 @@ export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionP
             onClick={() => setIsAddOpen(true)}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
-            + Ajouter un compte
+            {t("brands.accountsSection.addButton")}
           </button>
         )}
       </div>
 
       {brandAccounts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-          Aucun compte affilié pour cette marque pour l&apos;instant.
+          {t("brands.accountsSection.empty")}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -82,9 +82,7 @@ export function AccountsListView() {
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageHeader.accountsAffiliated")}</h1>
           <p className="text-sm text-muted-foreground ">
-            {filteredAccounts.length} compte{filteredAccounts.length > 1 ? "s" : ""} affiché
-            {filteredAccounts.length > 1 ? "s" : ""} — profils enregistrés localement ; connexion
-            API réelle disponible pour LinkedIn (pilote).
+            {t("accounts.listView.accountsCountSummary", { count: filteredAccounts.length, plural: filteredAccounts.length > 1 ? "s" : "" })}
           </p>
         </header>
         <button
@@ -92,7 +90,7 @@ export function AccountsListView() {
           onClick={() => setIsAddOpen(true)}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
-          + Ajouter un compte
+          {t("accounts.listView.addAccountButton")}
         </button>
       </div>
 
@@ -100,7 +98,7 @@ export function AccountsListView() {
 
       {filteredAccounts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-          Aucun compte ne correspond à ces critères.
+          {t("accounts.listView.empty")}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

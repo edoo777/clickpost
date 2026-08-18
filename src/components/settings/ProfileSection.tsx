@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { uploadAvatar } from "@/lib/supabase/storage";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
@@ -14,6 +15,7 @@ const LABEL_CLASS = "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:
  * L'identifiant et le courriel proviennent de Supabase Auth et ne sont jamais modifiables ici.
  */
 export function ProfileSection() {
+  const t = useTranslations();
   const { userId, email, profile, updateProfile } = useWorkspaceSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [firstName, setFirstName] = useState(profile?.first_name ?? "");
@@ -40,8 +42,8 @@ export function ProfileSection() {
   if (!profile || !userId) {
     return (
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-foreground">Profil</h2>
-        <p className="text-sm text-muted-foreground">Chargement du profil…</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("settings.profile.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("settings.profile.loading")}</p>
       </section>
     );
   }
@@ -74,7 +76,7 @@ export function ProfileSection() {
     const { url, error } = await uploadAvatar(userId, file);
     setIsUploadingAvatar(false);
     if (error || !url) {
-      setErrorMessage(error ?? "Le téléversement de l'avatar a échoué.");
+      setErrorMessage(error ?? t("settings.profile.avatarUploadFailed"));
       return;
     }
     await updateProfile({ avatar_url: url });
@@ -85,8 +87,8 @@ export function ProfileSection() {
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold text-foreground">Profil</h2>
-        <p className="text-xs text-muted-foreground">Vos informations personnelles — visibles par les membres de votre espace de travail.</p>
+        <h2 className="text-sm font-semibold text-foreground">{t("settings.profile.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("settings.profile.description")}</p>
       </div>
 
       <div className="flex items-center gap-4">
@@ -105,52 +107,52 @@ export function ProfileSection() {
             disabled={isUploadingAvatar}
             className="w-fit rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-60 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            {isUploadingAvatar ? "Envoi…" : "Changer l'avatar"}
+            {isUploadingAvatar ? t("settings.profile.uploading") : t("settings.profile.changeAvatarButton")}
           </button>
           <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={handleAvatarSelected} className="hidden" />
-          <span className="text-[11px] text-muted-foreground">PNG, JPEG, WEBP ou GIF — 5 Mo maximum.</span>
+          <span className="text-[11px] text-muted-foreground">{t("settings.profile.avatarFormatHint")}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Prénom
+          {t("settings.profile.firstNameLabel")}
           <input value={firstName} onChange={(event) => setFirstName(event.target.value)} className={FIELD_CLASS} />
         </label>
         <label className={LABEL_CLASS}>
-          Nom
+          {t("settings.profile.lastNameLabel")}
           <input value={lastName} onChange={(event) => setLastName(event.target.value)} className={FIELD_CLASS} />
         </label>
       </div>
 
       <label className={LABEL_CLASS}>
-        Nom complet affiché
+        {t("settings.profile.displayNameLabel")}
         <input
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
-          placeholder={`${firstName} ${lastName}`.trim() || "Nom affiché"}
+          placeholder={`${firstName} ${lastName}`.trim() || t("settings.profile.displayNamePlaceholder")}
           className={FIELD_CLASS}
         />
       </label>
 
       <label className={LABEL_CLASS}>
-        Fonction ou poste (facultatif)
+        {t("settings.profile.jobTitleLabel")}
         <input value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} className={FIELD_CLASS} />
       </label>
 
       <label className={LABEL_CLASS}>
-        Adresse courriel
+        {t("settings.profile.emailLabel")}
         <input value={email} disabled className={`${FIELD_CLASS} cursor-not-allowed opacity-70`} />
-        <span className="text-[11px] font-normal text-muted-foreground">Gérée par votre compte de connexion — non modifiable ici.</span>
+        <span className="text-[11px] font-normal text-muted-foreground">{t("settings.profile.emailHint")}</span>
       </label>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={LABEL_CLASS}>
-          Langue préférée
+          {t("settings.profile.languageLabel")}
           <input value={language} onChange={(event) => setLanguage(event.target.value)} className={FIELD_CLASS} />
         </label>
         <label className={LABEL_CLASS}>
-          Fuseau horaire
+          {t("settings.profile.timeZoneLabel")}
           <input value={timeZone} onChange={(event) => setTimeZone(event.target.value)} className={FIELD_CLASS} />
         </label>
       </div>
@@ -162,7 +164,7 @@ export function ProfileSection() {
       )}
       {status === "saved" && (
         <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-          Profil enregistré.
+          {t("settings.profile.saved")}
         </p>
       )}
 
@@ -172,7 +174,7 @@ export function ProfileSection() {
         disabled={status === "saving"}
         className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "saving" ? "Enregistrement…" : "Enregistrer le profil"}
+        {status === "saving" ? t("settings.profile.saving") : t("settings.profile.saveButton")}
       </button>
     </section>
   );

@@ -7,18 +7,12 @@ import { ImportProgressStep } from "@/components/settings/import-wizard/ImportPr
 import { ImportReportStep } from "@/components/settings/import-wizard/ImportReportStep";
 import { ImportReviewStep } from "@/components/settings/import-wizard/ImportReviewStep";
 import { ImportScanStep } from "@/components/settings/import-wizard/ImportScanStep";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { journalKey } from "@/lib/sync/local-import-runner";
 import type { DuplicateAction, ImportJournalEntry, ImportScanResult } from "@/types/import-wizard";
 
 type WizardStep = "scan" | "review" | "backup" | "progress" | "report";
 
-const STEP_LABEL: Record<WizardStep, string> = {
-  scan: "Analyse",
-  review: "Sélection",
-  backup: "Confirmation",
-  progress: "Importation",
-  report: "Rapport",
-};
 const STEP_ORDER: WizardStep[] = ["scan", "review", "backup", "progress", "report"];
 
 interface ImportWizardModalProps {
@@ -32,6 +26,14 @@ interface ImportWizardModalProps {
  * synchronisation existant (F1.4), jamais un second moteur.
  */
 export function ImportWizardModal({ onClose }: ImportWizardModalProps) {
+  const t = useTranslations();
+  const STEP_LABEL: Record<WizardStep, string> = {
+    scan: t("settings.importWizard.steps.scan"),
+    review: t("settings.importWizard.steps.review"),
+    backup: t("settings.importWizard.steps.backup"),
+    progress: t("settings.importWizard.steps.progress"),
+    report: t("settings.importWizard.steps.report"),
+  };
   const [step, setStep] = useState<WizardStep>("scan");
   const [scanResult, setScanResult] = useState<ImportScanResult | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
@@ -57,15 +59,15 @@ export function ImportWizardModal({ onClose }: ImportWizardModalProps) {
       <div className="flex max-h-[90vh] w-full max-w-4xl flex-col gap-5 overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Importer mes anciennes données locales</h2>
+            <h2 className="text-lg font-semibold text-foreground">{t("settings.importWizard.title")}</h2>
             <p className="text-xs text-muted-foreground">
-              Étape {stepIndex} sur {STEP_ORDER.length} — {STEP_LABEL[step]}
+              {t("settings.importWizard.stepOf", { step: stepIndex, total: STEP_ORDER.length, label: STEP_LABEL[step] })}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("settings.importWizard.closeAria")}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
           >
             <IconClose className="h-4 w-4" />

@@ -2,6 +2,7 @@
 
 import { useBrandsSession } from "@/lib/brands-store";
 import { useAccountStatusLabel } from "@/lib/account-status";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { AccountStatus, SocialPlatform } from "@/types/dashboard";
 
@@ -43,6 +44,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
   const isDefault = value.brand === "all" && value.platform === "all" && value.status === "all";
   const PLATFORM_LABEL = usePlatformLabel();
   const ACCOUNT_STATUS_LABEL = useAccountStatusLabel();
+  const t = useTranslations();
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -51,7 +53,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
         onChange={(event) => onChange({ ...value, brand: event.target.value })}
         className={FIELD_CLASS}
       >
-        <option value="all">Toutes les marques</option>
+        <option value="all">{t("accounts.filters.allBrands")}</option>
         {brands.map((brand) => (
           <option key={brand.id} value={brand.name}>
             {brand.name}
@@ -64,7 +66,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
         onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les réseaux</option>
+        <option value="all">{t("accounts.filters.allNetworks")}</option>
         {ALL_PLATFORMS.map((platform) => (
           <option key={platform} value={platform}>
             {PLATFORM_LABEL[platform]}
@@ -77,7 +79,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
         onChange={(event) => onChange({ ...value, status: event.target.value as AccountStatus | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les statuts</option>
+        <option value="all">{t("accounts.filters.allStatuses")}</option>
         {ALL_STATUSES.map((status) => (
           <option key={status} value={status}>
             {ACCOUNT_STATUS_LABEL[status]}
@@ -91,7 +93,7 @@ export function AccountsFilters({ value, onChange }: AccountsFiltersProps) {
           onClick={() => onChange(DEFAULT_ACCOUNTS_FILTERS)}
           className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
         >
-          Réinitialiser
+          {t("accounts.filters.resetButton")}
         </button>
       )}
     </div>

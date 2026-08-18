@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LinkedInOrganizationsPanel } from "@/components/accounts/LinkedInOrganizationsPanel";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { OAUTH_CONNECTION_STATE_LABEL, type OAuthConnectionSummary } from "@/types/oauth-connection";
 import type { SocialAccount } from "@/types/dashboard";
 
@@ -46,6 +47,7 @@ interface LinkedInConnectionPanelProps {
  * connexion depuis le seul navigateur.
  */
 export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInConnectionPanelProps) {
+  const t = useTranslations();
   const [summary, setSummary] = useState<OAuthConnectionSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -63,7 +65,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
           if (body.status === "ok" && body.summary) setSummary(body.summary);
         })
         .catch(() => {
-          if (!cancelled) setError("État de connexion LinkedIn indisponible pour le moment.");
+          if (!cancelled) setError(t("accounts.linkedinConnection.statusUnavailable"));
         })
         .finally(() => {
           if (!cancelled) setIsLoading(false);
@@ -73,6 +75,10 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
       cancelled = true;
       clearTimeout(timeout);
     };
+    // `t` volontairement exclu : ne re-déclencherait qu'un appel réseau superflu à chaque
+    // changement de langue, pour un message d'erreur qui n'est de toute façon affiché que si CET
+    // appel échoue — jamais une donnée obsolète qui resterait affichée après un changement de langue.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account.id]);
 
   async function handleDisconnect() {
@@ -87,19 +93,19 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { message?: string } | null;
-        setError(body?.message ?? "Déconnexion impossible.");
+        setError(body?.message ?? t("accounts.linkedinConnection.disconnectFailed"));
         return;
       }
       onDisconnected();
     } catch {
-      setError("Déconnexion impossible (réseau).");
+      setError(t("accounts.linkedinConnection.disconnectFailedNetwork"));
     } finally {
       setIsDisconnecting(false);
     }
   }
 
   if (isLoading) {
-    return <p className="text-xs text-muted-foreground ">Vérification de la connexion LinkedIn…</p>;
+    return <p className="text-xs text-muted-foreground ">{t("accounts.linkedinConnection.checkingConnection")}</p>;
   }
 
   const state = summary?.state ?? "no_local_account";
@@ -108,7 +114,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800/60">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Connexion LinkedIn réelle</span>
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{t("accounts.linkedinConnection.title")}</span>
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${TONE_CLASS[tone]}`}>
           {OAUTH_CONNECTION_STATE_LABEL[state]}
         </span>
@@ -116,8 +122,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
 
       {state === "not_configured" && (
         <p className="text-xs text-muted-foreground ">
-          L&apos;intégration LinkedIn n&apos;est pas encore configurée sur ce serveur (identifiants
-          d&apos;application manquants).
+          {t("accounts.linkedinConnection.notConfiguredNotice")}
         </p>
       )}
 
@@ -126,7 +131,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
           href={`/api/social/linkedin/connect?brandId=${encodeURIComponent(account.brandId)}`}
           className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-fuchsia-500/20"
         >
-          Connecter LinkedIn
+          {t("accounts.linkedinConnection.connectButton")}
         </a>
       )}
 
@@ -135,7 +140,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
           href={`/api/social/linkedin/connect?brandId=${encodeURIComponent(account.brandId)}`}
           className="w-fit rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400"
         >
-          Reconnecter LinkedIn
+          {t("accounts.linkedinConnection.reconnectButton")}
         </a>
       )}
 
@@ -150,13 +155,13 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
           disabled={isDisconnecting}
           className="w-fit rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-500/10"
         >
-          {isDisconnecting ? "Déconnexion…" : "Déconnecter"}
+          {isDisconnecting ? t("accounts.linkedinConnection.disconnecting") : t("accounts.linkedinConnection.disconnectButton")}
         </button>
       )}
 
       {summary?.tokenExpiresAt && state === "connected" && (
         <p className="text-[11px] text-muted-foreground ">
-          Jeton valide jusqu&apos;au {new Date(summary.tokenExpiresAt).toLocaleString("fr-FR")}.
+          {t("accounts.linkedinConnection.tokenValidUntil", { date: new Date(summary.tokenExpiresAt).toLocaleString("fr-FR") })}
         </p>
       )}
 
@@ -170,7 +175,7 @@ export function LinkedInConnectionPanel({ account, onDisconnected }: LinkedInCon
                 href={`/api/social/linkedin/connect?brandId=${encodeURIComponent(account.brandId)}&includeOrganization=true`}
                 className="w-fit text-[11px] font-medium text-violet-700 hover:underline dark:text-violet-300"
               >
-                Autoriser aussi la publication sur une Page LinkedIn administrée
+                {t("accounts.linkedinConnection.authorizeOrgPageLink")}
               </a>
             )
           )}

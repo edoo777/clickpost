@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { BrandIdentity } from "@/types/settings";
 
 interface BrandIdentitySectionProps {
@@ -8,6 +11,7 @@ interface BrandIdentitySectionProps {
 }
 
 export function BrandIdentitySection({ identity, editable, onChange, onReset }: BrandIdentitySectionProps) {
+  const t = useTranslations();
   function set<K extends keyof BrandIdentity>(key: K, value: BrandIdentity[K]) {
     onChange({ ...identity, [key]: value });
   }
@@ -15,21 +19,21 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground ">Identité visuelle</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("settings.brandIdentity.title")}</h2>
         {editable && (
           <button
             type="button"
             onClick={onReset}
             className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline "
           >
-            Restaurer les valeurs par défaut
+            {t("settings.brandIdentity.resetButton")}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Couleur principale
+          {t("settings.brandIdentity.primaryColorLabel")}
           <div className="flex items-center gap-2">
             <input
               type="color"
@@ -43,7 +47,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Couleur secondaire
+          {t("settings.brandIdentity.secondaryColorLabel")}
           <div className="flex items-center gap-2">
             <input
               type="color"
@@ -59,7 +63,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
 
       <div className="flex flex-col gap-2">
         <span className="text-xs font-medium text-muted-foreground ">
-          Aperçu de l&apos;interface personnalisée
+          {t("settings.brandIdentity.previewLabel")}
         </span>
         <div
           className="flex overflow-hidden rounded-lg border border-border "
@@ -79,7 +83,7 @@ export function BrandIdentitySection({ identity, editable, onChange, onReset }: 
               className="w-fit rounded-lg px-3 py-1.5 text-xs font-medium text-white"
               style={{ backgroundColor: identity.secondaryColor }}
             >
-              Bouton d&apos;action
+              {t("settings.brandIdentity.actionButtonPreview")}
             </span>
           </div>
         </div>

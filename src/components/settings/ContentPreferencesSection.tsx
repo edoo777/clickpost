@@ -2,6 +2,7 @@
 
 import { platformIcons } from "@/components/icons";
 import { CONTENT_FORMATS, useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import { LANGUAGE_OPTIONS } from "@/lib/settings-data";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -28,6 +29,7 @@ interface ContentPreferencesSectionProps {
 }
 
 export function ContentPreferencesSection({ content, editable, onChange }: ContentPreferencesSectionProps) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
   const FORMAT_LABEL = useFormatLabel();
   function set<K extends keyof ContentPreferences>(key: K, value: ContentPreferences[K]) {
@@ -56,10 +58,10 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Préférences de contenu</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("settings.contentPreferences.title")}</h2>
 
       <label className="flex w-fit flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        Langue de création par défaut
+        {t("settings.contentPreferences.defaultLanguageLabel")}
         <select
           disabled={!editable}
           value={content.defaultCreationLanguage}
@@ -75,7 +77,7 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
       </label>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Réseaux sociaux proposés par défaut</span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("settings.contentPreferences.defaultPlatformsLabel")}</span>
         <div className="flex flex-wrap gap-2">
           {ALL_PLATFORMS.map((platform) => {
             const Icon = platformIcons[platform];
@@ -97,7 +99,7 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Formats favoris</span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("settings.contentPreferences.favoriteFormatsLabel")}</span>
         <div className="flex flex-wrap gap-2">
           {CONTENT_FORMATS.map((format) => {
             const isSelected = content.favoriteFormats.includes(format);
@@ -117,7 +119,7 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
       </div>
 
       <label className="flex w-fit flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        Durée par défaut des campagnes (jours)
+        {t("settings.contentPreferences.campaignDurationLabel")}
         <input
           type="number"
           min={1}
@@ -130,7 +132,7 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Hashtags récurrents (un par ligne)
+          {t("settings.contentPreferences.recurringHashtagsLabel")}
           <textarea
             rows={2}
             disabled={!editable}
@@ -140,7 +142,7 @@ export function ContentPreferencesSection({ content, editable, onChange }: Conte
           />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Appels à l&apos;action récurrents (un par ligne)
+          {t("settings.contentPreferences.recurringCtasLabel")}
           <textarea
             rows={2}
             disabled={!editable}

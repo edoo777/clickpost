@@ -3,40 +3,52 @@
 import Link from "next/link";
 import { IconAlertTriangle, IconBriefcase, IconChartBar, IconLayoutGrid, IconTag } from "@/components/icons";
 import { ConflictBadge } from "@/components/conflicts/ConflictBadge";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useSyncStatus } from "@/lib/sync/use-sync-status";
 
-const LINKS = [
-  {
-    label: "Marques",
-    description: "Niche, positionnement, comptes affiliés et thématiques de chaque marque",
-    href: "/marques",
-    icon: IconBriefcase,
-  },
-  { label: "Thématiques", description: "Bibliothèque complète, toutes marques confondues", href: "/thematiques", icon: IconTag },
-  {
-    label: "Calendrier éditorial",
-    description: "Plans de semaine par marque",
-    href: "/calendrier-editorial",
-    icon: IconLayoutGrid,
-  },
-  { label: "Performances", description: "Rapport d'analyse détaillé", href: "/performances", icon: IconChartBar },
-  {
-    label: "Centre des conflits",
-    description: "Résoudre les conflits de synchronisation",
-    href: "/conflits",
-    icon: IconAlertTriangle,
-  },
-];
-
 export function OtherSectionsLinks() {
+  const t = useTranslations();
   const conflictCount = useSyncStatus().conflictCount;
+
+  const LINKS = [
+    {
+      label: t("settings.otherSections.linkBrandsLabel"),
+      description: t("settings.otherSections.linkBrandsDescription"),
+      href: "/marques",
+      icon: IconBriefcase,
+    },
+    {
+      label: t("settings.otherSections.linkThemesLabel"),
+      description: t("settings.otherSections.linkThemesDescription"),
+      href: "/thematiques",
+      icon: IconTag,
+    },
+    {
+      label: t("settings.otherSections.linkCalendarLabel"),
+      description: t("settings.otherSections.linkCalendarDescription"),
+      href: "/calendrier-editorial",
+      icon: IconLayoutGrid,
+    },
+    {
+      label: t("settings.otherSections.linkPerformanceLabel"),
+      description: t("settings.otherSections.linkPerformanceDescription"),
+      href: "/performances",
+      icon: IconChartBar,
+    },
+    {
+      label: t("settings.otherSections.linkConflictsLabel"),
+      description: t("settings.otherSections.linkConflictsDescription"),
+      href: "/conflits",
+      icon: IconAlertTriangle,
+    },
+  ];
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm  ">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold text-foreground ">Autres sections</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("settings.otherSections.title")}</h2>
         <p className="text-xs text-muted-foreground ">
-          Regroupées ici pour garder la navigation principale légère.
+          {t("settings.otherSections.description")}
         </p>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

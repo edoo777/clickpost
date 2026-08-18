@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { ReportWorkItemCounts } from "@/types/report";
 
 function percentChange(current: number, previous: number): number | null {
@@ -16,21 +19,21 @@ function DeltaBadge({ percent }: { percent: number | null }) {
   );
 }
 
-const ITEMS: { key: keyof ReportWorkItemCounts; label: string }[] = [
-  { key: "topicsCreated", label: "Sujets créés" },
-  { key: "ideasCreated", label: "Idées enregistrées" },
-  { key: "contentDrafted", label: "Contenus rédigés" },
-  { key: "contentScheduled", label: "Contenus programmés" },
-  { key: "contentPublished", label: "Contenus publiés" },
-  { key: "contentArchived", label: "Contenus archivés" },
-];
-
 /** Comptages réels du travail effectué dans ClickPost — jamais une estimation (voir
  * build-report-data.ts). */
 export function WorkDoneSection({ current, previous }: { current: ReportWorkItemCounts; previous: ReportWorkItemCounts | null }) {
+  const t = useTranslations();
+  const ITEMS: { key: keyof ReportWorkItemCounts; label: string }[] = [
+    { key: "topicsCreated", label: t("reports.workDone.items.topicsCreated") },
+    { key: "ideasCreated", label: t("reports.workDone.items.ideasCreated") },
+    { key: "contentDrafted", label: t("reports.workDone.items.contentDrafted") },
+    { key: "contentScheduled", label: t("reports.workDone.items.contentScheduled") },
+    { key: "contentPublished", label: t("reports.workDone.items.contentPublished") },
+    { key: "contentArchived", label: t("reports.workDone.items.contentArchived") },
+  ];
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5">
-      <h2 className="text-sm font-semibold text-foreground">Travail réalisé</h2>
+      <h2 className="text-sm font-semibold text-foreground">{t("reports.workDone.title")}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {ITEMS.map((item) => (
           <div key={item.key} className="flex flex-col gap-1 rounded-lg border border-border p-3">
