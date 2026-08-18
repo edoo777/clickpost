@@ -6,6 +6,7 @@ import type { TrendActionContext } from "@/components/trends/TrendActionsMenu";
 import { TrendCard } from "@/components/trends/TrendCard";
 import { WebSearchNoSignalState } from "@/components/trends/WebSearchNoSignalState";
 import { WebSearchTrigger } from "@/components/trends/WebSearchTrigger";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SocialPlatform } from "@/types/dashboard";
 
 const MUSIC_PLATFORMS: SocialPlatform[] = ["tiktok", "instagram", "youtube", "facebook", "pinterest"];
@@ -34,22 +35,19 @@ export function MusicTrendsSection({
   language?: string;
   onAdjustFilters: (patch: { period?: "24h" | "7d" | "30d" | "all"; niche?: string }) => void;
 }) {
+  const t = useTranslations();
   const [results, setResults] = useState<DisplayableTrend[] | null>(null);
 
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h2 className="text-sm font-semibold text-foreground">Musiques et sons</h2>
-        <p className="text-xs text-muted-foreground">
-          Aucun fournisseur officiel de tendances musicales n&apos;est accessible à ce jour — une veille Web ciblée
-          peut identifier des sons mentionnés comme populaires dans des sources identifiables, uniquement sur
-          demande explicite.
-        </p>
+        <h2 className="text-sm font-semibold text-foreground">{t("trends.musicSection.title")}</h2>
+        <p className="text-xs text-muted-foreground">{t("trends.musicSection.subtitle")}</p>
       </div>
 
       <WebSearchTrigger
         params={{ mode: "global", focus: "music", platforms: MUSIC_PLATFORMS, niche, themeLabels, country, language, period: "7d" }}
-        label="Rechercher les tendances musicales"
+        label={t("trends.musicSection.searchButtonLabel")}
         onResults={setResults}
       />
 
@@ -70,19 +68,12 @@ export function MusicTrendsSection({
 
       {!results && (
         <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-center">
-          <p className="text-sm font-medium text-foreground">
-            Aucune source officielle de tendances musicales n&apos;est encore configurée.
-          </p>
-          <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground">
-            Cliquez sur « Rechercher les tendances musicales » pour lancer une veille Web ciblée, ou laissez cette
-            section telle quelle si vous préférez ne consulter que les sources officielles.
-          </p>
+          <p className="text-sm font-medium text-foreground">{t("trends.musicSection.noOfficialSource")}</p>
+          <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground">{t("trends.musicSection.noOfficialSourceHint")}</p>
         </div>
       )}
 
-      <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-        Vérifiez les droits d&apos;utilisation applicables à votre compte, votre région et votre activité.
-      </p>
+      <p className="text-xs font-medium text-amber-700 dark:text-amber-400">{t("trends.musicSection.rightsNotice")}</p>
     </section>
   );
 }

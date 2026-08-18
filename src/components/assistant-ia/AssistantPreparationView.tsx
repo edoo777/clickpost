@@ -14,13 +14,6 @@ import { useThemesSession } from "@/lib/themes-store";
 
 type WizardStep = "brand" | "calendar" | "generation" | "done";
 
-const STEP_LABELS: { key: WizardStep; label: string }[] = [
-  { key: "brand", label: "1. Marque" },
-  { key: "calendar", label: "2. Calendrier" },
-  { key: "generation", label: "3. Génération" },
-  { key: "done", label: "4. Confirmation" },
-];
-
 export function AssistantPreparationView() {
   const t = useTranslations();
   const { brands } = useBrandsSession();
@@ -31,6 +24,13 @@ export function AssistantPreparationView() {
   const WEEKDAY_LABEL = useWeekdayLabel();
   const PLATFORM_LABEL = usePlatformLabel();
   const FORMAT_LABEL = useFormatLabel();
+
+  const STEP_LABELS: { key: WizardStep; label: string }[] = [
+    { key: "brand", label: t("assistant.preparation.stepBrand") },
+    { key: "calendar", label: t("assistant.preparation.stepCalendar") },
+    { key: "generation", label: t("assistant.preparation.stepGeneration") },
+    { key: "done", label: t("assistant.preparation.stepConfirmation") },
+  ];
 
   const brand = brands.find((candidate) => candidate.id === selectedBrandId);
   const calendar = selectedBrandId
@@ -62,10 +62,7 @@ export function AssistantPreparationView() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground ">
           {t("pageHeader.assistantPreparation")}
         </h1>
-        <p className="text-sm text-muted-foreground ">
-          Un parcours guidé, en mode démonstration, pour préparer rapidement le
-          contenu d&apos;une marque à partir de son calendrier éditorial.
-        </p>
+        <p className="text-sm text-muted-foreground ">{t("assistant.preparation.subtitle")}</p>
       </header>
 
       <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground ">
@@ -85,7 +82,7 @@ export function AssistantPreparationView() {
 
       {step === "brand" && brands.length === 0 && (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16] ">
-          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour utiliser l&apos;assistant.
+          {t("assistant.preparation.noBrandNotice")}
         </p>
       )}
 
@@ -101,7 +98,7 @@ export function AssistantPreparationView() {
               <span className="text-sm font-semibold text-foreground ">{candidate.name}</span>
               <span className="text-xs text-muted-foreground ">{candidate.industry}</span>
               <span className="text-xs text-muted-foreground ">
-                {candidate.toneOfVoice || "Aucun ton défini"}
+                {candidate.toneOfVoice || t("assistant.preparation.noToneDefined")}
               </span>
               {candidate.communicationGoals.length > 0 && (
                 <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground ">
@@ -119,22 +116,24 @@ export function AssistantPreparationView() {
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
           <div>
             <h2 className="text-sm font-semibold text-foreground ">
-              Étape 2 · Calendrier de {brand.name}
+              {t("assistant.preparation.calendarStepTitle", { name: brand.name })}
             </h2>
             <p className="text-sm text-muted-foreground ">
-              {weekPlan ? `Plan « ${weekPlan.label} »` : "Aucun calendrier éditorial trouvé pour cette marque."}
+              {weekPlan
+                ? t("assistant.preparation.planLabel", { label: weekPlan.label })
+                : t("assistant.preparation.noCalendarFound")}
             </p>
           </div>
 
           {activeDays.length === 0 ? (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
-              Aucun jour actif dans le calendrier éditorial de cette marque. Configurez-en un dans{" "}
+              {t("assistant.preparation.noActiveDayPrefix")}{" "}
               <Link href="/calendrier" className="underline">
-                le Calendrier
+                {t("assistant.preparation.calendarLink")}
               </Link>
-              , ou utilisez la voie manuelle du{" "}
+              {t("assistant.preparation.noActiveDayMiddle")}{" "}
               <Link href="/boite-idees?tab=generateur" className="underline">
-                Générateur de sujets
+                {t("assistant.preparation.topicGeneratorLink")}
               </Link>
               .
             </p>
@@ -150,12 +149,12 @@ export function AssistantPreparationView() {
                     {day.themeIds
                       .map((id) => brandThemes.find((theme) => theme.id === id)?.label)
                       .filter(Boolean)
-                      .join(", ") || "Sans thématique"}
+                      .join(", ") || t("assistant.preparation.noThemeFallback")}
                   </span>
                   <span className="text-xs text-muted-foreground ">
-                    {day.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") || "Aucun réseau"} ·{" "}
-                    {day.formats.map((format) => FORMAT_LABEL[format]).join(", ") || "Aucun format"} · {day.frequency}
-                    /jour
+                    {day.platforms.map((platform) => PLATFORM_LABEL[platform]).join(", ") || t("assistant.preparation.noNetworkFallback")} ·{" "}
+                    {day.formats.map((format) => FORMAT_LABEL[format]).join(", ") || t("assistant.preparation.noFormatFallback")} · {day.frequency}
+                    {t("assistant.preparation.perDaySuffix")}
                   </span>
                 </li>
               ))}
@@ -168,7 +167,7 @@ export function AssistantPreparationView() {
               onClick={() => setStep("brand")}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Retour
+              {t("common.back")}
             </button>
             <button
               type="button"
@@ -176,7 +175,7 @@ export function AssistantPreparationView() {
               onClick={() => setStep("generation")}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
             >
-              Continuer
+              {t("assistant.preparation.continueButton")}
             </button>
           </div>
         </div>
@@ -195,27 +194,31 @@ export function AssistantPreparationView() {
       {step === "done" && brand && (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/20 dark:bg-emerald-500/10">
           <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-            {createdCount} idée{createdCount > 1 ? "s" : ""} créée{createdCount > 1 ? "s" : ""} pour {brand.name}.
+            {t("assistant.preparation.ideasCreatedSummary", {
+              count: createdCount,
+              plural: createdCount > 1 ? "s" : "",
+              name: brand.name,
+            })}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/boite-idees?tab=banque"
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
-              Voir la Banque d&apos;idées
+              {t("assistant.preparation.viewIdeasBank")}
             </Link>
             <Link
               href="/calendrier"
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Voir le Calendrier
+              {t("assistant.preparation.viewCalendar")}
             </Link>
             <button
               type="button"
               onClick={handleRestart}
               className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline "
             >
-              Préparer une autre marque
+              {t("assistant.preparation.restartButton")}
             </button>
           </div>
         </div>

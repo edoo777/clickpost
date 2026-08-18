@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SocialPlatform } from "@/types/dashboard";
 import { fetchWebSearchStatus, runWebTrendSearch } from "@/lib/trends/client";
 import { musicItemToDisplayable, webTrendItemToDisplayable } from "@/lib/trends/display-mappers";
@@ -21,15 +22,17 @@ export interface WebSearchTriggerParams {
   period: "24h" | "7d" | "30d" | "all";
 }
 
-function formatResetAt(resetAt: string): string {
+type TFunction = ReturnType<typeof useTranslations>;
+
+function formatResetAt(t: TFunction, resetAt: string): string {
   const date = new Date(resetAt);
   if (Number.isNaN(date.getTime())) return "";
   const diffMs = date.getTime() - Date.now();
-  if (diffMs <= 0) return "bientôt";
+  if (diffMs <= 0) return t("trends.searchTrigger.resetSoon");
   const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 60) return `dans ${minutes} min`;
+  if (minutes < 60) return t("trends.searchTrigger.resetInMinutes", { minutes });
   const hours = Math.round(minutes / 60);
-  return `dans ${hours} h`;
+  return t("trends.searchTrigger.resetInHours", { hours });
 }
 
 /**
@@ -40,8 +43,8 @@ function formatResetAt(resetAt: string): string {
  */
 export function WebSearchTrigger({
   params,
-  label = "Rechercher les tendances",
-  retryLabel = "Rechercher de nouveau",
+  label,
+  retryLabel,
   onResults,
 }: {
   params: WebSearchTriggerParams;
@@ -49,6 +52,9 @@ export function WebSearchTrigger({
   retryLabel?: string;
   onResults: (items: DisplayableTrend[]) => void;
 }) {
+  const t = useTranslations();
+  const resolvedLabel = label ?? t("trends.searchTrigger.defaultLabel");
+  const resolvedRetryLabel = retryLabel ?? t("trends.searchTrigger.retryLabel");
   const [status, setStatus] = useState<TriggerStatus>("checking");
   const [resetAt, setResetAt] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -125,7 +131,7 @@ export function WebSearchTrigger({
     }
     if (result.status !== "ok") {
       setStatus("error");
-      setMessage(result.message ?? "Recherche indisponible pour l'instant.");
+      setMessage(result.message ?? t("trends.searchTrigger.searchUnavailable"));
       return;
     }
 
@@ -139,7 +145,7 @@ export function WebSearchTrigger({
   }
 
   const isDisabled = status === "checking" || status === "loading" || status === "quota_blocked";
-  const buttonLabel = status === "loading" ? "Recherche en cours…" : hasSearchedOnce ? retryLabel : label;
+  const buttonLabel = status === "loading" ? t("trends.searchTrigger.searching") : hasSearchedOnce ? resolvedRetryLabel : resolvedLabel;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -149,7 +155,9 @@ export function WebSearchTrigger({
         disabled={isDisabled}
         className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
       >
-        {status === "quota_blocked" ? `Prochaine recherche disponible ${resetAt ? formatResetAt(resetAt) : ""}` : buttonLabel}
+        {status === "quota_blocked"
+          ? t("trends.searchTrigger.nextSearchAvailable", { when: resetAt ? formatResetAt(t, resetAt) : "" })
+          : buttonLabel}
       </button>
       {message && <p className="text-[11px] text-muted-foreground">{message}</p>}
     </div>

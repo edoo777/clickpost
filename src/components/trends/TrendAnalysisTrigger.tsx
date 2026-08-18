@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { runTrendAnalysis, type TrendAnalysisResult } from "@/lib/trends/client";
 
 interface AnalysisState {
@@ -26,6 +27,7 @@ export function TrendAnalysisTrigger({
   niche?: string;
   themeLabels: string[];
 }) {
+  const t = useTranslations();
   const [analysis, setAnalysis] = useState<AnalysisState>({ status: "idle" });
 
   async function handleAnalyze() {
@@ -52,7 +54,7 @@ export function TrendAnalysisTrigger({
         disabled={analysis.status === "loading"}
         className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
       >
-        {analysis.status === "loading" ? "Analyse en cours…" : "Analyser avec Claude"}
+        {analysis.status === "loading" ? t("trends.analysisTrigger.analyzing") : t("trends.analysisTrigger.analyzeButton")}
       </button>
 
       {analysis.status === "error" && (
@@ -64,29 +66,29 @@ export function TrendAnalysisTrigger({
       {analysis.status === "done" && analysis.result && (
         <div className="flex flex-col gap-2 rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-500/20 dark:bg-violet-500/[.06]">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
-            Analyse Claude — interprétation, pas une donnée source
+            {t("trends.analysisTrigger.resultTitle")}
           </p>
           <p className="text-xs text-foreground">{analysis.result.relevance}</p>
           <dl className="grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
             <div>
-              <dt className="font-medium text-muted-foreground">Marque concernée</dt>
+              <dt className="font-medium text-muted-foreground">{t("trends.analysisTrigger.targetBrandLabel")}</dt>
               <dd className="text-foreground">{analysis.result.targetBrand}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Plateforme suggérée</dt>
+              <dt className="font-medium text-muted-foreground">{t("trends.analysisTrigger.suggestedPlatformLabel")}</dt>
               <dd className="text-foreground">{analysis.result.suggestedPlatform}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Types de contenu</dt>
-              <dd className="text-foreground">{analysis.result.suggestedContentTypes.join(", ") || "—"}</dd>
+              <dt className="font-medium text-muted-foreground">{t("trends.analysisTrigger.contentTypesLabel")}</dt>
+              <dd className="text-foreground">{analysis.result.suggestedContentTypes.join(", ") || t("trends.common.emptyValue")}</dd>
             </div>
             <div>
-              <dt className="font-medium text-muted-foreground">Formats</dt>
-              <dd className="text-foreground">{analysis.result.suggestedFormats.join(", ") || "—"}</dd>
+              <dt className="font-medium text-muted-foreground">{t("trends.analysisTrigger.formatsLabel")}</dt>
+              <dd className="text-foreground">{analysis.result.suggestedFormats.join(", ") || t("trends.common.emptyValue")}</dd>
             </div>
           </dl>
           <div>
-            <p className="font-medium text-muted-foreground">Risques à éviter</p>
+            <p className="font-medium text-muted-foreground">{t("trends.analysisTrigger.risksLabel")}</p>
             <p className="text-foreground">{analysis.result.risks}</p>
           </div>
         </div>

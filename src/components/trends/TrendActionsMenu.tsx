@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { useDevelopIdea } from "@/lib/develop-idea";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useIdeaNotesSession } from "@/lib/idea-notes-store";
 import { plainTextToDocument } from "@/lib/rich-document";
 import { useSavedTrendsSession } from "@/lib/saved-trends-store";
@@ -24,6 +25,7 @@ export interface TrendActionContext {
  * plus une Idée ou une Note via les magasins déjà existants, avec confirmation explicite.
  */
 export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; context: TrendActionContext }) {
+  const t = useTranslations();
   const router = useRouter();
   const { userId } = useWorkspaceSession();
   const { saveTrend } = useSavedTrendsSession();
@@ -44,7 +46,7 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
 
   function handleSave(status: "saved" | "hidden" | "not_relevant", confirmLabel: string) {
     if (!userId) {
-      notify("Session en cours de chargement — réessayez dans un instant.");
+      notify(t("trends.actionsMenu.sessionLoadingNotice"));
       return close();
     }
     if (!window.confirm(confirmLabel)) return close();
@@ -52,7 +54,13 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
       { brandId: context.brandId, provider: trend.provider, externalId: trend.externalId, title: trend.title, sourceUrl: trend.url, status },
       userId
     );
-    notify(status === "saved" ? "Tendance enregistrée." : status === "hidden" ? "Tendance masquée." : "Marquée non pertinente.");
+    notify(
+      status === "saved"
+        ? t("trends.actionsMenu.savedNotice")
+        : status === "hidden"
+          ? t("trends.actionsMenu.hiddenNotice")
+          : t("trends.actionsMenu.notRelevantNotice")
+    );
     close();
   }
 
@@ -82,10 +90,10 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
 
   function handleCreateNote() {
     if (!userId) {
-      notify("Session en cours de chargement — réessayez dans un instant.");
+      notify(t("trends.actionsMenu.sessionLoadingNotice"));
       return close();
     }
-    if (!window.confirm(`Créer une note dans la Banque d'idées à partir de « ${trend.title} » ?`)) return close();
+    if (!window.confirm(t("trends.actionsMenu.confirmCreateNote", { title: trend.title }))) return close();
     const now = new Date().toISOString();
     const note = {
       id: crypto.randomUUID(),
@@ -100,12 +108,12 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
       updatedAt: now,
     };
     addNote(note);
-    notify("Note créée — retrouvez-la dans l'onglet Notes de la Banque d'idées.");
+    notify(t("trends.actionsMenu.noteCreatedNotice"));
     close();
   }
 
   function handleCreatePublication() {
-    if (!window.confirm(`Créer une idée dans la Banque et ouvrir l'Atelier pour « ${trend.title} » ?`)) return close();
+    if (!window.confirm(t("trends.actionsMenu.confirmCreatePublication", { title: trend.title }))) return close();
     const idea = buildIdeaFromTrend();
     addIdea(idea);
     close();
@@ -117,7 +125,7 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
     // idées — une idée doit d'abord passer par l'Atelier pour qu'on lui assigne un format complet
     // et une date. Rediriger directement vers /calendrier ici créait l'idée sans jamais l'y faire
     // apparaître. Même parcours que « Créer une publication » ci-dessus.
-    if (!window.confirm(`Créer une idée dans la Banque à partir de « ${trend.title} » et ouvrir l'Atelier pour la planifier ?`)) return close();
+    if (!window.confirm(t("trends.actionsMenu.confirmAddToCalendar", { title: trend.title }))) return close();
     const idea = buildIdeaFromTrend();
     addIdea(idea);
     close();
@@ -125,10 +133,10 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
   }
 
   async function handleReport() {
-    const reason = window.prompt(`Signaler « ${trend.title} » comme incorrecte — pourquoi (facultatif) ?`);
+    const reason = window.prompt(t("trends.actionsMenu.reportPrompt", { title: trend.title }));
     if (reason === null) return close(); // annulé
     const outcome = await reportIncorrectInformation({ itemId: trend.id, sourceUrl: trend.url, reason: reason || undefined });
-    notify(outcome.status === "ok" ? "Signalement enregistré, merci." : "Le signalement n'a pas pu être envoyé.");
+    notify(outcome.status === "ok" ? t("trends.actionsMenu.reportSentNotice") : t("trends.actionsMenu.reportFailedNotice"));
     close();
   }
 
@@ -141,7 +149,7 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
         aria-expanded={isOpen}
         className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
       >
-        Actions
+        {t("trends.actionsMenu.actionsButton")}
       </button>
 
       {feedback && <p className="absolute -bottom-6 left-0 whitespace-nowrap text-[11px] text-emerald-600 dark:text-emerald-400">{feedback}</p>}
@@ -150,10 +158,16 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
         <>
           <div className="fixed inset-0 z-10" onClick={close} aria-hidden="true" />
           <div role="menu" className="absolute right-0 z-20 mt-1 w-64 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-lg">
-            <MenuButton onClick={() => handleSave("saved", `Enregistrer « ${trend.title} » ?`)}>Enregistrer</MenuButton>
-            <MenuButton onClick={() => handleSave("hidden", `Masquer « ${trend.title} » de vos listes ?`)}>Masquer</MenuButton>
-            <MenuButton onClick={() => handleSave("not_relevant", `Marquer « ${trend.title} » comme non pertinente ?`)}>Non pertinente</MenuButton>
-            <MenuButton onClick={handleReport}>Signaler une information incorrecte</MenuButton>
+            <MenuButton onClick={() => handleSave("saved", t("trends.actionsMenu.confirmSave", { title: trend.title }))}>
+              {t("common.save")}
+            </MenuButton>
+            <MenuButton onClick={() => handleSave("hidden", t("trends.actionsMenu.confirmHide", { title: trend.title }))}>
+              {t("trends.actionsMenu.hide")}
+            </MenuButton>
+            <MenuButton onClick={() => handleSave("not_relevant", t("trends.actionsMenu.confirmNotRelevant", { title: trend.title }))}>
+              {t("trends.actionsMenu.notRelevant")}
+            </MenuButton>
+            <MenuButton onClick={handleReport}>{t("trends.actionsMenu.reportIncorrect")}</MenuButton>
             <a
               href={trend.url}
               target="_blank"
@@ -162,13 +176,13 @@ export function TrendActionsMenu({ trend, context }: { trend: DisplayableTrend; 
               onClick={close}
               className="block w-full rounded-lg px-3 py-1.5 text-left text-sm text-foreground hover:bg-muted"
             >
-              Voir la source
+              {t("trends.actionsMenu.viewSource")}
             </a>
             <div className="my-1 border-t border-border" />
-            <MenuButton onClick={handleGenerateIdeas}>Générer des idées</MenuButton>
-            <MenuButton onClick={handleCreateNote}>Créer une note</MenuButton>
-            <MenuButton onClick={handleCreatePublication}>Créer une publication</MenuButton>
-            <MenuButton onClick={handleAddToCalendar}>Ajouter au calendrier</MenuButton>
+            <MenuButton onClick={handleGenerateIdeas}>{t("trends.actionsMenu.generateIdeas")}</MenuButton>
+            <MenuButton onClick={handleCreateNote}>{t("trends.actionsMenu.createNote")}</MenuButton>
+            <MenuButton onClick={handleCreatePublication}>{t("trends.actionsMenu.createPublication")}</MenuButton>
+            <MenuButton onClick={handleAddToCalendar}>{t("trends.actionsMenu.addToCalendar")}</MenuButton>
           </div>
         </>
       )}

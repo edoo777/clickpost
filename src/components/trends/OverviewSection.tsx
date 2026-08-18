@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DisplayableTrend } from "@/components/trends/displayable-trend";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { TrendActionContext } from "@/components/trends/TrendActionsMenu";
 import { TrendCard } from "@/components/trends/TrendCard";
 import type { NewsSectionState } from "@/components/trends/PlatformNewsSection";
@@ -32,6 +33,7 @@ export function OverviewSection({
   themeLabels: string[];
   onOpenAdvice: () => void;
 }) {
+  const t = useTranslations();
   const [globalWebResults, setGlobalWebResults] = useState<DisplayableTrend[] | null>(null);
   const [searchCount, setSearchCount] = useState(0);
   const youtubeItems: DisplayableTrend[] =
@@ -56,8 +58,8 @@ export function OverviewSection({
   });
 
   const sources = [
-    youtube.result?.status === "ok" ? "YouTube Data API v3" : null,
-    news.result ? "Flux officiels des plateformes (YouTube, Meta Newsroom, Pinterest Newsroom)" : null,
+    youtube.result?.status === "ok" ? t("trends.filterBar.sourceYoutubeApiOption") : null,
+    news.result ? t("trends.overview.officialFeedsSourceLabel") : null,
   ].filter((value): value is string => Boolean(value));
 
   const lastUpdatedCandidates = [youtube.result?.collectedAt, news.result?.collectedAt].filter((value): value is string => Boolean(value));
@@ -67,17 +69,21 @@ export function OverviewSection({
     <div className="flex flex-col gap-6">
       <div className="rounded-2xl border border-border bg-surface p-4">
         <p className="text-xs text-muted-foreground">
-          Dernière actualisation : {lastUpdated ? new Date(lastUpdated).toLocaleString("fr-CA") : "—"}
+          {t("trends.overview.lastUpdatedLabel", {
+            date: lastUpdated ? new Date(lastUpdated).toLocaleString("fr-CA") : t("trends.common.emptyValue"),
+          })}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Sources utilisées : {sources.length > 0 ? sources.join(" · ") : "aucune donnée collectée pour l'instant"}
+          {t("trends.overview.sourcesUsedLabel", {
+            sources: sources.length > 0 ? sources.join(" · ") : t("trends.overview.noSourcesYet"),
+          })}
         </p>
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Tendances YouTube importantes</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("trends.overview.youtubeSectionTitle")}</h2>
         {youtubeItems.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Aucune donnée disponible pour l&apos;instant — voir l&apos;onglet YouTube.</p>
+          <p className="text-xs text-muted-foreground">{t("trends.overview.noYoutubeData")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {youtubeItems.map((trend) => (
@@ -96,9 +102,9 @@ export function OverviewSection({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Actualités récentes des plateformes</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("trends.overview.newsSectionTitle")}</h2>
         {newsItems.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Aucune donnée disponible pour l&apos;instant — voir l&apos;onglet Actualités.</p>
+          <p className="text-xs text-muted-foreground">{t("trends.overview.noNewsData")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {newsItems.map((trend) => (
@@ -109,13 +115,10 @@ export function OverviewSection({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Sujets pertinents pour la marque active</h2>
-        <p className="text-xs text-muted-foreground">
-          Correspondance textuelle simple avec votre niche/thématique active — pas une analyse IA. Utilisez
-          « Analyser avec Claude » sur un élément pour une explication réelle.
-        </p>
+        <h2 className="text-sm font-semibold text-foreground">{t("trends.overview.relevantSectionTitle")}</h2>
+        <p className="text-xs text-muted-foreground">{t("trends.overview.relevantHint")}</p>
         {relevantItems.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Aucune correspondance textuelle trouvée pour l&apos;instant.</p>
+          <p className="text-xs text-muted-foreground">{t("trends.overview.noRelevantMatch")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {relevantItems.map((trend) => (
@@ -127,22 +130,19 @@ export function OverviewSection({
 
       <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Veille Web — recherche globale</h2>
-          <p className="text-xs text-muted-foreground">
-            Complète les sources officielles quand elles ne suffisent pas — une seule recherche couvrant plusieurs
-            plateformes à la fois, jamais automatique.
-          </p>
+          <h2 className="text-sm font-semibold text-foreground">{t("trends.overview.webSearchSectionTitle")}</h2>
+          <p className="text-xs text-muted-foreground">{t("trends.overview.webSearchHint")}</p>
         </div>
         <WebSearchTrigger
           params={{ mode: "global", focus: "platform_trends", platforms: ALL_WEB_SEARCH_PLATFORMS, niche, themeLabels, period: "7d" }}
-          label="Rechercher les tendances (toutes plateformes)"
+          label={t("trends.overview.webSearchAllPlatformsLabel")}
           onResults={(items) => {
             setGlobalWebResults(items);
             setSearchCount((prev) => prev + 1);
           }}
         />
         {globalWebResults && globalWebResults.length === 0 && (
-          <p className="text-xs text-muted-foreground">Aucun signal récent suffisamment fiable n&apos;a été détecté.</p>
+          <p className="text-xs text-muted-foreground">{t("trends.noSignalState.message")}</p>
         )}
         {globalWebResults && globalWebResults.length > 0 && (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -155,18 +155,14 @@ export function OverviewSection({
       </section>
 
       <section className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4">
-        <h2 className="text-sm font-semibold text-foreground">Opportunités recommandées</h2>
-        <p className="text-xs text-muted-foreground">
-          Aucune opportunité n&apos;est générée automatiquement ici — ouvrez l&apos;onglet « Conseils personnalisés » et
-          sélectionnez un élément déjà collecté pour obtenir une analyse Claude réelle (pertinence, contenu, format,
-          plateforme, risques).
-        </p>
+        <h2 className="text-sm font-semibold text-foreground">{t("trends.overview.opportunitiesTitle")}</h2>
+        <p className="text-xs text-muted-foreground">{t("trends.overview.opportunitiesHint")}</p>
         <button
           type="button"
           onClick={onOpenAdvice}
           className="w-fit rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1.5 text-xs font-semibold text-white"
         >
-          Ouvrir Conseils personnalisés
+          {t("trends.overview.openAdviceButton")}
         </button>
       </section>
     </div>

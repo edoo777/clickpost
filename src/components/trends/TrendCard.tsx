@@ -5,6 +5,7 @@ import type { DisplayableTrend } from "@/components/trends/displayable-trend";
 import { SourceBadge } from "@/components/trends/SourceBadge";
 import { TrendActionsMenu, type TrendActionContext } from "@/components/trends/TrendActionsMenu";
 import { TrendAnalysisTrigger } from "@/components/trends/TrendAnalysisTrigger";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { formatFreshness } from "@/lib/trends/freshness";
 
 export function TrendCard({
@@ -22,6 +23,7 @@ export function TrendCard({
   themeLabels: string[];
   cacheAgeMs?: number;
 }) {
+  const t = useTranslations();
   const [showWhy, setShowWhy] = useState(false);
   const corroboratingCount = trend.corroboratingSources?.length ?? 0;
 
@@ -46,10 +48,14 @@ export function TrendCard({
 
       <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
         <span className="rounded-full border border-border px-2 py-0.5 font-medium">{trend.sourceName}</span>
-        <span>Collecté {formatFreshness(trend.collectedAt, cacheAgeMs)}</span>
-        {trend.publishedAt && <span>· Publié le {new Date(trend.publishedAt).toLocaleDateString("fr-CA")}</span>}
-        {trend.searchedAt && <span>· Recherché {formatFreshness(trend.searchedAt)}</span>}
-        {corroboratingCount > 0 && <span>· +{corroboratingCount} source{corroboratingCount > 1 ? "s" : ""} corroborante{corroboratingCount > 1 ? "s" : ""}</span>}
+        <span>{t("trends.card.collectedPrefix", { freshness: formatFreshness(trend.collectedAt, cacheAgeMs) })}</span>
+        {trend.publishedAt && (
+          <span>{t("trends.card.publishedPrefix", { date: new Date(trend.publishedAt).toLocaleDateString("fr-CA") })}</span>
+        )}
+        {trend.searchedAt && <span>{t("trends.card.searchedPrefix", { freshness: formatFreshness(trend.searchedAt) })}</span>}
+        {corroboratingCount > 0 && (
+          <span>{t("trends.card.corroboratingSources", { count: corroboratingCount, plural: corroboratingCount > 1 ? "s" : "" })}</span>
+        )}
       </div>
 
       {trend.relevanceJustification && (
@@ -59,7 +65,7 @@ export function TrendCard({
             onClick={() => setShowWhy((prev) => !prev)}
             className="w-fit text-[11px] font-medium text-violet-700 hover:underline dark:text-violet-300"
           >
-            {showWhy ? "Masquer la justification" : "Pourquoi cette information est pertinente"}
+            {showWhy ? t("trends.card.hideJustification") : t("trends.card.whyRelevant")}
           </button>
           {showWhy && (
             <p className="rounded-lg bg-violet-50/60 px-3 py-2 text-xs text-foreground dark:bg-violet-500/[.06]">

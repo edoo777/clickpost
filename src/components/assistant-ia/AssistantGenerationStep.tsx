@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { generateIdeasFromCalendar, type CalendarGeneratedIdeaPreview } from "@/lib/calendar-generation";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { useFormatLabel, useWeekdayLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { BrandProfile } from "@/types/brand";
 import type { EditorialWeekPlan } from "@/types/editorial-calendar";
@@ -46,6 +47,7 @@ export function AssistantGenerationStep({
   onBack,
   onComplete,
 }: AssistantGenerationStepProps) {
+  const t = useTranslations();
   const { addIdea } = useContentWorkspace();
   const [startDate, setStartDate] = useState(todayInputValue());
   const [weekCount, setWeekCount] = useState(2);
@@ -91,15 +93,15 @@ export function AssistantGenerationStep({
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div>
-        <h2 className="text-sm font-semibold text-foreground ">Étape 3 · Génération</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("assistant.generation.stepTitle")}</h2>
         <p className="text-sm text-muted-foreground ">
-          Ajustez la période si besoin, puis validez pour créer les idées proposées pour {brand.name}.
+          {t("assistant.generation.subtitle", { name: brand.name })}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Date de départ
+          {t("calendar.generation.startDateLabel")}
           <input
             type="date"
             value={startDate}
@@ -108,7 +110,7 @@ export function AssistantGenerationStep({
           />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Nombre de semaines
+          {t("calendar.generation.weekCountLabel")}
           <input
             type="number"
             min={1}
@@ -122,12 +124,12 @@ export function AssistantGenerationStep({
 
       {previews.length === 0 ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
-          Aucune idée à générer sur cette période avec ce plan de semaine.
+          {t("assistant.generation.emptyPreview")}
         </p>
       ) : (
         <>
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {previews.length} idée{previews.length > 1 ? "s" : ""} seront créées
+            {t("calendar.generation.ideasWillBeCreated", { count: previews.length, plural: previews.length > 1 ? "s" : "" })}
           </p>
           <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
             {grouped.map(([dateKey, dayPreviews]) => (
@@ -148,7 +150,7 @@ export function AssistantGenerationStep({
                       </span>
                       {preview.isDuplicate && (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-                          Doublon possible
+                          {t("calendar.generation.possibleDuplicate")}
                         </span>
                       )}
                     </li>
@@ -166,7 +168,7 @@ export function AssistantGenerationStep({
           onClick={onBack}
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
         >
-          Retour
+          {t("common.back")}
         </button>
         <button
           type="button"
@@ -174,7 +176,7 @@ export function AssistantGenerationStep({
           onClick={handleConfirm}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:shadow-fuchsia-500/10"
         >
-          Créer les {previews.length} idée{previews.length > 1 ? "s" : ""}
+          {t("calendar.generation.createIdeasButton", { count: previews.length, plural: previews.length > 1 ? "s" : "" })}
         </button>
       </div>
     </div>

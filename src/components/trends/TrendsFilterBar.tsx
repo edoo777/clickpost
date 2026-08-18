@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import { TREND_REGIONS } from "@/lib/trends/regions";
 import type { Brand } from "@/types/brand";
@@ -21,13 +22,6 @@ export interface TrendFilters {
   contentType: string;
   source: TrendSourceFilter;
 }
-
-const PERIOD_LABEL: Record<TrendPeriod, string> = {
-  "24h": "24 dernières heures",
-  "7d": "7 derniers jours",
-  "30d": "30 derniers jours",
-  all: "Toute période",
-};
 
 const PLATFORM_OPTIONS: SocialPlatform[] = ["youtube", "instagram", "facebook", "tiktok", "linkedin", "x", "pinterest", "threads"];
 
@@ -64,7 +58,14 @@ export function TrendsFilterBar({
   activeBrand: Brand | null;
   brandThemes: Theme[];
 }) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
+  const PERIOD_LABEL: Record<TrendPeriod, string> = {
+    "24h": t("trends.filterBar.period24h"),
+    "7d": t("trends.filterBar.period7d"),
+    "30d": t("trends.filterBar.period30d"),
+    all: t("trends.filterBar.periodAll"),
+  };
   function patch(partial: Partial<TrendFilters>) {
     onChange({ ...filters, ...partial });
   }
@@ -73,18 +74,18 @@ export function TrendsFilterBar({
     <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-niche">Niche</label>
+          <label className={labelClass} htmlFor="trend-niche">{t("trends.filterBar.nicheLabel")}</label>
           <input
             id="trend-niche"
             value={filters.niche}
             onChange={(event) => patch({ niche: event.target.value })}
-            placeholder="Ex. Fitness"
+            placeholder={t("trends.filterBar.nichePlaceholder")}
             className={`${selectClass} w-40`}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-theme">Thématique</label>
+          <label className={labelClass} htmlFor="trend-theme">{t("trends.filterBar.themeLabel")}</label>
           {brandThemes.length > 0 ? (
             <select
               id="trend-theme"
@@ -92,7 +93,7 @@ export function TrendsFilterBar({
               onChange={(event) => patch({ themeLabel: event.target.value })}
               className={`${selectClass} w-40`}
             >
-              <option value="">Toutes</option>
+              <option value="">{t("trends.filterBar.themeAllOption")}</option>
               {brandThemes.map((theme) => (
                 <option key={theme.id} value={theme.label}>{theme.label}</option>
               ))}
@@ -102,21 +103,21 @@ export function TrendsFilterBar({
               id="trend-theme"
               value={filters.themeLabel}
               onChange={(event) => patch({ themeLabel: event.target.value })}
-              placeholder="Libre"
+              placeholder={t("trends.filterBar.freeInputPlaceholder")}
               className={`${selectClass} w-40`}
             />
           )}
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-platform">Plateforme</label>
+          <label className={labelClass} htmlFor="trend-platform">{t("trends.filterBar.platformLabel")}</label>
           <select
             id="trend-platform"
             value={filters.platform}
             onChange={(event) => patch({ platform: event.target.value as SocialPlatform | "all" })}
             className={`${selectClass} w-36`}
           >
-            <option value="all">Toutes</option>
+            <option value="all">{t("trends.filterBar.platformAllOption")}</option>
             {PLATFORM_OPTIONS.map((platform) => (
               <option key={platform} value={platform}>{PLATFORM_LABEL[platform]}</option>
             ))}
@@ -124,7 +125,7 @@ export function TrendsFilterBar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-country">Pays</label>
+          <label className={labelClass} htmlFor="trend-country">{t("trends.filterBar.countryLabel")}</label>
           <select
             id="trend-country"
             value={filters.country}
@@ -138,7 +139,7 @@ export function TrendsFilterBar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-language">Langue</label>
+          <label className={labelClass} htmlFor="trend-language">{t("trends.filterBar.languageLabel")}</label>
           <input
             id="trend-language"
             value={filters.language}
@@ -149,7 +150,7 @@ export function TrendsFilterBar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-period">Période</label>
+          <label className={labelClass} htmlFor="trend-period">{t("trends.filterBar.periodLabel")}</label>
           <select
             id="trend-period"
             value={filters.period}
@@ -163,27 +164,27 @@ export function TrendsFilterBar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-content-type">Type de contenu</label>
+          <label className={labelClass} htmlFor="trend-content-type">{t("trends.filterBar.contentTypeLabel")}</label>
           <input
             id="trend-content-type"
             value={filters.contentType}
             onChange={(event) => patch({ contentType: event.target.value })}
-            placeholder="Libre"
+            placeholder={t("trends.filterBar.freeInputPlaceholder")}
             className={`${selectClass} w-32`}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className={labelClass} htmlFor="trend-source">Source</label>
+          <label className={labelClass} htmlFor="trend-source">{t("trends.filterBar.sourceLabel")}</label>
           <select
             id="trend-source"
             value={filters.source}
             onChange={(event) => patch({ source: event.target.value as TrendSourceFilter })}
             className={`${selectClass} w-44`}
           >
-            <option value="all">Toutes les sources</option>
-            <option value="youtube-api">YouTube Data API v3</option>
-            <option value="official-feed">Flux officiels des plateformes</option>
+            <option value="all">{t("trends.filterBar.sourceAllOption")}</option>
+            <option value="youtube-api">{t("trends.filterBar.sourceYoutubeApiOption")}</option>
+            <option value="official-feed">{t("trends.filterBar.sourceOfficialFeedOption")}</option>
           </select>
         </div>
 
@@ -192,14 +193,12 @@ export function TrendsFilterBar({
           onClick={() => onChange(buildDefaultFilters(activeBrand, brandThemes))}
           className="ml-auto rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted"
         >
-          Réinitialiser à la marque active
+          {t("trends.filterBar.resetButton")}
         </button>
       </div>
 
       {!activeBrand && (
-        <p className="text-xs text-muted-foreground">
-          Aucune marque active — les filtres restent vides jusqu&apos;à ce que vous les renseigniez manuellement.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("trends.filterBar.noActiveBrandNotice")}</p>
       )}
     </div>
   );

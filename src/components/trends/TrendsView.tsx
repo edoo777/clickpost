@@ -18,19 +18,19 @@ import { dedupeDisplayable, newsItemToDisplayable, trendItemToDisplayable } from
 
 type TrendsTab = "overview" | "youtube" | "news" | "advice" | "music";
 
-const TABS: { key: TrendsTab; label: string }[] = [
-  { key: "overview", label: "Vue d'ensemble" },
-  { key: "youtube", label: "Tendances YouTube" },
-  { key: "news", label: "Actualités des plateformes" },
-  { key: "advice", label: "Conseils personnalisés" },
-  { key: "music", label: "Musiques et sons" },
-];
-
 export function TrendsView() {
   const t = useTranslations();
   const { activeBrand } = useBrandsSession();
   const { themes } = useThemesSession();
   const brandThemes = activeBrand ? getActiveThemesForBrand(themes, activeBrand.id) : [];
+
+  const TABS: { key: TrendsTab; label: string }[] = [
+    { key: "overview", label: t("trends.view.tabOverview") },
+    { key: "youtube", label: t("trends.view.tabYoutube") },
+    { key: "news", label: t("trends.view.tabNews") },
+    { key: "advice", label: t("trends.view.tabAdvice") },
+    { key: "music", label: t("trends.view.tabMusic") },
+  ];
 
   const [tab, setTab] = useState<TrendsTab>("overview");
   const [filters, setFilters] = useState<TrendFilters>(() => buildDefaultFilters(activeBrand, brandThemes));
@@ -110,10 +110,7 @@ export function TrendsView() {
           </span>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.trends")}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Sources officielles, publiques et traçables uniquement — YouTube Data API v3 et flux officiels des
-          plateformes. Aucune donnée inventée, aucun scraping, aucun faux temps réel.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("trends.view.subtitle")}</p>
       </header>
 
       <TrendsFilterBar filters={filters} onChange={setFilters} activeBrand={activeBrand} brandThemes={brandThemes} />

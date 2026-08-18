@@ -8,6 +8,7 @@ import { TrendCard } from "@/components/trends/TrendCard";
 import type { TrendFilters } from "@/components/trends/TrendsFilterBar";
 import { WebSearchNoSignalState } from "@/components/trends/WebSearchNoSignalState";
 import { WebSearchTrigger } from "@/components/trends/WebSearchTrigger";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import { CACHE_TTL_NEWS_MS } from "@/lib/trends/cache";
 import type { PlatformNewsResponse } from "@/lib/trends/client";
@@ -45,16 +46,14 @@ export function PlatformNewsSection({
   // undefined = jamais recherché ; [] = recherché, aucun signal fiable ; sinon résultats affichés.
   const [webResultsByPlatform, setWebResultsByPlatform] = useState<Partial<Record<SocialPlatform, DisplayableTrend[]>>>({});
   const PLATFORM_LABEL = usePlatformLabel();
+  const t = useTranslations();
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Actualités des plateformes</h2>
-          <p className="text-xs text-muted-foreground">
-            Annonces officielles (fonctionnalités, algorithmes, monétisation, règles, droits d&apos;auteur, API). Quand
-            aucune source officielle n&apos;existe, une veille Web vérifiée peut être lancée manuellement.
-          </p>
+          <h2 className="text-sm font-semibold text-foreground">{t("trends.platformNews.title")}</h2>
+          <p className="text-xs text-muted-foreground">{t("trends.platformNews.subtitle")}</p>
         </div>
         <button
           type="button"
@@ -62,11 +61,11 @@ export function PlatformNewsSection({
           disabled={state.status === "loading"}
           className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60"
         >
-          {state.status === "loading" ? "Actualisation…" : "Actualiser"}
+          {state.status === "loading" ? t("trends.common.refreshing") : t("trends.common.refresh")}
         </button>
       </div>
 
-      {state.status === "loading" && !state.result && <p className="text-xs text-muted-foreground">Chargement…</p>}
+      {state.status === "loading" && !state.result && <p className="text-xs text-muted-foreground">{t("common.loading")}</p>}
 
       <div className="flex flex-col gap-5">
         {platforms.map((platform) => {
@@ -80,7 +79,7 @@ export function PlatformNewsSection({
                 {PLATFORM_LABEL[platform]}
                 {platformResult?.status === "ok" && isStale(platformResult.cacheAgeMs, CACHE_TTL_NEWS_MS) && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium normal-case text-amber-800 dark:bg-amber-500/10 dark:text-amber-400">
-                    Données périmées — cliquez sur Actualiser
+                    {t("trends.common.staleDataNotice")}
                   </span>
                 )}
               </h3>
@@ -108,9 +107,9 @@ export function PlatformNewsSection({
               {!hasOfficialResults && (
                 <>
                   {!platformResult ? (
-                    <p className="text-xs text-muted-foreground">—</p>
+                    <p className="text-xs text-muted-foreground">{t("trends.common.emptyValue")}</p>
                   ) : platformResult.status === "ok" ? (
-                    <p className="text-xs text-muted-foreground">Aucune actualité récente pour cette source officielle.</p>
+                    <p className="text-xs text-muted-foreground">{t("trends.platformNews.noRecentNews")}</p>
                   ) : (
                     <ProviderStateBanner status={platformResult.status} message={platformResult.message} />
                   )}
