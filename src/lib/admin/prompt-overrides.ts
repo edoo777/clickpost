@@ -57,6 +57,7 @@ export async function listPromptOverrides(): Promise<PromptOverride[]> {
       extraInstructions: (row?.extra_instructions as string | undefined) ?? "",
       previousExtraInstructions: (row?.previous_extra_instructions as string | null | undefined) ?? null,
       updatedAt: (row?.updated_at as string | undefined) ?? null,
+      version: (row?.version as number | undefined) ?? 1,
     };
   });
 }
@@ -70,7 +71,8 @@ export interface SavePromptOverrideInput {
 
 export async function savePromptOverride(key: PromptOverrideKey, input: SavePromptOverrideInput, updatedBy: string): Promise<void> {
   const supabase = createSupabaseServiceRoleClient();
-  const { data: existing } = await supabase.from("prompt_overrides").select("extra_instructions").eq("key", key).maybeSingle();
+  const { data: existing } = await supabase.from("prompt_overrides").select("extra_instructions, version").eq("key", key).maybeSingle();
+  const currentVersion = (existing?.version as number | undefined) ?? 0;
   await supabase.from("prompt_overrides").upsert({
     key,
     name: input.name,
@@ -78,6 +80,7 @@ export async function savePromptOverride(key: PromptOverrideKey, input: SaveProm
     system_prompt_override: input.systemPromptOverride,
     extra_instructions: input.extraInstructions,
     previous_extra_instructions: existing?.extra_instructions ?? null,
+    version: currentVersion + 1,
     updated_at: new Date().toISOString(),
     updated_by: updatedBy,
   });

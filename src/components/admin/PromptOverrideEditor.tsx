@@ -61,7 +61,7 @@ export function PromptOverrideEditor({ override }: { override: PromptOverride })
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Fonction : {PROMPT_OVERRIDE_LABELS[override.key]} · identifiant : {override.key}
+            Fonction : {PROMPT_OVERRIDE_LABELS[override.key]} · identifiant : {override.key} · version {override.version}
           </span>
           <input
             value={name}

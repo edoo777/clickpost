@@ -26,4 +26,7 @@ export interface PromptOverride {
   extraInstructions: string;
   previousExtraInstructions: string | null;
   updatedAt: string | null;
+  /** Incrémentée à chaque enregistrement réel depuis l'espace Admin — jamais modifiée par la
+   * restauration de l'instruction précédente, qui reste une action distincte. */
+  version: number;
 }
