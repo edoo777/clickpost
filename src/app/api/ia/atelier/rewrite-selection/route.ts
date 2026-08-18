@@ -5,6 +5,7 @@ import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildRewriteSelectionPrompt } from "@/lib/ai/rewrite-selection-prompt";
 import { validateRewriteSelectionRequest } from "@/lib/ai/validate-rewrite-selection-request";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import type { Brand } from "@/types/brand";
@@ -56,10 +57,12 @@ export async function POST(request: Request) {
     if (themeRow) theme = mapRowToRecord(themeRow) as unknown as Theme;
   }
 
+  const language = await getUserLocale(supabase, user.id);
   const prompt = buildRewriteSelectionPrompt({
     context: { idea, brand, theme, tone: idea.tone ?? "professional", length: "medium", instructions: "" },
     selectedText,
     instruction,
+    language,
   });
 
   try {

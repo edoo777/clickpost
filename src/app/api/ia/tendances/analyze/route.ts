@@ -4,6 +4,7 @@ import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { buildTrendAnalysisPrompt } from "@/lib/ai/trend-analysis-prompt";
 import { validateTrendAnalysisRequest } from "@/lib/ai/validate-trend-analysis-request";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
@@ -44,7 +45,8 @@ export async function POST(request: Request) {
     return errorResponse("not_configured", "Intégration Claude non configurée sur ce serveur.", 503);
   }
 
-  const prompt = buildTrendAnalysisPrompt(validation.value);
+  const language = await getUserLocale(supabase, user.id);
+  const prompt = buildTrendAnalysisPrompt(validation.value, language);
 
   try {
     const client = getAnthropicClient();

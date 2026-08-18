@@ -1,4 +1,6 @@
 import type { NoteQuickActionKind, PublicationQuickActionKind, QuickActionKind } from "@/lib/ai/quick-actions";
+import { buildLanguageInstruction } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
 import type { SocialPlatform } from "@/types/dashboard";
 
 export interface QuickActionPromptInput {
@@ -32,12 +34,13 @@ const ACTION_INSTRUCTION: Record<QuickActionKind, string> = {
  * uniquement le client Anthropic serveur existant (voir la route associée) ; aucun second moteur
  * de génération n'est créé ici.
  */
-export function buildQuickActionPrompt(input: QuickActionPromptInput): QuickActionPrompt {
+export function buildQuickActionPrompt(input: QuickActionPromptInput, language: Locale): QuickActionPrompt {
   const isList = input.action === "three_angles";
   const system = [
-    "Tu es un assistant éditorial francophone. Tu reçois une idée de publication (titre et, le cas",
+    "Tu es un assistant éditorial. Tu reçois une idée de publication (titre et, le cas",
     "échéant, une description courte) et tu dois exécuter UNE SEULE action ciblée dessus, sans",
     "rien inventer d'autre et sans changer le sujet de l'idée.",
+    buildLanguageInstruction(language),
     ACTION_INSTRUCTION[input.action],
     isList
       ? 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["angle 1","angle 2","angle 3"]} — exactement trois éléments.'
@@ -80,12 +83,13 @@ const NOTE_ACTION_INSTRUCTION: Record<NoteQuickActionKind, string> = {
  * ou sélection), jamais sur un champ structuré unique. Même contrat de réponse JSON que
  * buildQuickActionPrompt, pour rester analysable par la même route serveur.
  */
-export function buildNoteQuickActionPrompt(input: NoteQuickActionPromptInput): QuickActionPrompt {
+export function buildNoteQuickActionPrompt(input: NoteQuickActionPromptInput, language: Locale): QuickActionPrompt {
   const isList = input.action === "note_three_angles";
   const system = [
-    "Tu es un assistant éditorial francophone. Tu reçois un texte libre écrit par l'utilisateur",
+    "Tu es un assistant éditorial. Tu reçois un texte libre écrit par l'utilisateur",
     "(éventuellement précédé d'un titre) et tu dois exécuter UNE SEULE action ciblée dessus, sans",
     "rien inventer d'autre et sans changer le sujet.",
+    buildLanguageInstruction(language),
     NOTE_ACTION_INSTRUCTION[input.action],
     isList
       ? 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["angle 1","angle 2","angle 3"]} — exactement trois éléments.'
@@ -126,12 +130,13 @@ const PUBLICATION_ACTION_INSTRUCTION: Record<PublicationQuickActionKind, string>
  * catalogue, même contrat de réponse JSON {"items":[...]} que les deux précédents, pour rester
  * analysable par la même route serveur sans logique dupliquée.
  */
-export function buildPublicationQuickActionPrompt(input: PublicationQuickActionPromptInput): QuickActionPrompt {
+export function buildPublicationQuickActionPrompt(input: PublicationQuickActionPromptInput, language: Locale): QuickActionPrompt {
   const isList = input.action === "publication_more_hooks" || input.action === "publication_generate_hashtags";
   const system = [
-    "Tu es un assistant éditorial francophone pour les réseaux sociaux. Tu reçois les champs d'une",
+    "Tu es un assistant éditorial pour les réseaux sociaux. Tu reçois les champs d'une",
     "publication en cours de rédaction et tu dois exécuter UNE SEULE action ciblée dessus, sans rien",
     "inventer d'autre et sans changer le sujet.",
+    buildLanguageInstruction(language),
     PUBLICATION_ACTION_INSTRUCTION[input.action],
     input.action === "publication_more_hooks"
       ? 'Réponds UNIQUEMENT avec un JSON valide, sans texte avant ou après : {"items":["accroche 1","accroche 2","accroche 3"]} — exactement trois éléments.'

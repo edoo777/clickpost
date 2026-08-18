@@ -15,6 +15,7 @@ import {
   validatePublicationQuickActionRequest,
   validateQuickActionRequest,
 } from "@/lib/ai/validate-quick-action-request";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /** Action IA rapide et ciblée — sur un seul champ court d'une idée de la Banque, sur le contenu
@@ -58,25 +59,26 @@ export async function POST(request: Request) {
   let actionKey: string;
   let maxTokens: number;
   let maxItemLength: number;
+  const language = await getUserLocale(supabase, user.id);
 
   if (isNoteAction) {
     const validation = validateNoteQuickActionRequest(rawBody);
     if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
-    prompt = buildNoteQuickActionPrompt(validation.value);
+    prompt = buildNoteQuickActionPrompt(validation.value, language);
     actionKey = validation.value.action;
     maxTokens = MAX_TOKENS_NOTE;
     maxItemLength = MAX_ITEM_LENGTH_NOTE;
   } else if (isPublicationAction) {
     const validation = validatePublicationQuickActionRequest(rawBody);
     if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
-    prompt = buildPublicationQuickActionPrompt(validation.value);
+    prompt = buildPublicationQuickActionPrompt(validation.value, language);
     actionKey = validation.value.action;
     maxTokens = MAX_TOKENS_PUBLICATION;
     maxItemLength = MAX_ITEM_LENGTH_PUBLICATION;
   } else {
     const validation = validateQuickActionRequest(rawBody);
     if (!validation.valid) return errorResponse("invalid_request", validation.message, 400);
-    prompt = buildQuickActionPrompt(validation.value);
+    prompt = buildQuickActionPrompt(validation.value, language);
     actionKey = validation.value.action;
     maxTokens = MAX_TOKENS_FIELD;
     maxItemLength = MAX_ITEM_LENGTH_FIELD;

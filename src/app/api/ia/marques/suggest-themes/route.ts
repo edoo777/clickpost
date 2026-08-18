@@ -4,6 +4,7 @@ import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { parseThemeSuggestions } from "@/lib/ai/parse-theme-suggestions";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { buildSuggestThemesPrompt } from "@/lib/ai/suggest-themes-prompt";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 
@@ -54,14 +55,18 @@ export async function POST(request: Request) {
   const { data: themeRows } = await supabase.from("themes").select("label").eq("brand_id", brandId).is("deleted_at", null);
   const existingThemeLabels = (themeRows ?? []).map((row) => row.label as string).filter(Boolean);
 
-  const prompt = buildSuggestThemesPrompt({
-    brandName: brand.name,
-    niche: brand.industry,
-    subNiche: brand.subNiche,
-    positioning: brand.positioning,
-    targetAudience: brand.targetAudience,
-    existingThemeLabels,
-  });
+  const language = await getUserLocale(supabase, user.id);
+  const prompt = buildSuggestThemesPrompt(
+    {
+      brandName: brand.name,
+      niche: brand.industry,
+      subNiche: brand.subNiche,
+      positioning: brand.positioning,
+      targetAudience: brand.targetAudience,
+      existingThemeLabels,
+    },
+    language
+  );
 
   try {
     const client = getAnthropicClient();

@@ -1,5 +1,6 @@
 import type { AIGenerationContext } from "@/lib/assisted-generation";
-import { buildBrandContextLines, buildIdeaContextLines } from "@/lib/ai/prompt-context";
+import { buildBrandContextLines, buildIdeaContextLines, buildLanguageInstruction } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
 
 export interface RewriteSelectionPrompt {
   system: string;
@@ -16,11 +17,13 @@ export function buildRewriteSelectionPrompt(params: {
   context: AIGenerationContext;
   selectedText: string;
   instruction: string;
+  language: Locale;
 }): RewriteSelectionPrompt {
-  const { context, selectedText, instruction } = params;
+  const { context, selectedText, instruction, language } = params;
 
   const systemLines = [
-    "Tu es un rédacteur publicitaire francophone spécialisé dans les publications pour les réseaux sociaux.",
+    "Tu es un rédacteur publicitaire spécialisé dans les publications pour les réseaux sociaux.",
+    buildLanguageInstruction(language),
     "Tu dois réécrire uniquement le passage sélectionné fourni, selon l'instruction donnée, en respectant le contexte de marque.",
     ...buildBrandContextLines(context.brand),
     "Ne propose pas de contenu qui viole les interdits de la marque.",

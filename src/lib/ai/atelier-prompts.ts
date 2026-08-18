@@ -1,4 +1,6 @@
 import type { AIGenerationContext } from "@/lib/assisted-generation";
+import { buildLanguageInstruction } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
 
 export interface AtelierPrompt {
   system: string;
@@ -18,12 +20,13 @@ function joinList(items: string[] | undefined, fallback = "aucune"): string {
  * stricte (mêmes champs que `TextBody`) pour permettre une validation fiable côté route serveur,
  * sans dépendre d'un format libre à parser heuristiquement.
  */
-export function buildAtelierGenerationPrompt(context: AIGenerationContext): AtelierPrompt {
+export function buildAtelierGenerationPrompt(context: AIGenerationContext, language: Locale): AtelierPrompt {
   const { idea, brand, theme, tone, length, instructions } = context;
 
   const system = [
-    "Tu es un rédacteur publicitaire francophone qui écrit des publications pour les réseaux sociaux",
+    "Tu es un rédacteur publicitaire qui écrit des publications pour les réseaux sociaux",
     `d'une agence marketing, au nom de la marque « ${brand.name} » (secteur : ${brand.industry || "non précisé"}).`,
+    buildLanguageInstruction(language),
     brand.positioning ? `Positionnement : ${brand.positioning}.` : null,
     brand.valueProposition ? `Proposition de valeur : ${brand.valueProposition}.` : null,
     `Voix de la marque : ${brand.toneOfVoice || "non précisée"}.`,

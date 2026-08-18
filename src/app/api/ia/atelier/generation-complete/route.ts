@@ -12,6 +12,7 @@ import { parseAtelierResponse } from "@/lib/ai/parse-atelier-response";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { validateGenerationRequest } from "@/lib/ai/validate-generation-request";
 import type { AIGenerationContext } from "@/lib/assisted-generation";
+import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import type { Brand } from "@/types/brand";
@@ -66,8 +67,9 @@ export async function POST(request: Request) {
     if (themeRow) theme = mapRowToRecord(themeRow) as unknown as Theme;
   }
 
+  const language = await getUserLocale(supabase, user.id);
   const context: AIGenerationContext = { idea, brand, theme, tone, length, instructions };
-  const prompt = buildAtelierGenerationPrompt(context);
+  const prompt = buildAtelierGenerationPrompt(context, language);
 
   try {
     const client = getAnthropicClient();

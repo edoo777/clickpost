@@ -1,4 +1,6 @@
+import { buildLanguageInstruction } from "@/lib/ai/prompt-context";
 import type { ValidatedTrendAnalysisRequest } from "@/lib/ai/validate-trend-analysis-request";
+import type { Locale } from "@/lib/i18n/locale";
 
 export interface TrendAnalysisPrompt {
   system: string;
@@ -11,8 +13,10 @@ export interface TrendAnalysisPrompt {
  * supplémentaire : il explique uniquement la pertinence de la donnée fournie pour la marque/
  * niche fournie. Distinct visuellement côté UI (« Analyse Claude » vs « Donnée de la source »).
  */
-export function buildTrendAnalysisPrompt(input: ValidatedTrendAnalysisRequest): TrendAnalysisPrompt {
+export function buildTrendAnalysisPrompt(input: ValidatedTrendAnalysisRequest, language: Locale): TrendAnalysisPrompt {
   const system = `Tu es l'analyste tendances de ClickPost. Tu expliques la pertinence d'un élément déjà collecté depuis une source officielle, pour une marque donnée.
+
+${buildLanguageInstruction(language)}
 
 Règles strictes, non négociables :
 - Ne invente JAMAIS de statistique, de tendance supplémentaire, de source, de date ou de fait non présent dans les données fournies ci-dessous.

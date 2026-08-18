@@ -1,3 +1,6 @@
+import { buildLanguageInstruction } from "@/lib/ai/prompt-context";
+import type { Locale } from "@/lib/i18n/locale";
+
 export interface SuggestThemesPromptInput {
   brandName: string;
   niche: string;
@@ -16,11 +19,12 @@ const CONTENT_TYPE_EXAMPLES = "Conseil, Preuve, Offre, Témoignage, Opinion, Ét
 
 /** Prompt de suggestion de thématiques éditoriales — jamais de type de contenu (Conseil, Preuve…)
  * proposé comme thématique. Les suggestions ne sont jamais enregistrées automatiquement. */
-export function buildSuggestThemesPrompt(input: SuggestThemesPromptInput): SuggestThemesPrompt {
+export function buildSuggestThemesPrompt(input: SuggestThemesPromptInput, language: Locale): SuggestThemesPrompt {
   const system = [
-    "Tu es un stratège de contenu francophone. On te donne la niche et le positionnement d'une",
+    "Tu es un stratège de contenu. On te donne la niche et le positionnement d'une",
     "marque ; tu dois proposer des THÉMATIQUES ÉDITORIALES — des sujets qui découlent de la",
     "niche (ex. pour la niche Fitness : Musculation, Nutrition, Course à pied, Récupération).",
+    buildLanguageInstruction(language),
     "",
     `INTERDICTION ABSOLUE : ne propose jamais un type de contenu (angle éditorial, ex. ${CONTENT_TYPE_EXAMPLES}) comme thématique.`,
     "Une thématique est un sujet, jamais un angle de traitement.",
