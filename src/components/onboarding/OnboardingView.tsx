@@ -15,7 +15,9 @@ import {
   WorkspaceNameStep,
 } from "@/components/onboarding/OnboardingSteps";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
+import { recordProductEvent } from "@/lib/analytics/product-events";
 import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { ProfileRow, WorkspaceBrandingRow, WorkspaceRow } from "@/lib/supabase/types";
 
@@ -62,6 +64,13 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
     setDraftWorkspace(workspace);
     setDraftBranding(branding);
     setStep(Math.min(Math.max(workspace.onboarding_step, 1), TOTAL_STEPS));
+    if (!workspace.onboarding_completed && workspace.onboarding_step <= 1) {
+      void recordProductEvent(createSupabaseBrowserClient(), {
+        eventName: "onboarding_started",
+        userId: profile.id,
+        workspaceId: workspace.id,
+      });
+    }
   }
   const hasInitialized = Boolean(initializedFromId);
   const isAlreadyOnboarded = hasInitialized && Boolean(workspace?.onboarding_completed);
@@ -170,6 +179,13 @@ export function OnboardingView({ welcomeTitle, welcomeSubtitle }: OnboardingView
     if (error) {
       setErrorMessage(error);
       return;
+    }
+    if (draftProfile) {
+      void recordProductEvent(createSupabaseBrowserClient(), {
+        eventName: "onboarding_completed",
+        userId: draftProfile.id,
+        workspaceId: draftWorkspace?.id ?? null,
+      });
     }
     await refresh();
     router.push("/");

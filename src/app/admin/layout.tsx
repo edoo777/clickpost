@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Vue d'ensemble" },
+  { href: "/admin/kpi", label: "Business & KPI" },
   { href: "/admin/prompts", label: "Prompts IA" },
   { href: "/admin/textes", label: "Textes produit" },
   { href: "/admin/utilisateurs", label: "Utilisateurs & workspaces" },

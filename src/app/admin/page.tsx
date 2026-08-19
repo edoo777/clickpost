@@ -16,6 +16,7 @@ async function getCounts() {
 }
 
 const SECTIONS = [
+  { href: "/admin/kpi", title: "Business & KPI", description: "Activité, entonnoir, usage IA et répartition par plan/réseau — données réelles uniquement." },
   { href: "/admin/prompts", title: "Prompts IA", description: "Compléments de prompt par fonction (Copilote, Atelier, Générateur, Rapports)." },
   { href: "/admin/textes", title: "Textes produit", description: "Onboarding, messages système — un ensemble curé, pas exhaustif." },
   { href: "/admin/utilisateurs", title: "Utilisateurs & workspaces", description: "Vue de lecture simple, aucune action de gestion complexe." },

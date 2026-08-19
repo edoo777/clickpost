@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { setStoredActiveBrandId, useStoredActiveBrandId } from "@/lib/active-brand-store";
+import { recordProductEvent } from "@/lib/analytics/product-events";
 import type { ContentType } from "@/lib/content-types";
 import { useSyncedPersistedState } from "@/lib/sync/use-synced-state";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -137,6 +139,13 @@ export function BrandsSessionProvider({ children }: { children: ReactNode }) {
           revision: 1,
         };
         setBrands((prev) => [...prev, brand]);
+        if (userId) {
+          void recordProductEvent(createSupabaseBrowserClient(), {
+            eventName: "brand_created",
+            userId,
+            workspaceId: workspace?.id ?? null,
+          });
+        }
         return brand;
       },
       updateBrand: (id, patch) =>

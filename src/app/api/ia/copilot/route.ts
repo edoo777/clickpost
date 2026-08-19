@@ -6,6 +6,8 @@ import { buildCopilotPrompt } from "@/lib/ai/copilot-prompt";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { validateCopilotRequest } from "@/lib/ai/validate-copilot-request";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -68,6 +70,11 @@ export async function POST(request: Request) {
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
   const workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+  const quota = await checkAiQuota(workspaceId);
+  if (!quota.allowed) {
+    return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+  }
 
   const { data: accountRows } = await supabase.from("accounts").select("*").eq("brand_id", brandId);
   const connectedAccounts = Array.isArray(accountRows)
@@ -151,6 +158,15 @@ export async function POST(request: Request) {
 
     const textBlock = response.content.find((block): block is Anthropic.TextBlock => block.type === "text");
     if (!textBlock) return errorResponse("invalid_response", "Réponse Claude sans contenu texte.", 502);
+
+    await recordAiUsage(supabase, {
+      workspaceId,
+      userId: user.id,
+      featureKey: "copilot",
+      model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ status: "ok", text: textBlock.text } as CopilotApiSuccess);
   } catch (error) {

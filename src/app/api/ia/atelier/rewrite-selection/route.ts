@@ -5,6 +5,8 @@ import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildRewriteSelectionPrompt } from "@/lib/ai/rewrite-selection-prompt";
 import { validateRewriteSelectionRequest } from "@/lib/ai/validate-rewrite-selection-request";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -50,6 +52,12 @@ export async function POST(request: Request) {
   const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", idea.brandId).single();
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
+  const workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+  const quota = await checkAiQuota(workspaceId);
+  if (!quota.allowed) {
+    return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+  }
 
   let theme: Theme | undefined;
   if (idea.themeId) {
@@ -93,6 +101,15 @@ export async function POST(request: Request) {
     if (typeof parsed !== "object" || parsed === null || typeof (parsed as Record<string, unknown>).text !== "string") {
       return errorResponse("invalid_response", "Réponse Claude dans un format inattendu.", 502);
     }
+
+    await recordAiUsage(supabase, {
+      workspaceId,
+      userId: user.id,
+      featureKey: "atelier.rewrite_selection",
+      model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ status: "ok", text: (parsed as { text: string }).text });
   } catch (error) {

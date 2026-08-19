@@ -3,7 +3,9 @@ import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/
 import { classifyAnthropicError } from "@/lib/ai/classify-anthropic-error";
 import { buildPublicationGenerationPrompt } from "@/lib/ai/publication-generation-prompt";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
 import { validatePublicationGenerationRequest } from "@/lib/ai/validate-publication-generation-request";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import type { Brand } from "@/types/brand";
@@ -51,12 +53,21 @@ export async function POST(request: Request) {
   }
 
   // Contexte revérifié côté serveur — jamais le profil de marque fourni tel quel par le client.
+  // workspaceId absent en mode ponctuel (aucune marque sélectionnée) — aucun quota IA ni journal
+  // d'usage à imputer dans ce cas (voir ValidatedPublicationGenerationRequest.brandId).
   let brand: Brand | undefined;
+  let workspaceId: string | undefined;
   let connectedAccountHandles: string[] = [];
   if (input.brandId) {
     const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", input.brandId).single();
     if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
     brand = mapRowToRecord(brandRow) as unknown as Brand;
+    workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+    const quota = await checkAiQuota(workspaceId);
+    if (!quota.allowed) {
+      return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+    }
 
     const { data: accountRows } = await supabase.from("accounts").select("*").eq("brand_id", input.brandId);
     if (accountRows) {
@@ -150,6 +161,17 @@ export async function POST(request: Request) {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     });
+
+    if (workspaceId) {
+      await recordAiUsage(supabase, {
+        workspaceId,
+        userId: user.id,
+        featureKey: "publications.generate",
+        model,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      });
+    }
 
     return NextResponse.json({
       status: "ok",

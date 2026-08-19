@@ -6,6 +6,8 @@ import { buildAtelierPresetPrompt } from "@/lib/ai/atelier-preset-prompt";
 import { validateAtelierPresetRequest } from "@/lib/ai/validate-atelier-preset-request";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -92,6 +94,12 @@ export async function POST(request: Request) {
   const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", idea.brandId).single();
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
+  const workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+  const quota = await checkAiQuota(workspaceId);
+  if (!quota.allowed) {
+    return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+  }
 
   let theme: Theme | undefined;
   if (idea.themeId) {
@@ -136,6 +144,15 @@ export async function POST(request: Request) {
     } catch {
       return errorResponse("invalid_response", "Réponse Claude dans un format inattendu.", 502);
     }
+
+    await recordAiUsage(supabase, {
+      workspaceId,
+      userId: user.id,
+      featureKey: "atelier.preset",
+      model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     if (prompt.responseKind === "version") {
       if (!validateTextBody(parsed)) {

@@ -4,6 +4,7 @@ import { saveConnection } from "@/lib/linkedin/connections";
 import { cacheCallbackOutcome, getCachedCallbackOutcome } from "@/lib/linkedin/callback-idempotency";
 import { isWorkspaceAdmin } from "@/lib/linkedin/workspace-guard";
 import { LINKEDIN_MEMBER_SCOPES } from "@/lib/linkedin/config";
+import { recordProductEvent } from "@/lib/analytics/product-events";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
@@ -137,6 +138,15 @@ async function processCallback(code: string, state: string): Promise<string> {
       await supabase.from("accounts").update({ status: "error" }).eq("id", accountId);
     }
     return errorPath("token_storage_failed");
+  }
+
+  if (status === "connected") {
+    await recordProductEvent(supabase, {
+      eventName: "social_connected",
+      userId: user.id,
+      workspaceId,
+      metadata: { platform: "linkedin" },
+    });
   }
 
   return `/comptes?linkedin_connected=${accountId}`;

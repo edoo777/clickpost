@@ -6,6 +6,8 @@ import { buildRapportsGeneratePrompt } from "@/lib/ai/rapports-prompt";
 import { validateRapportsGenerateRequest } from "@/lib/ai/validate-rapports-generate-request";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { getUserLocale } from "@/lib/i18n/server-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { mapRowToRecord } from "@/lib/sync/mappers";
@@ -75,6 +77,12 @@ export async function POST(request: Request) {
   const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
   if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
   const brand = mapRowToRecord(brandRow) as unknown as Brand;
+  const workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+  const quota = await checkAiQuota(workspaceId);
+  if (!quota.allowed) {
+    return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+  }
 
   const promptOverride = await getPromptOverrideConfig("rapports");
   const language = await getUserLocale(supabase, user.id);
@@ -148,6 +156,15 @@ export async function POST(request: Request) {
 
     console.info("[ia/rapports/generate] rapport généré", {
       userId: user.id,
+      model,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
+
+    await recordAiUsage(supabase, {
+      workspaceId,
+      userId: user.id,
+      featureKey: "rapports.generate",
       model,
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,

@@ -18,6 +18,7 @@ import {
   IconWand,
 } from "@/components/icons";
 import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
+import type { Plan } from "@/types/billing";
 
 function Icon({ as: As, className }: { as: ComponentType<SVGProps<SVGSVGElement>>; className?: string }) {
   return <As className={className} />;
@@ -70,7 +71,22 @@ const AGENCY_CARDS: { titleKey: TranslationKey; descriptionKey: TranslationKey }
   { titleKey: "landing.agencyProductivityTitle", descriptionKey: "landing.agencyProductivityDescription" },
 ];
 
-export function BienvenueView() {
+const FAQ_ITEMS: { questionKey: TranslationKey; answerKey: TranslationKey }[] = [
+  { questionKey: "landing.faq1Question", answerKey: "landing.faq1Answer" },
+  { questionKey: "landing.faq2Question", answerKey: "landing.faq2Answer" },
+  { questionKey: "landing.faq3Question", answerKey: "landing.faq3Answer" },
+  { questionKey: "landing.faq4Question", answerKey: "landing.faq4Answer" },
+  { questionKey: "landing.faq5Question", answerKey: "landing.faq5Answer" },
+];
+
+interface BienvenueViewProps {
+  /** Plans réels (table `plans`) — jamais une grille tarifaire fabriquée côté composant. Peut
+   * être vide si la lecture serveur échoue ; la section se masque alors plutôt que d'afficher des
+   * cartes vides. */
+  plans?: Plan[];
+}
+
+export function BienvenueView({ plans = [] }: BienvenueViewProps) {
   const t = useTranslations();
 
   return (
@@ -244,6 +260,57 @@ export function BienvenueView() {
                 <div key={card.titleKey} className="rounded-xl bg-white/10 p-4">
                   <span className="text-sm font-semibold">{t(card.titleKey)}</span>
                   <p className="text-xs text-white/80">{t(card.descriptionKey)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* TARIFS */}
+        {plans.length > 0 && (
+          <section className="border-b border-border px-6 py-16">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <SectionEyebrow>{t("landing.pricingEyebrow")}</SectionEyebrow>
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("landing.pricingTitle")}</h2>
+                <p className="max-w-xl text-sm text-muted-foreground">{t("landing.pricingBetaNotice")}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {plans.map((plan) => (
+                  <div key={plan.key} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+                    <span className="text-sm font-semibold">{plan.name}</span>
+                    <span className="text-2xl font-semibold tracking-tight">
+                      {plan.priceUsdCents === 0
+                        ? t("landing.pricingFree")
+                        : plan.priceUsdCents === null
+                          ? t("landing.pricingPriceUnavailable")
+                          : `${(plan.priceUsdCents / 100).toFixed(0)} $`}
+                    </span>
+                    <p className="text-xs text-muted-foreground">{plan.description}</p>
+                    <span className="mt-auto text-xs font-medium text-violet-600 dark:text-violet-400">
+                      {plan.aiGenerationQuotaMonthly === null
+                        ? t("landing.pricingUnlimitedAi")
+                        : t("landing.pricingMonthlyAiGenerations", { count: plan.aiGenerationQuotaMonthly })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* FAQ */}
+        <section className="border-b border-border px-6 py-16">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <SectionEyebrow>{t("landing.faqEyebrow")}</SectionEyebrow>
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("landing.faqTitle")}</h2>
+            </div>
+            <div className="flex flex-col gap-4">
+              {FAQ_ITEMS.map((item) => (
+                <div key={item.questionKey} className="rounded-xl border border-border bg-surface p-4">
+                  <p className="text-sm font-semibold text-foreground">{t(item.questionKey)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t(item.answerKey)}</p>
                 </div>
               ))}
             </div>

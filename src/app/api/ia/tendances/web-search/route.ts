@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { validateWebTrendSearchRequest, type ValidatedWebTrendSearchRequest } from "@/lib/ai/validate-web-trend-search-request";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { anthropicWebTrendProvider } from "@/lib/trends/anthropic-web-trend-provider";
 import { CACHE_TTL_WEB_MUSIC_MS, CACHE_TTL_WEB_NO_SIGNAL_MS, CACHE_TTL_WEB_TREND_MS, getCached, setCached } from "@/lib/trends/cache";
 import {
@@ -90,6 +91,15 @@ export async function POST(request: Request) {
         quota: peekQuotaStatus(workspaceId, user.id),
       });
     }
+  }
+
+  // Quota IA (génération mensuelle Claude) distinct du quota de recherche Web ci-dessous — les
+  // jetons/coût réels de cet appel Claude+web_search ne sont pas journalisés dans ai_usage_events
+  // (recordAiUsage) : ils ne sont observables qu'à l'intérieur d'anthropic-web-trend-provider.ts,
+  // hors périmètre autorisé pour ce chantier. Seul le contrôle a priori est appliqué ici.
+  const aiQuota = await checkAiQuota(workspaceId);
+  if (!aiQuota.allowed) {
+    return NextResponse.json({ status: "error", message: "Quota mensuel de génération IA atteint pour ce workspace." }, { status: 402 });
   }
 
   const quotaCheck = consumeSearchQuota(input.mode, workspaceId, user.id);

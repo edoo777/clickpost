@@ -5,6 +5,8 @@ import { buildGenerateurPrompt, type GenerateurPromptTheme } from "@/lib/ai/gene
 import { parseTopicsResponse } from "@/lib/ai/parse-topics-response";
 import { getPromptOverrideConfig } from "@/lib/admin/prompt-overrides";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { recordAiUsage } from "@/lib/ai/usage-tracking";
+import { checkAiQuota } from "@/lib/billing/quotas";
 import { getUserLocale } from "@/lib/i18n/server-locale";
 import { validateTopicsRequest } from "@/lib/ai/validate-topics-request";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -56,6 +58,9 @@ export async function POST(request: Request) {
   let brandPositioning: string | undefined;
   let brandDescription: string | undefined;
   let existingTitles: string[] | undefined;
+  // Absent en mode ponctuel (standalone) — aucune marque/workspace associé, donc aucun quota IA
+  // ni journal d'usage à imputer (voir ValidatedTopicsRequest.brandId : volontairement absent).
+  let workspaceId: string | undefined;
   if (!standalone) {
     const { data: brandRow, error: brandError } = await supabase.from("brands").select("*").eq("id", brandId).single();
     if (brandError || !brandRow) return errorResponse("unauthorized", "Marque introuvable ou inaccessible.", 404);
@@ -68,6 +73,13 @@ export async function POST(request: Request) {
       positioning?: string;
       description?: string;
     };
+    workspaceId = (brandRow as { workspace_id: string }).workspace_id;
+
+    const quota = await checkAiQuota(workspaceId);
+    if (!quota.allowed) {
+      return errorResponse("quota_exceeded", "Quota mensuel de génération IA atteint pour ce workspace.", 402);
+    }
+
     promptNiche = brand.industry;
     brandName = brand.name;
     brandValueProposition = brand.valueProposition;
@@ -181,6 +193,17 @@ export async function POST(request: Request) {
       totalRequested,
       totalRejected,
     });
+
+    if (workspaceId) {
+      await recordAiUsage(supabase, {
+        workspaceId,
+        userId: user.id,
+        featureKey: "generateur.topics",
+        model,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      });
+    }
 
     return NextResponse.json({
       status: "ok",
