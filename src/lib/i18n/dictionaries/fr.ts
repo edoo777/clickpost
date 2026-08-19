@@ -2079,6 +2079,45 @@ const fr = {
       connectButton: "Connecter cette page",
     },
   },
+  admin: {
+    productTextEditor: {
+      modifiedOn: "Modifié le {date}",
+      restorePreviousVersion: "Restaurer la version précédente",
+      saved: "Enregistré.",
+      unknownError: "Erreur inconnue.",
+    },
+    featureFlagToggle: {
+      unknownError: "Erreur inconnue.",
+    },
+    promptOverrideEditor: {
+      functionLabel: "Fonction : {function} · identifiant : {key} · version {version}",
+      modifiedOn: "Modifié le {date}",
+      active: "Actif",
+      inactive: "Inactif",
+      systemPromptLabel: "Prompt système (prépendu)",
+      systemPromptHint:
+        "Ajouté avant le prompt système existant — pour une note de ton/persona. Jamais un remplacement des règles de sécurité (anti-invention de données, format de réponse).",
+      systemPromptPlaceholder: "Aucune note système configurée.",
+      extraInstructionsLabel: "Instructions supplémentaires (ajoutées)",
+      extraInstructionsPlaceholder: "Aucune instruction complémentaire configurée.",
+      restorePreviousInstructions: "Restaurer les instructions précédentes",
+      saved: "Enregistré.",
+      unknownError: "Erreur inconnue.",
+    },
+  },
+  approvals: {
+    filters: {
+      allOwners: "Tous les responsables",
+      allApprovers: "Tous les approbateurs",
+      reviewAndPendingClient: "En révision + en attente du client",
+    },
+    queue: {
+      pendingCount: "{count} publication{plural} en attente d'action",
+      empty: "Aucune publication en attente d'approbation.",
+      ownerLabel: "Responsable :",
+      nextActorLabel: "Prochain intervenant :",
+    },
+  },
 } as const;
 
 export default fr;

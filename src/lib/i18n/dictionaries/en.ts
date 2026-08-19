@@ -2063,6 +2063,45 @@ const en = {
       connectButton: "Connect this page",
     },
   },
+  admin: {
+    productTextEditor: {
+      modifiedOn: "Modified on {date}",
+      restorePreviousVersion: "Restore previous version",
+      saved: "Saved.",
+      unknownError: "Unknown error.",
+    },
+    featureFlagToggle: {
+      unknownError: "Unknown error.",
+    },
+    promptOverrideEditor: {
+      functionLabel: "Function: {function} · id: {key} · version {version}",
+      modifiedOn: "Modified on {date}",
+      active: "Active",
+      inactive: "Inactive",
+      systemPromptLabel: "System prompt (prepended)",
+      systemPromptHint:
+        "Added before the existing system prompt — for a tone/persona note. Never a replacement for the hard-coded safety rules (anti data fabrication, strict response format).",
+      systemPromptPlaceholder: "No system note configured.",
+      extraInstructionsLabel: "Additional instructions (appended)",
+      extraInstructionsPlaceholder: "No additional instruction configured.",
+      restorePreviousInstructions: "Restore previous instructions",
+      saved: "Saved.",
+      unknownError: "Unknown error.",
+    },
+  },
+  approvals: {
+    filters: {
+      allOwners: "All owners",
+      allApprovers: "All approvers",
+      reviewAndPendingClient: "In review + awaiting client",
+    },
+    queue: {
+      pendingCount: "{count} publication{plural} awaiting action",
+      empty: "No publication awaiting approval.",
+      ownerLabel: "Owner:",
+      nextActorLabel: "Next to act:",
+    },
+  },
 } satisfies Dictionary;
 
 export default en;

@@ -27,7 +27,7 @@ export function ApprovalQueueView() {
           {t("pageHeader.approvalQueue")}
         </h1>
         <p className="text-sm text-muted-foreground ">
-          {`${queue.length} publication${queue.length > 1 ? "s" : ""} en attente d'action`}
+          {t("approvals.queue.pendingCount", { count: queue.length, plural: queue.length > 1 ? "s" : "" })}
         </p>
       </header>
 

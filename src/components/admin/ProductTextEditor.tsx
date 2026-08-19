@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { PRODUCT_TEXT_LABELS, type ProductText } from "@/lib/admin/product-text-keys";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 type Status = "idle" | "saving" | "saved" | "error";
 
 export function ProductTextEditor({ text }: { text: ProductText }) {
+  const t = useTranslations();
   const [value, setValue] = useState(text.value);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -21,13 +23,13 @@ export function ProductTextEditor({ text }: { text: ProductText }) {
         body: JSON.stringify({ key: text.key, value }),
       });
       const data = await response.json().catch(() => null);
-      if (!data || data.status !== "ok") throw new Error(data?.message ?? "Erreur inconnue.");
+      if (!data || data.status !== "ok") throw new Error(data?.message ?? t("admin.productTextEditor.unknownError"));
       setStatus("saved");
       setHasPrevious(true);
       setTimeout(() => setStatus("idle"), 2500);
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Erreur inconnue.");
+      setMessage(error instanceof Error ? error.message : t("admin.productTextEditor.unknownError"));
     }
   }
 
@@ -41,11 +43,11 @@ export function ProductTextEditor({ text }: { text: ProductText }) {
         body: JSON.stringify({ key: text.key, action: "restore" }),
       });
       const data = await response.json().catch(() => null);
-      if (!data || data.status !== "ok") throw new Error(data?.message ?? "Erreur inconnue.");
+      if (!data || data.status !== "ok") throw new Error(data?.message ?? t("admin.productTextEditor.unknownError"));
       window.location.reload();
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Erreur inconnue.");
+      setMessage(error instanceof Error ? error.message : t("admin.productTextEditor.unknownError"));
     }
   }
 
@@ -54,7 +56,9 @@ export function ProductTextEditor({ text }: { text: ProductText }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-foreground">{PRODUCT_TEXT_LABELS[text.key]}</h2>
         {text.updatedAt && (
-          <span className="text-xs text-muted-foreground">Modifié le {new Date(text.updatedAt).toLocaleString("fr-FR")}</span>
+          <span className="text-xs text-muted-foreground">
+            {t("admin.productTextEditor.modifiedOn", { date: new Date(text.updatedAt).toLocaleString("fr-FR") })}
+          </span>
         )}
       </div>
       <textarea
@@ -70,7 +74,7 @@ export function ProductTextEditor({ text }: { text: ProductText }) {
           disabled={status === "saving"}
           className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "saving" ? "Enregistrement…" : "Enregistrer"}
+          {status === "saving" ? t("common.saving") : t("common.save")}
         </button>
         {hasPrevious && (
           <button
@@ -79,10 +83,12 @@ export function ProductTextEditor({ text }: { text: ProductText }) {
             disabled={status === "saving"}
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Restaurer la version précédente
+            {t("admin.productTextEditor.restorePreviousVersion")}
           </button>
         )}
-        {status === "saved" && <span className="text-xs text-emerald-600 dark:text-emerald-400">Enregistré.</span>}
+        {status === "saved" && (
+          <span className="text-xs text-emerald-600 dark:text-emerald-400">{t("admin.productTextEditor.saved")}</span>
+        )}
         {status === "error" && <span className="text-xs text-red-600 dark:text-red-400">{message}</span>}
       </div>
     </div>

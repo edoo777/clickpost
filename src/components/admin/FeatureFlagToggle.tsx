@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import type { FeatureFlag } from "@/lib/admin/feature-flag-types";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 export function FeatureFlagToggle({ flag }: { flag: FeatureFlag }) {
+  const t = useTranslations();
   const [enabled, setEnabled] = useState(flag.enabled);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -19,10 +21,10 @@ export function FeatureFlagToggle({ flag }: { flag: FeatureFlag }) {
         body: JSON.stringify({ key: flag.key, enabled: next }),
       });
       const data = await response.json().catch(() => null);
-      if (!data || data.status !== "ok") throw new Error(data?.message ?? "Erreur inconnue.");
+      if (!data || data.status !== "ok") throw new Error(data?.message ?? t("admin.featureFlagToggle.unknownError"));
       setEnabled(next);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Erreur inconnue.");
+      setErrorMessage(error instanceof Error ? error.message : t("admin.featureFlagToggle.unknownError"));
     } finally {
       setIsSaving(false);
     }

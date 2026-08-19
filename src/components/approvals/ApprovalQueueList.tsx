@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { platformIcons } from "@/components/icons";
 import { getNextActor } from "@/lib/approval";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { STATUS_STYLE, useStatusLabel } from "@/lib/post-status";
 import type { Publication } from "@/types/publication";
 
@@ -18,12 +19,13 @@ interface ApprovalQueueListProps {
 }
 
 export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
+  const t = useTranslations();
   const STATUS_LABEL = useStatusLabel();
 
   if (publications.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12] ">
-        Aucune publication en attente d&apos;approbation.
+        {t("approvals.queue.empty")}
       </p>
     );
   }
@@ -45,7 +47,7 @@ export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
                 </span>
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-medium text-foreground ">
-                    {publication.excerpt || "Sans titre"}
+                    {publication.excerpt || t("publications.card.untitled")}
                   </span>
                   <span className="truncate text-xs text-muted-foreground ">
                     {publication.brand} · {dateFormatter.format(new Date(publication.scheduledFor))}
@@ -54,16 +56,16 @@ export function ApprovalQueueList({ publications }: ApprovalQueueListProps) {
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs text-muted-foreground ">
-                  Responsable :{" "}
+                  {t("approvals.queue.ownerLabel")}{" "}
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">{publication.owner || "—"}</span>
                 </span>
                 <span className="text-xs text-muted-foreground ">
-                  Prochain intervenant :{" "}
+                  {t("approvals.queue.nextActorLabel")}{" "}
                   <span className="font-medium text-zinc-700 dark:text-zinc-300">{nextActor ?? "—"}</span>
                 </span>
                 {publication.comments.length > 0 && (
                   <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground ">
-                    {publication.comments.length} commentaire{publication.comments.length > 1 ? "s" : ""}
+                    {t("publications.card.comments", { count: publication.comments.length, plural: publication.comments.length > 1 ? "s" : "" })}
                   </span>
                 )}
                 <span
