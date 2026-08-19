@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { ROLE_LABEL, ROLE_STYLE } from "@/lib/team-data";
 import type { TeamMember, TeamRole } from "@/types/team";
 
@@ -15,6 +16,7 @@ interface TeamTableProps {
 }
 
 export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: TeamTableProps) {
+  const t = useTranslations();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   return (
@@ -22,11 +24,11 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead>
           <tr className="border-b border-border text-xs font-medium text-muted-foreground  ">
-            <th className="px-4 py-3">Membre</th>
-            <th className="px-4 py-3">Rôle</th>
-            <th className="px-4 py-3">Marques accessibles</th>
-            <th className="px-4 py-3">Statut</th>
-            <th className="px-4 py-3">Actions</th>
+            <th className="px-4 py-3">{t("team.table.member")}</th>
+            <th className="px-4 py-3">{t("team.table.role")}</th>
+            <th className="px-4 py-3">{t("team.table.accessibleBrands")}</th>
+            <th className="px-4 py-3">{t("team.table.status")}</th>
+            <th className="px-4 py-3">{t("team.table.actions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border ">
@@ -55,7 +57,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                 <div className="flex flex-wrap gap-1">
                   {member.brands.length === ALL_BRANDS.length ? (
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-zinc-600  dark:text-zinc-400">
-                      Toutes les marques
+                      {t("team.table.allBrands")}
                     </span>
                   ) : (
                     member.brands.map((brand) => (
@@ -73,7 +75,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                 <button
                   type="button"
                   onClick={() => onToggleStatus(member.id)}
-                  aria-label={member.status === "active" ? "Désactiver" : "Activer"}
+                  aria-label={member.status === "active" ? t("team.table.disable") : t("team.table.enable")}
                   className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
                     member.status === "active" ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"
                   }`}
@@ -88,7 +90,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
               <td className="px-4 py-3">
                 {confirmingId === member.id ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-red-600 dark:text-red-400">Confirmer ?</span>
+                    <span className="text-xs text-red-600 dark:text-red-400">{t("team.table.confirmRemove")}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -97,14 +99,14 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                       }}
                       className="rounded-lg bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
                     >
-                      Oui
+                      {t("team.table.yes")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmingId(null)}
                       className="rounded-lg border border-border px-2 py-1 text-xs font-medium text-zinc-600  dark:text-zinc-400"
                     >
-                      Annuler
+                      {t("team.table.cancel")}
                     </button>
                   </div>
                 ) : (
@@ -113,7 +115,7 @@ export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: T
                     onClick={() => setConfirmingId(member.id)}
                     className="text-xs font-medium text-red-500 hover:underline"
                   >
-                    Retirer
+                    {t("team.table.remove")}
                   </button>
                 )}
               </td>

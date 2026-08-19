@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { ROLE_LABEL } from "@/lib/team-data";
 import type { TeamRole } from "@/types/team";
 
@@ -23,6 +24,7 @@ interface InviteMemberPanelProps {
 }
 
 export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps) {
+  const t = useTranslations();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<TeamRole>("creator");
@@ -41,17 +43,17 @@ export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps)
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label="Fermer le panneau"
+        aria-label={t("team.invitePanel.closePanel")}
         onClick={onClose}
         className="absolute inset-0 bg-black/30"
       />
       <div className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-surface p-6 shadow-xl ">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground ">Inviter un membre</h2>
+          <h2 className="text-lg font-semibold text-foreground ">{t("team.invitePanel.title")}</h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("team.invitePanel.close")}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted  "
           >
             ✕
@@ -59,16 +61,16 @@ export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps)
         </div>
 
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Invitation simulée — aucun e-mail réel n&apos;est envoyé.
+          {t("team.invitePanel.simulatedNotice")}
         </p>
 
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nom
+            {t("team.invitePanel.name")}
             <input value={name} onChange={(event) => setName(event.target.value)} className={INPUT_CLASS} />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Email
+            {t("team.invitePanel.email")}
             <input
               type="email"
               value={email}
@@ -77,7 +79,7 @@ export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps)
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Rôle
+            {t("team.invitePanel.role")}
             <select value={role} onChange={(event) => setRole(event.target.value as TeamRole)} className={INPUT_CLASS}>
               {ALL_ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -87,7 +89,7 @@ export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps)
             </select>
           </label>
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Marques accessibles</span>
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("team.invitePanel.accessibleBrands")}</span>
             <div className="flex flex-wrap gap-2">
               {ALL_BRANDS.map((brand) => (
                 <button
@@ -113,14 +115,14 @@ export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps)
             onClick={onClose}
             className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
           >
-            Annuler
+            {t("team.invitePanel.cancel")}
           </button>
           <button
             type="button"
             onClick={handleSubmit}
             className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
-            Envoyer l&apos;invitation (simulée)
+            {t("team.invitePanel.sendInvitation")}
           </button>
         </div>
       </div>

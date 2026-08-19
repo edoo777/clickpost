@@ -26,14 +26,13 @@ export function ThemesView() {
           {t("pageTitle.themes")}
         </h1>
         <p className="text-sm text-muted-foreground ">
-          Gérez la bibliothèque de thématiques de chaque marque et attribuez-les librement aux jours
-          de la semaine.
+          {t("themes.view.subtitle")}
         </p>
       </header>
 
       {brands.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16] ">
-          Aucune marque dans ce workspace. Créez-en une dans « Marques » pour commencer à gérer ses thématiques.
+          {t("themes.view.noBrands")}
         </p>
       ) : (
         <>
@@ -55,14 +54,14 @@ export function ThemesView() {
               onClick={() => addTheme(effectiveBrandId)}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
-              + Nouvelle thématique
+              {t("themes.view.newTheme")}
             </button>
           </div>
 
           <div className="flex flex-col gap-3">
             {brandThemes.length === 0 && (
               <p className="text-sm text-muted-foreground ">
-                Aucune thématique pour cette marque. Créez-en une pour commencer.
+                {t("themes.view.noThemesForBrand")}
               </p>
             )}
             {brandThemes.map((theme, index) => (

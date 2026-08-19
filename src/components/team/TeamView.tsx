@@ -23,7 +23,7 @@ export function TeamView() {
       brands: input.brands,
     });
     setIsInviteOpen(false);
-    setConfirmation(`Invitation simulée envoyée à ${input.email}.`);
+    setConfirmation(t("team.view.invitationSimulated", { email: input.email }));
   }
 
   function handleUpdateRole(id: string, role: TeamRole) {
@@ -42,7 +42,7 @@ export function TeamView() {
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.team")}</h1>
           <p className="text-sm text-muted-foreground ">
-            {members.length} membre{members.length > 1 ? "s" : ""}
+            {t("team.view.memberCount", { count: members.length, plural: members.length > 1 ? "s" : "" })}
           </p>
         </header>
         <button
@@ -50,7 +50,7 @@ export function TeamView() {
           onClick={() => setIsInviteOpen(true)}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
         >
-          + Inviter un membre
+          {t("team.view.inviteMember")}
         </button>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { IconArrowDown, IconArrowUp } from "@/components/icons";
 import { WEEKDAYS, useWeekdayLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Weekday } from "@/types/editorial-calendar";
 import type { Theme } from "@/types/theme";
 
@@ -39,9 +40,10 @@ export function ThemeRow({
   onMoveDown,
   onRemove,
 }: ThemeRowProps) {
+  const t = useTranslations();
   const WEEKDAY_LABEL = useWeekdayLabel();
   function handleRemove() {
-    if (window.confirm(`Supprimer définitivement la thématique « ${theme.label || "sans titre"} » ?`)) {
+    if (window.confirm(t("themes.row.confirmDelete", { label: theme.label || t("themes.row.untitled") }))) {
       onRemove();
     }
   }
@@ -60,7 +62,7 @@ export function ThemeRow({
             type="button"
             disabled={!canMoveUp}
             onClick={onMoveUp}
-            aria-label="Monter la thématique"
+            aria-label={t("themes.row.moveUp")}
             className="rounded-md border border-border p-1 text-muted-foreground disabled:opacity-30  "
           >
             <IconArrowUp className="h-3.5 w-3.5" />
@@ -69,7 +71,7 @@ export function ThemeRow({
             type="button"
             disabled={!canMoveDown}
             onClick={onMoveDown}
-            aria-label="Descendre la thématique"
+            aria-label={t("themes.row.moveDown")}
             className="rounded-md border border-border p-1 text-muted-foreground disabled:opacity-30  "
           >
             <IconArrowDown className="h-3.5 w-3.5" />
@@ -79,13 +81,13 @@ export function ThemeRow({
         <div className="flex flex-1 flex-col gap-1.5">
           <input
             value={theme.label}
-            placeholder="Nom de la thématique"
+            placeholder={t("themes.row.namePlaceholder")}
             onChange={(event) => onUpdate({ label: event.target.value })}
             className={`${INPUT_CLASS} font-medium`}
           />
           <input
             value={theme.objective}
-            placeholder="Objectif de la thématique"
+            placeholder={t("themes.row.objectivePlaceholder")}
             onChange={(event) => onUpdate({ objective: event.target.value })}
             className={`${INPUT_CLASS} text-xs text-muted-foreground `}
           />
@@ -95,7 +97,7 @@ export function ThemeRow({
           <button
             type="button"
             onClick={onToggleActive}
-            aria-label={theme.active ? "Désactiver la thématique" : "Réactiver la thématique"}
+            aria-label={theme.active ? t("themes.row.disable") : t("themes.row.enable")}
             className={`relative h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${
               theme.active ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-700"
             }`}
@@ -111,14 +113,14 @@ export function ThemeRow({
             onClick={handleRemove}
             className="text-xs font-medium text-red-500 hover:underline"
           >
-            Supprimer
+            {t("themes.row.remove")}
           </button>
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-muted-foreground ">
-          Jours de la semaine
+          {t("themes.row.weekdaysLabel")}
         </span>
         <div className="flex flex-wrap gap-1.5">
           {WEEKDAYS.map((day) => (
@@ -136,7 +138,7 @@ export function ThemeRow({
 
       {!theme.active && (
         <p className="text-xs text-muted-foreground ">
-          Thématique désactivée — masquée des futures attributions, mais conservée dans la bibliothèque.
+          {t("themes.row.disabledNotice")}
         </p>
       )}
     </div>

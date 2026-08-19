@@ -6,6 +6,7 @@ import { platformIcons } from "@/components/icons";
 import { ThemeSelect } from "@/components/theme/ThemeSelect";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { COUNTRY_OPTIONS, LANGUAGE_OPTIONS, NOTIFICATION_LABEL, TIME_ZONE_OPTIONS } from "@/lib/settings-data";
 import { ROLE_LABEL, ROLE_STYLE } from "@/lib/team-data";
 import { useTeamSession } from "@/lib/team-store";
@@ -29,6 +30,7 @@ const SECTION_CLASS =
   "rounded-2xl border border-border bg-surface p-5 shadow-sm  ";
 
 export function ProfileView() {
+  const t = useTranslations();
   const { members, currentUserId } = useTeamSession();
   const { getProfile, updateProfile } = useUserProfileSession();
   const { accounts } = useAccountsSession();
@@ -42,7 +44,7 @@ export function ProfileView() {
   const displayed = isEditing ? draft : profile;
 
   if (!member) {
-    return <p className="text-sm text-muted-foreground ">Utilisateur introuvable.</p>;
+    return <p className="text-sm text-muted-foreground ">{t("profile.view.userNotFound")}</p>;
   }
 
   function set<K extends keyof UserProfileExtra>(key: K, value: UserProfileExtra[K]) {
@@ -91,14 +93,14 @@ export function ProfileView() {
                 onClick={handleCancel}
                 className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Annuler
+                {t("profile.view.cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
               >
-                Enregistrer
+                {t("profile.view.save")}
               </button>
             </>
           ) : (
@@ -107,7 +109,7 @@ export function ProfileView() {
               onClick={handleEdit}
               className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700  dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Modifier le profil
+              {t("profile.view.editProfile")}
             </button>
           )}
         </div>
@@ -115,16 +117,15 @@ export function ProfileView() {
 
       {isEditing && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-          Les modifications restent en mémoire pour cette session uniquement — elles seront perdues au
-          rechargement de la page.
+          {t("profile.view.sessionOnlyNotice")}
         </p>
       )}
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Identité</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.identityTitle")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Prénom
+            {t("profile.view.firstName")}
             <input
               disabled={!isEditing}
               value={displayed.firstName}
@@ -133,7 +134,7 @@ export function ProfileView() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Nom
+            {t("profile.view.lastName")}
             <input
               disabled={!isEditing}
               value={displayed.lastName}
@@ -142,15 +143,15 @@ export function ProfileView() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Email
+            {t("profile.view.email")}
             <input disabled value={member.email} className={FIELD_CLASS} />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Rôle
+            {t("profile.view.role")}
             <input disabled value={ROLE_LABEL[member.role]} className={FIELD_CLASS} />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Entreprise / agence
+            {t("profile.view.company")}
             <input
               disabled={!isEditing}
               value={displayed.company}
@@ -159,7 +160,7 @@ export function ProfileView() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Téléphone (optionnel)
+            {t("profile.view.phone")}
             <input
               disabled={!isEditing}
               value={displayed.phone}
@@ -170,30 +171,30 @@ export function ProfileView() {
           </label>
         </div>
         <label className="mt-4 flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Biographie courte
+          {t("profile.view.bio")}
           <textarea
             disabled={!isEditing}
             rows={3}
             value={displayed.bio}
             onChange={(event) => set("bio", event.target.value)}
-            placeholder="Quelques mots sur votre rôle et vos expertises"
+            placeholder={t("profile.view.bioPlaceholder")}
             className={FIELD_CLASS}
           />
         </label>
         <p className="mt-3 text-xs text-muted-foreground ">
-          Nom, email et rôle se gèrent depuis{" "}
+          {t("profile.view.manageFromTeamPrefix")}{" "}
           <Link href="/equipe" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
-            Équipe
+            {t("profile.view.teamLink")}
           </Link>
           .
         </p>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Localisation</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.localizationTitle")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Fuseau horaire
+            {t("profile.view.timeZone")}
             <select
               disabled={!isEditing}
               value={displayed.timeZone}
@@ -208,7 +209,7 @@ export function ProfileView() {
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Langue
+            {t("profile.view.language")}
             <select
               disabled={!isEditing}
               value={displayed.language}
@@ -223,7 +224,7 @@ export function ProfileView() {
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Pays
+            {t("profile.view.country")}
             <select
               disabled={!isEditing}
               value={displayed.country}
@@ -241,9 +242,9 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Réseaux connectés</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.connectedAccountsTitle")}</h2>
         {accounts.length === 0 ? (
-          <p className="text-sm text-muted-foreground ">Aucun compte connecté.</p>
+          <p className="text-sm text-muted-foreground ">{t("profile.view.noConnectedAccounts")}</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {accounts.map((account) => {
@@ -261,18 +262,18 @@ export function ProfileView() {
           </ul>
         )}
         <p className="mt-3 text-xs text-muted-foreground ">
-          Gérer les connexions depuis{" "}
+          {t("profile.view.manageFromAccountsPrefix")}{" "}
           <Link href="/comptes" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
-            Comptes
+            {t("profile.view.accountsLink")}
           </Link>
           .
         </p>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Marques gérées</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.managedBrandsTitle")}</h2>
         {managedBrands.length === 0 ? (
-          <p className="text-sm text-muted-foreground ">Aucune marque assignée.</p>
+          <p className="text-sm text-muted-foreground ">{t("profile.view.noManagedBrands")}</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {managedBrands.map((brand) => (
@@ -286,18 +287,18 @@ export function ProfileView() {
           </ul>
         )}
         <p className="mt-3 text-xs text-muted-foreground ">
-          Modifiable depuis{" "}
+          {t("profile.view.editableFromTeamPrefix")}{" "}
           <Link href="/equipe" className="font-medium text-violet-600 hover:underline dark:text-violet-400">
-            Équipe
+            {t("profile.view.teamLink")}
           </Link>
           .
         </p>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-1 text-sm font-semibold text-foreground ">Préférences de notification</h2>
+        <h2 className="mb-1 text-sm font-semibold text-foreground ">{t("profile.view.notificationsTitle")}</h2>
         <p className="mb-4 text-xs text-muted-foreground ">
-          Simulation — aucune notification réelle n&apos;est envoyée.
+          {t("profile.view.notificationsSimulationNotice")}
         </p>
         <div className="flex flex-col divide-y divide-border ">
           {NOTIFICATION_ORDER.map((key) => (
@@ -310,7 +311,7 @@ export function ProfileView() {
                 type="button"
                 disabled={!isEditing}
                 onClick={() => set("notifications", { ...displayed.notifications, [key]: !displayed.notifications[key] })}
-                aria-label={displayed.notifications[key] ? "Désactiver" : "Activer"}
+                aria-label={displayed.notifications[key] ? t("profile.view.disable") : t("profile.view.enable")}
                 className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
                   displayed.notifications[key] ? "bg-gradient-to-r from-violet-600 to-fuchsia-600" : "bg-zinc-300 dark:bg-zinc-700"
                 } ${isEditing ? "cursor-pointer" : "cursor-default"}`}
@@ -327,64 +328,64 @@ export function ProfileView() {
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-1 text-sm font-semibold text-foreground ">Préférences d&apos;affichage</h2>
+        <h2 className="mb-1 text-sm font-semibold text-foreground ">{t("profile.view.displayPreferencesTitle")}</h2>
         <p className="mb-4 text-xs text-muted-foreground ">
-          Le thème s&apos;applique immédiatement, indépendamment du mode édition.
+          {t("profile.view.themeAppliesImmediately")}
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Thème
+            {t("profile.view.theme")}
             <ThemeSelect surface="light" />
           </div>
           <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            Densité d&apos;affichage
+            {t("profile.view.displayDensity")}
             <select
               disabled={!isEditing}
               value={displayed.displayDensity}
               onChange={(event) => set("displayDensity", event.target.value as UserProfileExtra["displayDensity"])}
               className={FIELD_CLASS}
             >
-              <option value="comfortable">Confortable</option>
-              <option value="compact">Compacte</option>
+              <option value="comfortable">{t("profile.view.densityComfortable")}</option>
+              <option value="compact">{t("profile.view.densityCompact")}</option>
             </select>
           </label>
         </div>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Sécurité</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.securityTitle")}</h2>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             disabled
             className="cursor-not-allowed rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
-            Changer le mot de passe
+            {t("profile.view.changePassword")}
           </button>
           <button
             type="button"
             disabled
             className="cursor-not-allowed rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground  "
           >
-            Gérer les sessions actives
+            {t("profile.view.manageSessions")}
           </button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground ">
-          Authentification avancée non disponible dans cette démonstration.
+          {t("profile.view.advancedAuthNotAvailable")}
         </p>
       </section>
 
       <section className={SECTION_CLASS}>
-        <h2 className="mb-4 text-sm font-semibold text-foreground ">Abonnement</h2>
+        <h2 className="mb-4 text-sm font-semibold text-foreground ">{t("profile.view.subscriptionTitle")}</h2>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Plan Agence — Démonstration</span>
+            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{t("profile.view.subscriptionPlan")}</span>
             <span className="text-xs text-muted-foreground ">
-              Aucun système de paiement actif dans cette version.
+              {t("profile.view.noPaymentSystem")}
             </span>
           </div>
           <span className="w-fit rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 text-xs font-semibold text-white shadow-sm shadow-fuchsia-500/20">
-            Actif
+            {t("profile.view.subscriptionActive")}
           </span>
         </div>
       </section>
