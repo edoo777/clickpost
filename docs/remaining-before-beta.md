@@ -1,3 +1,8 @@
+> **Voir `docs/FINAL-BETA-READINESS.md`** (session du 2026-08-19) pour l'état le plus à jour —
+> notamment l'i18n (désormais ~97 %, cette note ci-dessous est obsolète sur ce point) et les
+> nouvelles fondations analytics/facturation/quotas IA. Ce document reste valable pour tout le
+> reste (tests manuels, décisions produit ouvertes, dette technique).
+
 # ClickPost — Ce qui reste avant la bêta (5 à 10 utilisateurs)
 
 Liste stricte, mise à jour à la fin de la session autonome du 2026-08-18 (7e passage — correctif de

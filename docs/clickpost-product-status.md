@@ -1,3 +1,8 @@
+> **Voir `docs/FINAL-BETA-READINESS.md`** (session du 2026-08-19) pour l'état le plus à jour —
+> notamment l'i18n (désormais ~97 %, la ligne "Libellés partagés... NOT STARTED" ci-dessous est
+> obsolète) et les nouvelles fondations analytics/facturation/quotas IA/tableau de bord Admin KPI,
+> absentes de ce tableau.
+
 # ClickPost — État produit détaillé
 
 Photographie de l'état réel du produit à la fin de la session autonome du 2026-08-18 (7e passage —
