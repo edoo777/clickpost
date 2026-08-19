@@ -8,6 +8,36 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const BROADCAST_CHANNEL_NAME = "clickpost-sync";
 
+/**
+ * Ordre de synchronisation par dépendance réelle (voir les FK Supabase) — un enregistrement
+ * référencé (ex. `ideas`) doit toujours atteindre Supabase avant tout enregistrement qui le
+ * référence (ex. `topics.idea_id`, `idea_notes.converted_idea_id`), sinon l'insertion/mise à jour
+ * de ce dernier échoue avec une violation de contrainte de clé étrangère — même si les deux
+ * opérations ont été créées dans la même action utilisateur. Priorité plus basse = synchronisé
+ * plus tôt. Entités sans dépendance connue entre elles : même priorité, ordre relatif conservé
+ * (tri stable).
+ */
+export const SYNC_PRIORITY: Record<SyncEntityType, number> = {
+  accounts: 0,
+  brands: 0,
+  campaigns: 0,
+  themes: 0,
+  topicBatches: 0,
+  workflowStages: 0,
+  savedViews: 0,
+  importantDates: 0,
+  savedTrends: 0,
+  reports: 0,
+  // `posts` avant `ideas` : une idée peut référencer sa publication (`ideas.publication_id`)
+  // créée dans la même action (voir IdeaWorkshopView.handleCreatePublication).
+  posts: 0,
+  ideas: 1,
+  // Référencent potentiellement une idée créée dans la même action (voir develop-idea.ts).
+  topics: 2,
+  ideaNotes: 2,
+  contentVersions: 2,
+};
+
 let statusState: SyncStatusState = {
   status: "idle",
   pendingCount: 0,
@@ -202,7 +232,16 @@ export async function processSyncQueue() {
       return;
     }
 
-    const actionable = operations.filter((op) => !op.blocked);
+    // Tri stable par dépendance — jamais par confiance dans l'ordre d'enfilement local (déterminé
+    // par l'ordre de déclaration des hooks React entre magasins, un détail d'implémentation non
+    // garanti, voir la découverte du bug topics_idea_id_fkey). `ideas` doit toujours être
+    // synchronisée avant tout ce qui peut la référencer (topics.idea_id, idea_notes.
+    // converted_idea_id, content_versions.idea_id) ; `posts`/`topicBatches`/entités de base restent
+    // prioritaires par rapport à `ideas` (ideas.publication_id/batch_id peuvent la référencer en
+    // retour). Un tri stable préserve l'ordre relatif entre opérations de même priorité.
+    const actionable = operations
+      .filter((op) => !op.blocked)
+      .sort((a, b) => SYNC_PRIORITY[a.entityType] - SYNC_PRIORITY[b.entityType]);
     const alreadyBlocked = operations.filter((op) => op.blocked);
 
     setStatus({ status: "syncing", pendingCount: operations.length });
@@ -312,6 +351,35 @@ async function unblockAllOperations() {
   }
 }
 
+/** Colonne portant une référence optionnelle vers une idée, par entité — les seules relations
+ * connues à ce jour où une idée peut être créée puis référencée dans la même action utilisateur
+ * (voir develop-idea.ts). `SYNC_PRIORITY` ci-dessus règle l'ordre normal ; ce filet de sécurité ne
+ * s'applique qu'au cas résiduel où l'idée référencée reste malgré tout introuvable localement
+ * (ex. opération héritée d'avant ce correctif, ou idée réellement supprimée entre-temps) — jamais
+ * un cas normal. */
+const IDEA_REFERENCE_COLUMN: Partial<Record<SyncEntityType, string>> = {
+  topics: "idea_id",
+  ideaNotes: "converted_idea_id",
+};
+
+/**
+ * Neutralise une référence à une idée qui n'existe nulle part localement (ni déjà synchronisée,
+ * ni encore en attente d'envoi) — jamais une référence dont l'idée est simplement en cours de
+ * synchronisation (celle-ci reste intacte, `SYNC_PRIORITY` garantit qu'elle partira avant). Ne
+ * supprime jamais l'enregistrement porteur (topic/note) : seule la référence dangereuse est mise
+ * à `null`, exactement comme `stripSeedReferences` le fait déjà pour les identifiants de
+ * démonstration — même principe, cause différente (idée réellement introuvable, pas une donnée de
+ * démonstration).
+ */
+function stripDanglingIdeaReference(entityType: SyncEntityType, row: Record<string, unknown>): Record<string, unknown> {
+  const column = IDEA_REFERENCE_COLUMN[entityType];
+  if (!column) return row;
+  const value = row[column];
+  if (typeof value !== "string" || value.length === 0) return row;
+  if (getLocalRecordById("ideas", value)) return row;
+  return { ...row, [column]: null };
+}
+
 async function processOperation(
   supabase: ReturnType<typeof createSupabaseBrowserClient>,
   op: Awaited<ReturnType<typeof queueDb.getAllOperations>>[number]
@@ -347,7 +415,7 @@ async function processOperation(
     if (op.queueId !== undefined) await queueDb.removeOperation(op.queueId);
     return;
   }
-  const row = stripSeedReferences(mapRecordToRow(op.payload));
+  const row = stripDanglingIdeaReference(op.entityType, stripSeedReferences(mapRecordToRow(op.payload)));
   // `scheduled_for` est un timestamptz côté Supabase mais saisi localement comme une date-heure
   // naïve (champ datetime-local) interprétée dans `time_zone` — sans cette conversion, Postgres
   // l'interpréterait dans le fuseau de session (UTC), pas celui réellement choisi.

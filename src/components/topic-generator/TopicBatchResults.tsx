@@ -85,6 +85,10 @@ export function TopicBatchResults({
   );
   const hasErrorLot = (lots ?? []).some((lot) => lot.status === "error");
   const isLotsInProgress = (lots ?? []).some((lot) => lot.status === "pending" || lot.status === "generating");
+  // Le détail par lot (badges + info-bulle) n'est affiché ci-dessous que s'il y a plusieurs lots
+  // — pour une génération à lot unique (le cas le plus fréquent), le message technique précis
+  // reste ici la seule façon de le voir réellement, jamais seulement dans une info-bulle.
+  const firstLotErrorMessage = (lots ?? []).find((lot) => lot.status === "error")?.errorMessage;
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
@@ -154,7 +158,12 @@ export function TopicBatchResults({
         </div>
       )}
       {hasErrorLot && !isLotsInProgress && (
-        <p className="text-xs text-amber-700 dark:text-amber-400">{t("topicGenerator.batchResults.lotErrorNotice")}</p>
+        <div className="flex flex-col gap-1 rounded-lg bg-amber-50 px-3 py-2 dark:bg-amber-500/10">
+          <p className="text-xs text-amber-700 dark:text-amber-400">{t("topicGenerator.batchResults.lotErrorNotice")}</p>
+          {firstLotErrorMessage && (
+            <p className="text-xs font-medium text-amber-800 dark:text-amber-300">{firstLotErrorMessage}</p>
+          )}
+        </div>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

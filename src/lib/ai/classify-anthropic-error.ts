@@ -1,9 +1,19 @@
-import { APIConnectionError, APIConnectionTimeoutError, APIError, AuthenticationError, RateLimitError } from "@anthropic-ai/sdk";
+import { APIConnectionError, APIConnectionTimeoutError, APIError, AuthenticationError, BadRequestError, RateLimitError } from "@anthropic-ai/sdk";
 
 export interface ClassifiedError {
   code: string;
   message: string;
   status: number;
+}
+
+/** Détecte le cas précis "solde de crédit Anthropic insuffisant" (400 invalid_request_error,
+ * message documenté par Anthropic) — un blocage de facturation externe, jamais transitoire,
+ * jamais résolu par une nouvelle tentative : mérite un message explicite plutôt que de se fondre
+ * dans le générique "Erreur du fournisseur IA" (502), qui laisserait croire à un simple incident
+ * réseau côté Claude. Correspondance sur le texte du message plutôt qu'un code dédié : Anthropic
+ * ne distingue pas ce cas par un type d'erreur séparé côté SDK à ce jour. */
+export function isInsufficientCreditError(error: BadRequestError): boolean {
+  return /credit balance is too low/i.test(error.message);
 }
 
 /**
@@ -16,6 +26,13 @@ export interface ClassifiedError {
 export function classifyAnthropicError(error: unknown): ClassifiedError {
   if (error instanceof RateLimitError) return { code: "quota_exceeded", message: "Quota Claude dépassé.", status: 429 };
   if (error instanceof AuthenticationError) return { code: "not_configured", message: "Clé Claude invalide.", status: 503 };
+  if (error instanceof BadRequestError && isInsufficientCreditError(error)) {
+    return {
+      code: "insufficient_credit",
+      message: "Le compte Anthropic (Claude) n'a plus de crédit disponible — la génération IA est temporairement indisponible, indépendamment de votre demande. Contactez l'administrateur ClickPost.",
+      status: 503,
+    };
+  }
   if (error instanceof APIConnectionTimeoutError) {
     return { code: "timeout", message: "Délai d'attente Claude dépassé.", status: 504 };
   }

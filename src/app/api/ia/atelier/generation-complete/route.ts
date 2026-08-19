@@ -4,10 +4,12 @@ import Anthropic, {
   APIConnectionTimeoutError,
   APIError,
   AuthenticationError,
+  BadRequestError,
   RateLimitError,
 } from "@anthropic-ai/sdk";
 import { getAnthropicClient, getAnthropicModel, isAnthropicConfigured } from "@/lib/ai/anthropic-client";
 import { buildAtelierGenerationPrompt } from "@/lib/ai/atelier-prompts";
+import { isInsufficientCreditError } from "@/lib/ai/classify-anthropic-error";
 import { parseAtelierResponse } from "@/lib/ai/parse-atelier-response";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { recordAiUsage } from "@/lib/ai/usage-tracking";
@@ -131,6 +133,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RateLimitError) return errorResponse("quota_exceeded", "Quota Claude dépassé.", 429);
     if (error instanceof AuthenticationError) return errorResponse("not_configured", "Clé Claude invalide.", 503);
+    if (error instanceof BadRequestError && isInsufficientCreditError(error)) {
+      return errorResponse(
+        "insufficient_credit",
+        "Le compte Anthropic (Claude) n'a plus de crédit disponible — la génération IA est temporairement indisponible, indépendamment de votre demande. Contactez l'administrateur ClickPost.",
+        503
+      );
+    }
     if (error instanceof APIConnectionTimeoutError) return errorResponse("timeout", "Délai d'attente Claude dépassé.", 504);
     if (error instanceof APIConnectionError) return errorResponse("provider_unavailable", "Service Claude injoignable.", 503);
     if (error instanceof APIError) return errorResponse("provider_unavailable", "Erreur du fournisseur IA.", 502);
