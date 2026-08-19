@@ -1,6 +1,7 @@
 "use client";
 
 import { platformIcons } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { platformColors } from "@/lib/platform-colors";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialPlatform } from "@/types/dashboard";
@@ -10,14 +11,15 @@ interface PlatformPerformanceChartProps {
 }
 
 export function PlatformPerformanceChart({ data }: PlatformPerformanceChartProps) {
+  const t = useTranslations();
   const PLATFORM_LABEL = usePlatformLabel();
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Performance par réseau</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("performances.platformChart.title")}</h2>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">{t("performances.notEnoughData")}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {data.map((item) => {

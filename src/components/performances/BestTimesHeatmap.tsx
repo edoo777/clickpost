@@ -1,9 +1,14 @@
+"use client";
+
 import { Fragment } from "react";
+import { useWeekdayShortLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { TimeSlotCell } from "@/lib/analytics-report";
+import type { Weekday } from "@/types/editorial-calendar";
 
 const SLOT_ORDER = ["morning", "midday", "afternoon", "evening"];
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-const WEEKDAY_LABEL_SHORT = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+const WEEKDAY_NUMBER_TO_KEY: Weekday[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function intensityClass(rate: number, maxRate: number): string {
   if (maxRate <= 0 || rate <= 0) return "bg-muted text-muted-foreground  ";
@@ -21,22 +26,24 @@ interface BestTimesHeatmapProps {
 }
 
 export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
+  const t = useTranslations();
+  const WEEKDAY_LABEL_SHORT = useWeekdayShortLabel();
   const maxRate = Math.max(0, ...grid.map((cell) => cell.engagementRate));
   const slotLabels = SLOT_ORDER.map((slotKey) => grid.find((cell) => cell.slotKey === slotKey)?.slotLabel ?? slotKey);
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Meilleurs jours et heures</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("performances.heatmap.title")}</h2>
       {best ? (
         <p className="text-xs text-muted-foreground ">
-          Meilleur créneau :{" "}
+          {t("performances.heatmap.bestSlotPrefix")}
           <span className="font-medium text-zinc-700 dark:text-zinc-300">
             {best.weekdayLabel} · {best.slotLabel}
           </span>{" "}
-          ({best.engagementRate.toFixed(1)}% d&apos;engagement)
+          ({best.engagementRate.toFixed(1)}% {t("performances.heatmap.engagementSuffix")})
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground ">Pas assez de données sur cette période.</p>
+        <p className="text-xs text-muted-foreground ">{t("performances.notEnoughData")}</p>
       )}
 
       <div className="overflow-x-auto">
@@ -51,7 +58,7 @@ export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
           {WEEKDAY_ORDER.map((weekday) => (
             <Fragment key={weekday}>
               <div className="flex items-center text-xs font-medium text-muted-foreground ">
-                {WEEKDAY_LABEL_SHORT[weekday]}
+                {WEEKDAY_LABEL_SHORT[WEEKDAY_NUMBER_TO_KEY[weekday]]}
               </div>
               {SLOT_ORDER.map((slotKey) => {
                 const cell = grid.find((candidate) => candidate.weekday === weekday && candidate.slotKey === slotKey);
@@ -61,7 +68,7 @@ export function BestTimesHeatmap({ grid, best }: BestTimesHeatmapProps) {
                     key={slotKey}
                     title={
                       cell
-                        ? `${cell.weekdayLabel} · ${cell.slotLabel} : ${cell.engagementRate.toFixed(1)}% (${cell.count} publication${cell.count > 1 ? "s" : ""})`
+                        ? `${cell.weekdayLabel} · ${cell.slotLabel} : ${cell.engagementRate.toFixed(1)}% (${t("performances.heatmap.tooltipPublications", { count: cell.count, plural: cell.count > 1 ? "s" : "" })})`
                         : undefined
                     }
                     className={`flex h-9 items-center justify-center rounded-md text-[11px] font-medium ${intensityClass(

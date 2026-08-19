@@ -4,16 +4,17 @@ import { useState } from "react";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { buildIdeaFromSeed, useDevelopIdea } from "@/lib/develop-idea";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import {
-  ACTION_LABEL,
+  useActionLabel,
   type OptimizationActionKey,
   type OptimizationRecommendation,
 } from "@/lib/optimization-recommendations";
 
-const KIND_LABEL: Record<OptimizationRecommendation["kind"], string> = {
-  finding: "Constat",
-  recommendation: "Recommandation",
-  hypothesis: "Hypothèse à tester",
+const KIND_LABEL_KEY: Record<OptimizationRecommendation["kind"], "performances.optimization.kind.finding" | "performances.optimization.kind.recommendation" | "performances.optimization.kind.hypothesis"> = {
+  finding: "performances.optimization.kind.finding",
+  recommendation: "performances.optimization.kind.recommendation",
+  hypothesis: "performances.optimization.kind.hypothesis",
 };
 
 const KIND_STYLE: Record<OptimizationRecommendation["kind"], string> = {
@@ -36,6 +37,8 @@ interface OptimizationPanelProps {
  * disparaître la carte que localement, sans jamais supprimer de donnée.
  */
 export function OptimizationPanel({ recommendations, brandId }: OptimizationPanelProps) {
+  const t = useTranslations();
+  const ACTION_LABEL = useActionLabel();
   const { brands } = useBrandsSession();
   const { addIdea } = useContentWorkspace();
   const { developIdea } = useDevelopIdea();
@@ -107,11 +110,9 @@ export function OptimizationPanel({ recommendations, brandId }: OptimizationPane
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-semibold text-foreground ">Optimisation</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("performances.optimization.title")}</h2>
         <p className="text-xs text-muted-foreground ">
-          Constats calculés à partir des données affichées ci-dessus — jamais générés
-          automatiquement par Claude. Chaque carte distingue un constat vérifiable, une
-          recommandation qui en découle, ou une hypothèse à tester.
+          {t("performances.optimization.description")}
         </p>
       </div>
       <ul className="flex flex-col gap-3">
@@ -119,7 +120,7 @@ export function OptimizationPanel({ recommendations, brandId }: OptimizationPane
           <li key={recommendation.id} className="flex flex-col gap-2 rounded-lg border border-border p-3">
             <div className="flex items-center justify-between gap-2">
               <span className={`w-fit rounded-full px-2 py-0.5 text-[11px] font-medium ${KIND_STYLE[recommendation.kind]}`}>
-                {KIND_LABEL[recommendation.kind]}
+                {t(KIND_LABEL_KEY[recommendation.kind])}
               </span>
             </div>
             <p className="text-sm text-zinc-800 dark:text-zinc-100">{recommendation.text}</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useBrandsSession } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { usePlatformLabel } from "@/lib/post-status";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 
@@ -28,6 +29,7 @@ interface PerformancesFiltersProps {
 }
 
 export function PerformancesFilters({ value, accounts, onChange }: PerformancesFiltersProps) {
+  const t = useTranslations();
   const { brands } = useBrandsSession();
   const PLATFORM_LABEL = usePlatformLabel();
   const accountsForBrand = value.brand === "all" ? accounts : accounts.filter((account) => account.brand === value.brand);
@@ -40,10 +42,10 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           onChange={(event) => onChange({ ...value, preset: event.target.value as PeriodPreset })}
           className={FIELD_CLASS}
         >
-          <option value="7">7 derniers jours</option>
-          <option value="30">30 derniers jours</option>
-          <option value="90">90 derniers jours</option>
-          <option value="custom">Période personnalisée</option>
+          <option value="7">{t("performances.filters.last7")}</option>
+          <option value="30">{t("performances.filters.last30")}</option>
+          <option value="90">{t("performances.filters.last90")}</option>
+          <option value="custom">{t("performances.filters.customPeriod")}</option>
         </select>
 
         {value.preset === "custom" && (
@@ -52,14 +54,14 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
               type="date"
               value={value.startDate}
               onChange={(event) => onChange({ ...value, startDate: event.target.value })}
-              aria-label="Du"
+              aria-label={t("performances.filters.startDateLabel")}
               className={FIELD_CLASS}
             />
             <input
               type="date"
               value={value.endDate}
               onChange={(event) => onChange({ ...value, endDate: event.target.value })}
-              aria-label="Au"
+              aria-label={t("performances.filters.endDateLabel")}
               className={FIELD_CLASS}
             />
           </>
@@ -70,7 +72,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           onChange={(event) => onChange({ ...value, brand: event.target.value, accountId: "all" })}
           className={FIELD_CLASS}
         >
-          <option value="all">Toutes les marques</option>
+          <option value="all">{t("performances.filters.allBrands")}</option>
           {brands.map((brand) => (
             <option key={brand.id} value={brand.name}>
               {brand.name}
@@ -83,7 +85,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           onChange={(event) => onChange({ ...value, accountId: event.target.value })}
           className={FIELD_CLASS}
         >
-          <option value="all">Tous les comptes</option>
+          <option value="all">{t("performances.filters.allAccounts")}</option>
           {accountsForBrand.map((account) => (
             <option key={account.id} value={account.id}>
               {account.accountName} ({account.handle})
@@ -96,7 +98,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           onChange={(event) => onChange({ ...value, platform: event.target.value as SocialPlatform | "all" })}
           className={FIELD_CLASS}
         >
-          <option value="all">Tous les réseaux</option>
+          <option value="all">{t("performances.filters.allPlatforms")}</option>
           {ALL_PLATFORMS.map((platform) => (
             <option key={platform} value={platform}>
               {PLATFORM_LABEL[platform]}
@@ -112,7 +114,7 @@ export function PerformancesFilters({ value, accounts, onChange }: PerformancesF
           onChange={(event) => onChange({ ...value, compare: event.target.checked })}
           className="h-4 w-4 rounded border-zinc-300 dark:border-white/[.2]"
         />
-        Comparer à la période précédente
+        {t("performances.filters.compareToPrevious")}
       </label>
     </div>
   );

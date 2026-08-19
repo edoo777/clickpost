@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { FORMAT_TO_LABEL_KEY, PLATFORM_LABEL, type PerformanceTotals, type PerformedPublication, type RankedGroup, type TimeSlotCell } from "@/lib/analytics-report";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { Brand } from "@/types/brand";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
@@ -22,6 +24,24 @@ export const ACTION_LABEL: Record<OptimizationActionKey, string> = {
   test: "Créer un test",
   dismiss: "Ignorer la recommandation",
 };
+
+const ACTION_LABEL_KEY: Record<OptimizationActionKey, TranslationKey> = {
+  new_idea: "performances.optimization.action.new_idea",
+  recycle: "performances.optimization.action.recycle",
+  variant: "performances.optimization.action.variant",
+  calendar: "performances.optimization.action.calendar",
+  test: "performances.optimization.action.test",
+  dismiss: "performances.optimization.action.dismiss",
+};
+
+/** Version traduite de `ACTION_LABEL`, réservée aux composants React. */
+export function useActionLabel(): Record<OptimizationActionKey, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(ACTION_LABEL_KEY) as [OptimizationActionKey, TranslationKey][];
+    return Object.fromEntries(entries.map(([action, key]) => [action, t(key)])) as Record<OptimizationActionKey, string>;
+  }, [t]);
+}
 
 export interface OptimizationRecommendation {
   id: string;

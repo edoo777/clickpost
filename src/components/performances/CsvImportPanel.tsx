@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { buildMetricsCsvTemplate, downloadCsv, parseMetricsCsv } from "@/lib/analytics-csv";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { ImportedMetricRecord } from "@/types/analytics";
 import type { Publication } from "@/types/publication";
 
@@ -17,6 +18,7 @@ interface CsvImportPanelProps {
  * réels pour éviter toute correspondance approximative par titre.
  */
 export function CsvImportPanel({ publications, currentUserName, onImport }: CsvImportPanelProps) {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [importedCount, setImportedCount] = useState<number | null>(null);
@@ -56,17 +58,14 @@ export function CsvImportPanel({ publications, currentUserName, onImport }: CsvI
         onClick={() => setIsOpen((prev) => !prev)}
         className="flex items-center justify-between text-left"
       >
-        <h2 className="text-sm font-semibold text-foreground ">Importer des statistiques réelles (CSV)</h2>
-        <span className="text-xs text-muted-foreground ">{isOpen ? "Réduire" : "Afficher"}</span>
+        <h2 className="text-sm font-semibold text-foreground ">{t("performances.csvImport.title")}</h2>
+        <span className="text-xs text-muted-foreground ">{isOpen ? t("performances.csvImport.collapse") : t("performances.csvImport.expand")}</span>
       </button>
 
       {isOpen && (
         <div className="flex flex-col gap-3">
           <p className="text-xs text-muted-foreground ">
-            Téléchargez le modèle pour les publications actuellement filtrées, complétez les
-            colonnes de statistiques avec les vraies valeurs exportées de chaque plateforme, puis
-            réimportez le fichier. Une nouvelle importation remplace toujours l&apos;ancienne pour
-            les publications concernées — jamais cumulée silencieusement.
+            {t("performances.csvImport.description")}
           </p>
           <div className="flex flex-wrap gap-3">
             <button
@@ -75,21 +74,21 @@ export function CsvImportPanel({ publications, currentUserName, onImport }: CsvI
               disabled={publications.length === 0}
               className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              Télécharger le modèle
+              {t("performances.csvImport.downloadTemplate")}
             </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
-              Importer un fichier CSV
+              {t("performances.csvImport.importFile")}
             </button>
             <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleFileSelected} className="hidden" />
           </div>
 
           {importedCount !== null && (
             <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-              {importedCount} ligne{importedCount > 1 ? "s" : ""} importée{importedCount > 1 ? "s" : ""} avec succès.
+              {t("performances.csvImport.importSuccess", { count: importedCount, plural: importedCount > 1 ? "s" : "" })}
             </p>
           )}
           {errors.length > 0 && (

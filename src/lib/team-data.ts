@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { TeamMember, TeamRole } from "@/types/team";
 
 export const ROLE_LABEL: Record<TeamRole, string> = {
@@ -8,6 +10,24 @@ export const ROLE_LABEL: Record<TeamRole, string> = {
   reviewer: "Réviseur",
   client_approver: "Approbateur client",
 };
+
+const ROLE_LABEL_KEY: Record<TeamRole, TranslationKey> = {
+  owner: "status.role.owner",
+  admin: "status.role.admin",
+  manager: "status.role.manager",
+  creator: "status.role.creator",
+  reviewer: "status.role.reviewer",
+  client_approver: "status.role.client_approver",
+};
+
+/** Version traduite de `ROLE_LABEL`, réservée aux composants React. */
+export function useRoleLabel(): Record<TeamRole, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(ROLE_LABEL_KEY) as [TeamRole, TranslationKey][];
+    return Object.fromEntries(entries.map(([role, key]) => [role, t(key)])) as Record<TeamRole, string>;
+  }, [t]);
+}
 
 export const ROLE_STYLE: Record<TeamRole, string> = {
   owner: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400",

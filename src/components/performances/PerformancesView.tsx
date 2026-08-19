@@ -39,18 +39,16 @@ import {
 import { toISODate } from "@/lib/date-utils";
 import { useBrandsSession } from "@/lib/brands-store";
 import { isDemoAnalyticsEnabled, setDemoAnalyticsEnabled } from "@/lib/demo-data-preference";
-import { useTranslations } from "@/lib/i18n/locale-provider";
+import { useLocale, useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { useImportedMetricsSession } from "@/lib/imported-metrics-store";
 import { buildOptimizationRecommendations } from "@/lib/optimization-recommendations";
 import { usePostsSession } from "@/lib/posts-store";
 import { useTeamSession } from "@/lib/team-store";
 
-const periodDateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
-
 type Tab = "overview" | "optimization";
-const TABS: { id: Tab; label: string }[] = [
-  { id: "overview", label: "Vue d'ensemble" },
-  { id: "optimization", label: "Optimisation" },
+const TAB_LABEL_KEYS: { id: Tab; labelKey: TranslationKey }[] = [
+  { id: "overview", labelKey: "performances.view.tabOverview" },
+  { id: "optimization", labelKey: "performances.view.tabOptimization" },
 ];
 
 function computeRangeForPreset(preset: PeriodPreset, today: Date): { startDate: string; endDate: string } {
@@ -79,6 +77,8 @@ function buildInitialFilters(): PerformancesFiltersValue {
 
 export function PerformancesView() {
   const t = useTranslations();
+  const { locale } = useLocale();
+  const periodDateFormatter = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", { day: "2-digit", month: "short", year: "numeric" });
   const { posts } = usePostsSession();
   const { accounts } = useAccountsSession();
   const { brands } = useBrandsSession();
@@ -177,20 +177,17 @@ export function PerformancesView() {
           {t("pageHeader.performancesAndReports")}
         </h1>
         <p className="text-sm text-muted-foreground ">
-          Analyse des marques, comptes et publications pour identifier ce qui fonctionne le mieux.
+          {t("pageHeader.performancesAndReportsSubtitle")}
         </p>
       </header>
 
       <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-        Aucune plateforme sociale n&apos;étant connectée par une intégration API réelle, seul le
-        nombre de publications marquées « Publié » est garanti réel. Toute autre statistique
-        provient d&apos;un import CSV manuel (voir ci-dessous) ou, si activées, de données de
-        démonstration clairement identifiées.
+        {t("performances.view.disclaimer")}
       </p>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
         <div className="flex gap-1">
-          {TABS.map((item) => (
+          {TAB_LABEL_KEYS.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -201,7 +198,7 @@ export function PerformancesView() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {item.label}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>
@@ -229,18 +226,18 @@ export function PerformancesView() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ThemePerformanceChart data={contentTypePerformance} title="Types de contenu les plus performants" />
-            <ThemePerformanceChart data={objectivePerformance} title="Objectifs les plus performants" />
+            <ThemePerformanceChart data={contentTypePerformance} title={t("performances.themeChart.contentTypesTitle")} />
+            <ThemePerformanceChart data={objectivePerformance} title={t("performances.themeChart.objectivesTitle")} />
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ThemePerformanceChart data={ownerPerformance} title="Performance par responsable" />
-            <ThemePerformanceChart data={ctaPerformance} title="Appels à l'action les plus performants" />
+            <ThemePerformanceChart data={ownerPerformance} title={t("performances.themeChart.ownerTitle")} />
+            <ThemePerformanceChart data={ctaPerformance} title={t("performances.themeChart.ctaTitle")} />
           </div>
 
           <BestTimesHeatmap grid={bestTimeSlots.grid} best={bestTimeSlots.best} />
 
-          <TopPublicationsList publications={worstPublications} title="Publications les moins performantes" />
+          <TopPublicationsList publications={worstPublications} title={t("performances.topPublications.worstTitle")} />
 
           <ReportPreview
             periodLabel={periodLabel}

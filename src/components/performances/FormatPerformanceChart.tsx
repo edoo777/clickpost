@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormatLabel } from "@/lib/editorial-constants";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { ContentFormat } from "@/types/editorial-calendar";
 
 interface FormatPerformanceChartProps {
@@ -8,14 +9,15 @@ interface FormatPerformanceChartProps {
 }
 
 export function FormatPerformanceChart({ data }: FormatPerformanceChartProps) {
+  const t = useTranslations();
   const FORMAT_LABEL = useFormatLabel();
   const maxRate = Math.max(1, ...data.map((item) => item.engagementRate));
 
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
-      <h2 className="text-sm font-semibold text-foreground ">Formats les plus performants</h2>
+      <h2 className="text-sm font-semibold text-foreground ">{t("performances.formatChart.title")}</h2>
       {data.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">{t("performances.notEnoughData")}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {data.map((item) => (

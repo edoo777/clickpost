@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { ROLE_LABEL, ROLE_STYLE } from "@/lib/team-data";
+import { ROLE_STYLE, useRoleLabel } from "@/lib/team-data";
 import type { TeamMember, TeamRole } from "@/types/team";
 
 const ALL_ROLES: TeamRole[] = ["owner", "admin", "manager", "creator", "reviewer", "client_approver"];
@@ -17,6 +17,7 @@ interface TeamTableProps {
 
 export function TeamTable({ members, onUpdateRole, onToggleStatus, onRemove }: TeamTableProps) {
   const t = useTranslations();
+  const ROLE_LABEL = useRoleLabel();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   return (

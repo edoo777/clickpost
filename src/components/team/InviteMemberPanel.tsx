@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "@/lib/i18n/locale-provider";
-import { ROLE_LABEL } from "@/lib/team-data";
+import { useRoleLabel } from "@/lib/team-data";
 import type { TeamRole } from "@/types/team";
 
 const ALL_ROLES: TeamRole[] = ["owner", "admin", "manager", "creator", "reviewer", "client_approver"];
@@ -25,6 +25,7 @@ interface InviteMemberPanelProps {
 
 export function InviteMemberPanel({ onClose, onInvite }: InviteMemberPanelProps) {
   const t = useTranslations();
+  const ROLE_LABEL = useRoleLabel();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<TeamRole>("creator");

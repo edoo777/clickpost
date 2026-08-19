@@ -2,27 +2,26 @@
 
 import { useState } from "react";
 import { sumByDate, type NumericMetricKey } from "@/lib/analytics-report";
+import { useLocale, useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import type { DailyMetricPoint } from "@/types/analytics";
 
-const METRIC_OPTIONS: { key: NumericMetricKey; label: string }[] = [
-  { key: "impressions", label: "Impressions" },
-  { key: "reach", label: "Portée" },
-  { key: "views", label: "Vues" },
-  { key: "interactions", label: "Interactions" },
-  { key: "reactions", label: "Réactions" },
-  { key: "comments", label: "Commentaires" },
-  { key: "shares", label: "Partages" },
-  { key: "saves", label: "Sauvegardes" },
-  { key: "clicks", label: "Clics" },
-  { key: "newFollowers", label: "Nouveaux abonnés" },
-  { key: "conversions", label: "Conversions" },
+const METRIC_OPTION_KEYS: { key: NumericMetricKey; labelKey: TranslationKey }[] = [
+  { key: "impressions", labelKey: "performances.kpi.impressions" },
+  { key: "reach", labelKey: "performances.kpi.reach" },
+  { key: "views", labelKey: "performances.kpi.views" },
+  { key: "interactions", labelKey: "performances.kpi.interactions" },
+  { key: "reactions", labelKey: "performances.kpi.reactions" },
+  { key: "comments", labelKey: "performances.kpi.comments" },
+  { key: "shares", labelKey: "performances.kpi.shares" },
+  { key: "saves", labelKey: "performances.kpi.saves" },
+  { key: "clicks", labelKey: "performances.kpi.clicks" },
+  { key: "newFollowers", labelKey: "performances.kpi.newFollowers" },
+  { key: "conversions", labelKey: "performances.kpi.conversions" },
 ];
 
 const WIDTH = 640;
 const HEIGHT = 220;
 const PADDING = { top: 16, right: 16, bottom: 8, left: 8 };
-const numberFormatter = new Intl.NumberFormat("fr-FR");
-const dateFormatter = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "short" });
 
 interface EvolutionChartProps {
   currentPoints: DailyMetricPoint[];
@@ -30,6 +29,11 @@ interface EvolutionChartProps {
 }
 
 export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChartProps) {
+  const t = useTranslations();
+  const { locale } = useLocale();
+  const localeCode = locale === "fr" ? "fr-FR" : "en-US";
+  const numberFormatter = new Intl.NumberFormat(localeCode);
+  const dateFormatter = new Intl.DateTimeFormat(localeCode, { day: "2-digit", month: "short" });
   const [metric, setMetric] = useState<NumericMetricKey>("impressions");
 
   const currentSeries = sumByDate(currentPoints, metric);
@@ -59,15 +63,15 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
   return (
     <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5  ">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground ">Évolution des performances</h2>
+        <h2 className="text-sm font-semibold text-foreground ">{t("performances.evolution.title")}</h2>
         <select
           value={metric}
           onChange={(event) => setMetric(event.target.value as NumericMetricKey)}
           className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-zinc-700   dark:text-zinc-300"
         >
-          {METRIC_OPTIONS.map((option) => (
+          {METRIC_OPTION_KEYS.map((option) => (
             <option key={option.key} value={option.key}>
-              {option.label}
+              {t(option.labelKey)}
             </option>
           ))}
         </select>
@@ -76,23 +80,23 @@ export function EvolutionChart({ currentPoints, previousPoints }: EvolutionChart
       {previousSeries && (
         <div className="flex items-center gap-4 text-xs text-muted-foreground ">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" /> Période actuelle
+            <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" /> {t("performances.evolution.currentPeriod")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-3 rounded-full bg-zinc-400 dark:bg-zinc-600" /> Période précédente
+            <span className="h-0.5 w-3 rounded-full bg-zinc-400 dark:bg-zinc-600" /> {t("performances.evolution.previousPeriod")}
           </span>
         </div>
       )}
 
       {currentPlotted.length === 0 ? (
-        <p className="text-sm text-muted-foreground ">Pas assez de données sur cette période.</p>
+        <p className="text-sm text-muted-foreground ">{t("performances.notEnoughData")}</p>
       ) : (
         <>
           <svg
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
             className="w-full"
             role="img"
-            aria-label="Graphique d'évolution des performances"
+            aria-label={t("performances.evolution.chartAriaLabel")}
           >
             <line
               x1={PADDING.left}

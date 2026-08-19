@@ -65,6 +65,7 @@ const fr = {
     approvalQueue: "File d'approbation",
     assistantPreparation: "Assistant IA de préparation",
     performancesAndReports: "Performances et rapports",
+    performancesAndReportsSubtitle: "Analyse des marques, comptes et publications pour identifier ce qui fonctionne le mieux.",
     settingsSubtitle: "Paramètres généraux utilisés dans toute la plateforme.",
   },
   common: {
@@ -433,6 +434,14 @@ const fr = {
       done: "Terminée",
       skipped: "Ignorée",
     },
+    role: {
+      owner: "Propriétaire",
+      admin: "Administrateur",
+      manager: "Gestionnaire",
+      creator: "Créateur",
+      reviewer: "Réviseur",
+      client_approver: "Approbateur client",
+    },
   },
   platform: {
     instagram: "Instagram",
@@ -461,6 +470,15 @@ const fr = {
     friday: "Vendredi",
     saturday: "Samedi",
     sunday: "Dimanche",
+  },
+  weekdayShort: {
+    monday: "Lun",
+    tuesday: "Mar",
+    wednesday: "Mer",
+    thursday: "Jeu",
+    friday: "Ven",
+    saturday: "Sam",
+    sunday: "Dim",
   },
   calendar: {
     header: {
@@ -2284,6 +2302,119 @@ const fr = {
       remove: "Supprimer",
       weekdaysLabel: "Jours de la semaine",
       disabledNotice: "Thématique désactivée — masquée des futures attributions, mais conservée dans la bibliothèque.",
+    },
+  },
+  performances: {
+    view: {
+      disclaimer:
+        "Aucune plateforme sociale n'étant connectée par une intégration API réelle, seul le nombre de publications marquées « Publié » est garanti réel. Toute autre statistique provient d'un import CSV manuel (voir ci-dessous) ou, si activées, de données de démonstration clairement identifiées.",
+      tabOverview: "Vue d'ensemble",
+      tabOptimization: "Optimisation",
+    },
+    notEnoughData: "Pas assez de données sur cette période.",
+    filters: {
+      last7: "7 derniers jours",
+      last30: "30 derniers jours",
+      last90: "90 derniers jours",
+      customPeriod: "Période personnalisée",
+      startDateLabel: "Du",
+      endDateLabel: "Au",
+      allBrands: "Toutes les marques",
+      allAccounts: "Tous les comptes",
+      allPlatforms: "Tous les réseaux",
+      compareToPrevious: "Comparer à la période précédente",
+    },
+    kpi: {
+      sectionTitle: "Indicateurs clés",
+      publishedPosts: "Publications publiées",
+      impressions: "Impressions",
+      reach: "Portée",
+      views: "Vues",
+      interactions: "Interactions",
+      engagementRate: "Taux d'engagement",
+      reactions: "Réactions",
+      comments: "Commentaires",
+      shares: "Partages",
+      saves: "Sauvegardes",
+      clicks: "Clics",
+      newFollowers: "Nouveaux abonnés",
+      conversions: "Conversions",
+    },
+    evolution: {
+      title: "Évolution des performances",
+      chartAriaLabel: "Graphique d'évolution des performances",
+      currentPeriod: "Période actuelle",
+      previousPeriod: "Période précédente",
+    },
+    platformChart: {
+      title: "Performance par réseau",
+    },
+    formatChart: {
+      title: "Formats les plus performants",
+    },
+    themeChart: {
+      defaultTitle: "Thématiques les plus performantes",
+      contentTypesTitle: "Types de contenu les plus performants",
+      objectivesTitle: "Objectifs les plus performants",
+      ownerTitle: "Performance par responsable",
+      ctaTitle: "Appels à l'action les plus performants",
+    },
+    topPublications: {
+      defaultTitle: "Meilleures publications",
+      worstTitle: "Publications les moins performantes",
+      impressionsSuffix: "impressions",
+      demoSuffix: "démonstration",
+    },
+    heatmap: {
+      title: "Meilleurs jours et heures",
+      bestSlotPrefix: "Meilleur créneau : ",
+      engagementSuffix: "d'engagement",
+      tooltipPublications: "{count} publication{plural}",
+    },
+    csvImport: {
+      title: "Importer des statistiques réelles (CSV)",
+      collapse: "Réduire",
+      expand: "Afficher",
+      description:
+        "Téléchargez le modèle pour les publications actuellement filtrées, complétez les colonnes de statistiques avec les vraies valeurs exportées de chaque plateforme, puis réimportez le fichier. Une nouvelle importation remplace toujours l'ancienne pour les publications concernées — jamais cumulée silencieusement.",
+      downloadTemplate: "Télécharger le modèle",
+      importFile: "Importer un fichier CSV",
+      importSuccess: "{count} ligne{plural} importée{plural} avec succès.",
+    },
+    demoToggle: {
+      label: "Afficher des données de démonstration (aucune vraie statistique)",
+    },
+    metricsSource: {
+      notAvailable: "Données non encore disponibles",
+      importedAndDemo: "Importé + démonstration",
+      imported: "Importé",
+      demo: "Démonstration",
+    },
+    optimization: {
+      title: "Optimisation",
+      description:
+        "Constats calculés à partir des données affichées ci-dessus — jamais générés automatiquement par Claude. Chaque carte distingue un constat vérifiable, une recommandation qui en découle, ou une hypothèse à tester.",
+      kind: {
+        finding: "Constat",
+        recommendation: "Recommandation",
+        hypothesis: "Hypothèse à tester",
+      },
+      action: {
+        new_idea: "Transformer en nouvelle idée",
+        recycle: "Recycler en autre format",
+        variant: "Créer une variante",
+        calendar: "Ajouter au calendrier",
+        test: "Créer un test",
+        dismiss: "Ignorer la recommandation",
+      },
+    },
+    reportPreview: {
+      title: "Aperçu de rapport",
+      exportCsv: "Exporter en CSV",
+      exportPdf: "Exporter en PDF (bientôt disponible)",
+      reportTitle: "Rapport de performance — {period}",
+      summary: "{impressions} impressions, {reach} de portée, taux d'engagement de {rate}%.",
+      topPublicationPrefix: "Meilleure publication : ",
     },
   },
 } as const;

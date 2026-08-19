@@ -43,6 +43,16 @@ const WEEKDAY_LABEL_KEY: Record<Weekday, TranslationKey> = {
   sunday: "weekday.sunday",
 };
 
+const WEEKDAY_SHORT_LABEL_KEY: Record<Weekday, TranslationKey> = {
+  monday: "weekdayShort.monday",
+  tuesday: "weekdayShort.tuesday",
+  wednesday: "weekdayShort.wednesday",
+  thursday: "weekdayShort.thursday",
+  friday: "weekdayShort.friday",
+  saturday: "weekdayShort.saturday",
+  sunday: "weekdayShort.sunday",
+};
+
 const FORMAT_LABEL_KEY: Record<ContentFormat, TranslationKey> = {
   text: "format.text",
   carousel: "format.carousel",
@@ -58,6 +68,15 @@ export function useWeekdayLabel(): Record<Weekday, string> {
   const t = useTranslations();
   return useMemo(() => {
     const entries = Object.entries(WEEKDAY_LABEL_KEY) as [Weekday, TranslationKey][];
+    return Object.fromEntries(entries.map(([day, key]) => [day, t(key)])) as Record<Weekday, string>;
+  }, [t]);
+}
+
+/** Version abrégée traduite de `WEEKDAY_LABEL` (ex. "Lun") — voir le commentaire de `useWeekdayLabel`. */
+export function useWeekdayShortLabel(): Record<Weekday, string> {
+  const t = useTranslations();
+  return useMemo(() => {
+    const entries = Object.entries(WEEKDAY_SHORT_LABEL_KEY) as [Weekday, TranslationKey][];
     return Object.fromEntries(entries.map(([day, key]) => [day, t(key)])) as Record<Weekday, string>;
   }, [t]);
 }

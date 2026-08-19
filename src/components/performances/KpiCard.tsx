@@ -1,4 +1,7 @@
+"use client";
+
 import { IconArrowDown, IconArrowUp } from "@/components/icons";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface KpiCardProps {
   label: string;
@@ -7,6 +10,7 @@ interface KpiCardProps {
 }
 
 export function KpiCard({ label, value, deltaPercent }: KpiCardProps) {
+  const t = useTranslations();
   const hasDelta = deltaPercent !== null && deltaPercent !== undefined;
   const isPositive = (deltaPercent ?? 0) >= 0;
 
@@ -21,7 +25,7 @@ export function KpiCard({ label, value, deltaPercent }: KpiCardProps) {
           }`}
         >
           {isPositive ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-          {Math.abs(deltaPercent as number).toFixed(1)}% vs période précédente
+          {Math.abs(deltaPercent as number).toFixed(1)}% {t("dashboard.metricChangeSuffix")}
         </span>
       )}
     </div>
