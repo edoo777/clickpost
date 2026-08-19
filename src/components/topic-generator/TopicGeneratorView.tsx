@@ -791,7 +791,7 @@ export function TopicGeneratorView() {
             niche={selectedBrand?.industry ?? ""}
             errors={formErrors}
           />
-          <TopicBatchList batches={topicBatches} themeLabelFor={themeLabelFor} onOpen={handleOpenGroup} />
+          <TopicBatchList batches={topicBatches} topics={topics} themeLabelFor={themeLabelFor} onOpen={handleOpenGroup} />
         </>
       )}
     </div>

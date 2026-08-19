@@ -7,12 +7,13 @@ import TaskList from "@tiptap/extension-task-list";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { SlashCommand } from "@/components/idea-workshop/editor/slash-command-extension";
 import { NoteEditorToolbar } from "@/components/ideas-bank/notes/NoteEditorToolbar";
 import { NotePropertiesPanel } from "@/components/ideas-bank/notes/NotePropertiesPanel";
 import { NoteQuickActionsMenu } from "@/components/ideas-bank/notes/NoteQuickActionsMenu";
+import { DevelopMenu } from "@/components/shared/DevelopMenu";
+import { MoreActionsMenu } from "@/components/shared/MoreActionsMenu";
 import { useBrandsSession } from "@/lib/brands-store";
 import { useDevelopIdea } from "@/lib/develop-idea";
 import { useTranslations } from "@/lib/i18n/locale-provider";
@@ -62,10 +63,9 @@ interface NoteEditorProps {
  */
 export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
   const t = useTranslations();
-  const router = useRouter();
   const { brands } = useBrandsSession();
   const { updateNote, archiveNote, restoreNote, removeNote, addNote } = useIdeaNotesSession();
-  const { convertNoteToIdea, developNote } = useDevelopIdea();
+  const { convertNoteToIdea, canCreatePublication, createPublicationAndOpen } = useDevelopIdea();
   const { role, isAdmin, isLoading: isWorkspaceLoading, workspaceError, userId } = useWorkspaceSession();
   const saveStatus = useSyncExternalStore(subscribeStatus, getStatusSnapshot, getStatusServerSnapshot);
   const syncStatus = useSyncStatus();
@@ -138,20 +138,13 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
     onDeleted();
   }
 
-  function handleConvertToIdea() {
-    // Une fois l'idée créée, ce même bouton devient un raccourci direct vers l'Atelier — jamais
-    // un deuxième clic qui recréerait une idée en double (ensureIdeaForNote() est déjà idempotent
-    // via note.convertedIdeaId, mais autant naviguer directement plutôt que ré-afficher un toast).
-    if (note.convertedIdeaId) {
-      router.push(`/atelier/${note.convertedIdeaId}`);
+  function handleCreatePublication() {
+    const idea = convertNoteToIdea(note);
+    if (!canCreatePublication(idea)) {
+      setConfirmation(t("ideasBank.noteEditor.selectNetworkFirst"));
       return;
     }
-    convertNoteToIdea(note);
-    setConfirmation(t("ideasBank.noteEditor.ideaCreatedNotice"));
-  }
-
-  function handleDevelop() {
-    developNote(note, "manual");
+    createPublicationAndOpen(idea);
   }
 
   function handleCreateCopyFromAi(text: string) {
@@ -211,26 +204,30 @@ export function NoteEditor({ note, onSelectNote, onDeleted }: NoteEditorProps) {
         <button type="button" onClick={() => flushNow()} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
           {t("common.save")}
         </button>
-        <button type="button" onClick={handleDuplicate} disabled={!canEdit} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
-          {t("ideaWorkshop.versionsPanel.duplicate")}
-        </button>
-        {canDestruct && (
-          <>
-            <button type="button" onClick={handleArchiveToggle} className="rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300">
-              {note.archiveStatus === "archived" ? t("ideaWorkshop.versionsPanel.restore") : t("calendar.importantDates.archive")}
-            </button>
-            <button type="button" onClick={handleDelete} className="rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10">
-              {t("common.delete")}
-            </button>
-          </>
-        )}
-        <button type="button" onClick={handleConvertToIdea} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
-          {note.convertedIdeaId ? t("ideasBank.noteEditor.openIdeaInWorkshop") : t("ideasBank.noteEditor.convertToIdea")}
-        </button>
-        <button type="button" onClick={handleDevelop} className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white">
-          {t("ideasBank.noteEditor.developInProduction")}
+        <DevelopMenu variant="note" note={note} />
+        <button
+          type="button"
+          onClick={handleCreatePublication}
+          className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1.5 text-xs font-semibold text-white"
+        >
+          {t("ideasBank.noteEditor.createPublication")}
         </button>
         <NoteQuickActionsMenu editor={editor} noteTitle={note.title} brandTone={brand?.toneOfVoice} onCreateCopy={handleCreateCopyFromAi} />
+        <MoreActionsMenu
+          items={[
+            ...(canEdit ? [{ key: "duplicate", label: t("ideaWorkshop.versionsPanel.duplicate"), onClick: handleDuplicate }] : []),
+            ...(canDestruct
+              ? [
+                  {
+                    key: "archive",
+                    label: note.archiveStatus === "archived" ? t("ideaWorkshop.versionsPanel.restore") : t("calendar.importantDates.archive"),
+                    onClick: handleArchiveToggle,
+                  },
+                  { key: "delete", label: t("common.delete"), onClick: handleDelete, destructive: true },
+                ]
+              : []),
+          ]}
+        />
       </div>
 
       <NotePropertiesPanel note={note} onChange={(patch) => updateNote(note.id, patch)} />

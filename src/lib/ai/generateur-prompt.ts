@@ -69,6 +69,18 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     input.positioning ? `- Positionnement : ${input.positioning}` : null,
     input.description ? `- Description : ${input.description}` : null,
     "",
+    input.instructions
+      ? [
+          "PRIORITÉ ABSOLUE — DEMANDE EXACTE DE L'UTILISATEUR (à respecter avant tout autre réglage",
+          "ci-dessous, sauf si elle contredit une règle de sécurité ou le format de réponse imposé) :",
+          `« ${input.instructions} »`,
+          "Cette demande définit le fond et l'angle réel des sujets à produire — les thématiques, types",
+          "de contenu et quantités fournis plus bas structurent seulement leur répartition (dans quel",
+          "groupe classer chaque sujet, en quelle quantité), ils ne doivent jamais l'emporter sur ce que",
+          "l'utilisateur a explicitement demandé ici.",
+          "",
+        ].join("\n")
+      : null,
     "DISTINCTION STRICTE À RESPECTER — six concepts différents, jamais interchangeables :",
     "1. niche : le secteur général de la marque (ex. Fitness, Immobilier) — déjà fourni ci-dessus, à reporter tel quel.",
     "2. thématique (theme) : un pilier éditorial récurrent qui découle de la niche (ex. Musculation, Nutrition, Course à pied) — large et stable dans le temps, JAMAIS un sujet précis, JAMAIS un angle, JAMAIS le nom d'un réseau social.",
@@ -132,7 +144,7 @@ export function buildGenerateurPrompt(input: GenerateurPromptInput): GenerateurP
     input.preferredContentTypes && input.preferredContentTypes.length > 0
       ? `Types de contenu privilégiés par la marque : ${input.preferredContentTypes.join(", ")}`
       : null,
-    input.instructions ? `Instructions supplémentaires : ${input.instructions}` : null,
+    input.instructions ? "Rappel : respecte en priorité la demande exacte de l'utilisateur donnée au début de ce message." : null,
     input.existingTitles && input.existingTitles.length > 0
       ? [
           "Sujets déjà présents dans le workspace de cette marque — ne les recopie jamais, ne les",

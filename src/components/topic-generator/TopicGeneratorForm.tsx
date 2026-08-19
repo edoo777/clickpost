@@ -255,6 +255,18 @@ export function TopicGeneratorForm({
         </label>
       </div>
 
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        {t("topicGenerator.form.freeRequestLabel")}
+        <span className="text-xs font-normal text-muted-foreground">{t("topicGenerator.form.freeRequestHint")}</span>
+        <textarea
+          rows={4}
+          value={value.instructions}
+          placeholder={t("topicGenerator.form.freeRequestPlaceholder")}
+          onChange={(event) => onChange({ ...value, instructions: event.target.value })}
+          className={`${FIELD_CLASS} resize-y`}
+        />
+      </label>
+
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -450,17 +462,6 @@ export function TopicGeneratorForm({
         </div>
         {errors.formats && <span className="text-xs font-medium text-red-500">{errors.formats}</span>}
       </div>
-
-      <label className="flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        {t("topicGenerator.form.additionalInstructionLabel")}
-        <textarea
-          rows={2}
-          value={value.instructions}
-          placeholder={t("topicGenerator.form.additionalInstructionPlaceholder")}
-          onChange={(event) => onChange({ ...value, instructions: event.target.value })}
-          className={FIELD_CLASS}
-        />
-      </label>
 
       <button
         type="button"

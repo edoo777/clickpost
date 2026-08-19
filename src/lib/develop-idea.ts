@@ -1,9 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useAccountsSession } from "@/lib/accounts-store";
+import { useBrandsSession } from "@/lib/brands-store";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { useIdeaNotesSession } from "@/lib/idea-notes-store";
+import { buildPostInputFromIdea } from "@/lib/idea-transformation";
+import { buildNewPost } from "@/lib/posts";
+import { usePostsSession } from "@/lib/posts-store";
 import { plainTextToDocument } from "@/lib/rich-document";
+import { useThemesSession } from "@/lib/themes-store";
 import type { SocialPlatform } from "@/types/dashboard";
 import type { ContentFormat } from "@/types/editorial-calendar";
 import type { Idea } from "@/types/idea";
@@ -60,8 +66,12 @@ export type DevelopMode = "manual" | "ai";
  */
 export function useDevelopIdea() {
   const router = useRouter();
-  const { ideas, addIdea, updateTopic } = useContentWorkspace();
+  const { ideas, addIdea, updateIdea, updateTopic } = useContentWorkspace();
   const { updateNote } = useIdeaNotesSession();
+  const { brands } = useBrandsSession();
+  const { themes } = useThemesSession();
+  const { accounts } = useAccountsSession();
+  const { addPosts } = usePostsSession();
 
   function ensureIdeaForTopic(topic: Topic, batch: TopicBatch): Idea {
     if (topic.ideaId) {
@@ -127,9 +137,15 @@ export function useDevelopIdea() {
     return idea;
   }
 
-  function developTopic(topic: Topic, batch: TopicBatch, mode: DevelopMode) {
+  /** `instructions` : demande libre de l'utilisateur (ex. depuis le menu « Développer avec l'IA »
+   * — script vidéo, structuration, instruction personnalisée) — transmise à l'Atelier via un
+   * paramètre d'URL, jamais stockée sur l'idée elle-même. Lue par IdeaWorkshopView pour la
+   * génération automatique déclenchée à l'ouverture en mode IA (voir son effet `requestedMode`) ;
+   * sans effet en mode manuel. */
+  function developTopic(topic: Topic, batch: TopicBatch, mode: DevelopMode, instructions?: string) {
     const idea = ensureIdeaForTopic(topic, batch);
-    router.push(`/atelier/${idea.id}?mode=${mode}`);
+    const query = mode === "ai" && instructions ? `&instructions=${encodeURIComponent(instructions)}` : "";
+    router.push(`/atelier/${idea.id}?mode=${mode}${query}`);
   }
 
   function registerTopicAsIdea(topic: Topic, batch: TopicBatch): Idea {
@@ -144,14 +160,78 @@ export function useDevelopIdea() {
 
   /** « Développer dans la production » depuis une note — mêmes garanties que convertNoteToIdea,
    * puis ouvre l'Atelier existant. Ne publie jamais automatiquement. */
-  function developNote(note: IdeaNote, mode: DevelopMode) {
+  function developNote(note: IdeaNote, mode: DevelopMode, instructions?: string) {
     const idea = ensureIdeaForNote(note);
-    router.push(`/atelier/${idea.id}?mode=${mode}`);
+    const query = mode === "ai" && instructions ? `&instructions=${encodeURIComponent(instructions)}` : "";
+    router.push(`/atelier/${idea.id}?mode=${mode}${query}`);
   }
 
-  function developIdea(idea: Idea, mode: DevelopMode) {
-    router.push(`/atelier/${idea.id}?mode=${mode}`);
+  function developIdea(idea: Idea, mode: DevelopMode, instructions?: string) {
+    const query = mode === "ai" && instructions ? `&instructions=${encodeURIComponent(instructions)}` : "";
+    router.push(`/atelier/${idea.id}?mode=${mode}${query}`);
   }
 
-  return { developTopic, developIdea, registerTopicAsIdea, convertNoteToIdea, developNote };
+  /**
+   * Crée réellement la Publication associée à une idée (ou réutilise celle déjà liée via
+   * `idea.publicationId` — jamais un doublon), pour le raccourci « Créer une publication »/
+   * « Planifier » du Générateur de sujets et de la Banque d'idées — des idées qui n'ont jamais été
+   * ouvertes dans l'Atelier, donc sans version de contenu à sérialiser (voir
+   * `serializeVersionToText`, repli sur les champs à plat de l'idée). Distinct de
+   * `IdeaWorkshopView.handleCreatePublication` (qui sérialise la version active affichée dans
+   * l'Atelier) — même finalité, contexte de données différent, volontairement non fusionnés. Ne
+   * fait jamais rien si aucun réseau n'est défini sur l'idée — l'appelant doit vérifier
+   * `idea.platform` avant d'activer l'action (voir `canCreatePublication`).
+   */
+  function ensurePublicationForIdea(idea: Idea): { id: string } | null {
+    if (!idea.platform) return null;
+    if (idea.publicationId) {
+      // Réutilisation explicite — jamais une seconde publication pour la même idée, quel que soit
+      // le nombre de clics. La publication elle-même n'est pas relue ici (non nécessaire : seul
+      // son identifiant sert à la navigation), voir la page /publications/{id} pour son état réel.
+      return { id: idea.publicationId };
+    }
+    const brand = brands.find((candidate) => candidate.id === idea.brandId);
+    const brandName = brand?.name ?? idea.brandId;
+    const theme = themes.find((candidate) => candidate.id === idea.themeId);
+    const account =
+      accounts.find((candidate) => candidate.brand === brandName && candidate.platform === idea.platform && candidate.status === "connected") ??
+      accounts.find((candidate) => candidate.brand === brandName && candidate.status === "connected");
+    const input = buildPostInputFromIdea(idea, undefined, brandName, theme?.label ?? "");
+    const publication = buildNewPost({ ...input, accountId: account?.id });
+    addPosts([publication]);
+    updateIdea(idea.id, { publicationId: publication.id, status: "ready_to_schedule" });
+    return publication;
+  }
+
+  function canCreatePublication(idea: Idea): boolean {
+    return Boolean(idea.platform);
+  }
+
+  /** « Créer une publication » — ouvre l'éditeur de publication existant (mêmes champs, mêmes
+   * garanties qu'un clic dans l'Atelier), pour affiner texte/CTA/hashtags avant programmation. */
+  function createPublicationAndOpen(idea: Idea) {
+    const publication = ensurePublicationForIdea(idea);
+    if (!publication) return;
+    router.push(`/publications/${publication.id}`);
+  }
+
+  /** « Planifier » — même publication (créée si nécessaire), mais atterrit sur le calendrier
+   * plutôt que l'éditeur : action distincte de « Créer une publication », pensée pour poser
+   * directement une date plutôt que retravailler le contenu. */
+  function createPublicationAndSchedule(idea: Idea) {
+    const publication = ensurePublicationForIdea(idea);
+    if (!publication) return;
+    router.push("/calendrier");
+  }
+
+  return {
+    developTopic,
+    developIdea,
+    registerTopicAsIdea,
+    convertNoteToIdea,
+    developNote,
+    canCreatePublication,
+    createPublicationAndOpen,
+    createPublicationAndSchedule,
+  };
 }

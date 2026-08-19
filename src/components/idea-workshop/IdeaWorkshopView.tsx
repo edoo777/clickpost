@@ -37,6 +37,10 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedMode = searchParams.get("mode") === "ai" ? "ai" : "manual";
+  // Instruction libre transmise par le Générateur de sujets / la Banque d'idées (menu
+  // « Développer avec l'IA ») — jamais stockée sur l'idée, lue une seule fois à l'ouverture pour
+  // la génération automatique ci-dessous. Absente en usage normal (idée ouverte sans instruction).
+  const requestedInstructions = searchParams.get("instructions") ?? "";
 
   const {
     ideas,
@@ -86,7 +90,14 @@ export function IdeaWorkshopView({ ideaId }: IdeaWorkshopViewProps) {
     hasAutoRun.current = true;
     const hasContent = documentToPlainText(idea.documentContent).trim().length > 0 || (idea.body ?? "").trim().length > 0;
     if (hasContent) return;
-    const context: AIGenerationContext = { idea, brand, theme, tone: idea.tone ?? "professional", length: "medium", instructions: "" };
+    const context: AIGenerationContext = {
+      idea,
+      brand,
+      theme,
+      tone: idea.tone ?? "professional",
+      length: "medium",
+      instructions: requestedInstructions,
+    };
     // Différé hors du corps synchrone de l'effet (règle react-hooks/set-state-in-effect) : la
     // génération automatique à l'ouverture reste sur le générateur simulé en F2.1 (jamais
     // d'appel Claude déclenché sans action explicite de l'utilisateur, voir generateFullContent
