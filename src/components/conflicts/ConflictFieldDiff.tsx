@@ -1,6 +1,7 @@
 "use client";
 
 import { formatFieldValue, type ConflictFieldRow } from "@/lib/conflict-display";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 
 interface ConflictFieldDiffProps {
   rows: ConflictFieldRow[];
@@ -15,12 +16,13 @@ const CELL_CLASS = "grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.2fr
  * logique métier spécifique par table (F1.7). En mode fusion, chaque champ différent devient
  * sélectionnable (valeur locale ou distante). */
 export function ConflictFieldDiff({ rows, mode, selections, onSelect }: ConflictFieldDiffProps) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border">
       <div className={`${CELL_CLASS} bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground`}>
-        <span>Champ</span>
-        <span>Version locale</span>
-        <span>Version distante</span>
+        <span>{t("conflicts.fieldDiff.fieldColumn")}</span>
+        <span>{t("conflicts.fieldDiff.localColumn")}</span>
+        <span>{t("conflicts.fieldDiff.remoteColumn")}</span>
       </div>
       {rows.map((row) => (
         <div key={row.key} className={`${CELL_CLASS} px-4 py-2.5 text-sm ${row.isDifferent ? "bg-amber-50 dark:bg-amber-500/5" : ""}`}>
@@ -64,7 +66,7 @@ export function ConflictFieldDiff({ rows, mode, selections, onSelect }: Conflict
           )}
         </div>
       ))}
-      {rows.length === 0 && <p className="px-4 py-6 text-center text-sm text-muted-foreground">Aucun champ à comparer.</p>}
+      {rows.length === 0 && <p className="px-4 py-6 text-center text-sm text-muted-foreground">{t("conflicts.fieldDiff.noFieldsToCompare")}</p>}
     </div>
   );
 }

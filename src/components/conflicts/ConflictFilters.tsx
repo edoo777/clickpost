@@ -1,6 +1,7 @@
 "use client";
 
 import { CONFLICT_ENTITY_LABEL } from "@/lib/conflict-display";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { SyncEntityType } from "@/lib/sync/types";
 import type { Brand } from "@/types/brand";
 
@@ -33,6 +34,7 @@ interface ConflictFiltersProps {
  * qu'une valeur possible aujourd'hui (« à résoudre » — seuls les conflits non résolus sont
  * listés), le sélecteur reste prêt pour d'éventuels statuts futurs sans changement d'API. */
 export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProps) {
+  const t = useTranslations();
   const isDefault = JSON.stringify(value) === JSON.stringify(DEFAULT_CONFLICT_FILTERS);
 
   return (
@@ -41,7 +43,7 @@ export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProp
         type="search"
         value={value.search}
         onChange={(event) => onChange({ ...value, search: event.target.value })}
-        placeholder="Rechercher un conflit…"
+        placeholder={t("conflicts.filters.searchPlaceholder")}
         className={`${FIELD_CLASS} w-full sm:w-64`}
       />
 
@@ -50,7 +52,7 @@ export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProp
         onChange={(event) => onChange({ ...value, entityType: event.target.value as SyncEntityType | "all" })}
         className={FIELD_CLASS}
       >
-        <option value="all">Tous les types</option>
+        <option value="all">{t("conflicts.filters.allTypes")}</option>
         {(Object.entries(CONFLICT_ENTITY_LABEL) as [SyncEntityType, string][]).map(([type, label]) => (
           <option key={type} value={type}>
             {label}
@@ -64,7 +66,7 @@ export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProp
           onChange={(event) => onChange({ ...value, brandId: event.target.value })}
           className={FIELD_CLASS}
         >
-          <option value="all">Toutes les marques</option>
+          <option value="all">{t("conflicts.filters.allBrands")}</option>
           {brands.map((brand) => (
             <option key={brand.id} value={brand.id}>
               {brand.name}
@@ -74,21 +76,21 @@ export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProp
       )}
 
       <select value="pending" disabled className={`${FIELD_CLASS} opacity-70`}>
-        <option value="pending">À résoudre</option>
+        <option value="pending">{t("conflicts.filters.pendingStatus")}</option>
       </select>
 
       <input
         type="date"
         value={value.dateFrom}
         onChange={(event) => onChange({ ...value, dateFrom: event.target.value })}
-        aria-label="Du"
+        aria-label={t("conflicts.filters.dateFrom")}
         className={FIELD_CLASS}
       />
       <input
         type="date"
         value={value.dateTo}
         onChange={(event) => onChange({ ...value, dateTo: event.target.value })}
-        aria-label="Au"
+        aria-label={t("conflicts.filters.dateTo")}
         className={FIELD_CLASS}
       />
 
@@ -98,7 +100,7 @@ export function ConflictFilters({ value, onChange, brands }: ConflictFiltersProp
           onClick={() => onChange(DEFAULT_CONFLICT_FILTERS)}
           className="text-sm font-medium text-muted-foreground underline-offset-2 hover:underline"
         >
-          Réinitialiser
+          {t("conflicts.filters.reset")}
         </button>
       )}
     </div>

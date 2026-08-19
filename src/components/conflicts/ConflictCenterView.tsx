@@ -47,9 +47,9 @@ export function ConflictCenterView() {
   async function runBulk(choice: "keep_local" | "keep_remote") {
     const targets = filtered.filter((entry) => selectedIds.has(entry.id));
     if (targets.length === 0) return;
-    const label = choice === "keep_local" ? "la version LOCALE" : "la version DISTANTE";
+    const vars = { count: targets.length, plural: targets.length > 1 ? "s" : "" };
     const confirmed = window.confirm(
-      `Conserver ${label} pour ${targets.length} conflit${targets.length > 1 ? "s" : ""} sélectionné${targets.length > 1 ? "s" : ""} ? Cette action s'applique immédiatement à chacun, sans fusion.`
+      t(choice === "keep_local" ? "conflicts.center.confirmBulkKeepLocal" : "conflicts.center.confirmBulkKeepRemote", vars)
     );
     if (!confirmed) return;
 
@@ -62,7 +62,7 @@ export function ConflictCenterView() {
   }
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Chargement des conflits…</p>;
+    return <p className="text-sm text-muted-foreground">{t("conflicts.center.loading")}</p>;
   }
 
   return (
@@ -71,16 +71,20 @@ export function ConflictCenterView() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("pageTitle.conflictCenter")}</h1>
         <p className="text-sm text-muted-foreground">
           {conflicts.length === 0
-            ? "Aucun conflit de synchronisation en attente."
-            : `${conflicts.length} conflit${conflicts.length > 1 ? "s" : ""} nécessite${conflicts.length > 1 ? "nt" : ""} une action — vos données locales sont conservées, aucune n'a été perdue.`}
+            ? t("conflicts.center.emptyNotice")
+            : t("conflicts.center.pendingNotice", {
+                count: conflicts.length,
+                plural: conflicts.length > 1 ? "s" : "",
+                pluralVerb: conflicts.length > 1 ? "nt" : "",
+              })}
         </p>
       </header>
 
       {conflicts.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16]">
-          <p className="text-base font-semibold text-foreground">Tout est synchronisé</p>
+          <p className="text-base font-semibold text-foreground">{t("conflicts.center.allSyncedTitle")}</p>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Aucun conflit ne nécessite votre attention pour le moment.
+            {t("conflicts.center.allSyncedHint")}
           </p>
         </div>
       ) : (
@@ -90,7 +94,7 @@ export function ConflictCenterView() {
           {selectedIds.size > 0 && (
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 dark:border-violet-500/20 dark:bg-violet-500/10">
               <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
-                {selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}
+                {t("conflicts.center.selectedCount", { count: selectedIds.size, plural: selectedIds.size > 1 ? "s" : "" })}
               </span>
               <button
                 type="button"
@@ -98,7 +102,7 @@ export function ConflictCenterView() {
                 onClick={() => void runBulk("keep_local")}
                 className="rounded-lg border border-violet-300 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/20"
               >
-                Conserver local pour la sélection
+                {t("conflicts.center.keepLocalSelection")}
               </button>
               <button
                 type="button"
@@ -106,21 +110,21 @@ export function ConflictCenterView() {
                 onClick={() => void runBulk("keep_remote")}
                 className="rounded-lg border border-violet-300 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/20"
               >
-                Conserver distant pour la sélection
+                {t("conflicts.center.keepRemoteSelection")}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
                 className="ml-auto text-xs font-medium text-violet-700 underline-offset-2 hover:underline dark:text-violet-300"
               >
-                Désélectionner
+                {t("conflicts.center.deselect")}
               </button>
             </div>
           )}
 
           {filtered.length === 0 ? (
             <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-muted-foreground dark:border-white/[.12]">
-              Aucun conflit ne correspond à ces filtres.
+              {t("conflicts.center.noMatchNotice")}
             </p>
           ) : (
             <div className="flex flex-col gap-2">

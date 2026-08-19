@@ -11,6 +11,7 @@ import {
   getConflictTitle,
 } from "@/lib/conflict-display";
 import { useConflictsSession } from "@/lib/conflicts-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { mapRowToRecord } from "@/lib/sync/mappers";
 import type { ConflictEntry, ConflictResolutionChoice } from "@/types/conflict";
 
@@ -28,6 +29,7 @@ type Stage = "choose" | "merge";
  * `resolveConflict` dans conflict-resolution.ts).
  */
 export function ConflictComparisonPanel({ entry: initialEntry, onClose }: ConflictComparisonPanelProps) {
+  const t = useTranslations();
   const { resolve } = useConflictsSession();
   const { canManageBrands } = useBrandsSession();
   const [entry, setEntry] = useState(initialEntry);
@@ -103,10 +105,10 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
 
     setSuccess(
       choice === "defer"
-        ? "Décision reportée."
+        ? t("conflicts.comparison.deferredSuccess")
         : navigator.onLine
-          ? "Résolution enregistrée."
-          : "Résolution enregistrée localement — elle sera envoyée dès le retour de la connexion."
+          ? t("conflicts.comparison.savedSuccess")
+          : t("conflicts.comparison.savedOfflineSuccess")
     );
     setTimeout(onClose, 1400);
   }
@@ -124,7 +126,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("conflicts.comparison.close")}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
           >
             <IconClose className="h-4 w-4" />
@@ -133,73 +135,71 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
 
         {!canResolve && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-            Seuls les administrateurs du workspace peuvent résoudre un conflit sur une marque.
+            {t("conflicts.comparison.adminOnlyNotice")}
           </p>
         )}
 
         {staleNotice && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-            La version distante a changé pendant votre comparaison — elle a été actualisée ci-dessous. Merci de revérifier
-            avant de choisir à nouveau.
+            {t("conflicts.comparison.staleNotice")}
           </p>
         )}
 
         {bothSidesChanged && (
           <p className="rounded-lg bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
-            Les deux versions contiennent des changements distincts ({differingCount} champ{differingCount > 1 ? "s" : ""}{" "}
-            différent{differingCount > 1 ? "s" : ""}) — comparez-les avant de choisir.
+            {t("conflicts.comparison.bothChangedNotice", { count: differingCount, plural: differingCount > 1 ? "s" : "" })}
           </p>
         )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-border p-3">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Version locale</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("conflicts.comparison.localVersion")}</span>
               {localIsNewer && (
                 <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  Plus récente
+                  {t("conflicts.comparison.newer")}
                 </span>
               )}
             </div>
             {entry.local ? (
               <dl className="flex flex-col gap-1 text-xs text-muted-foreground">
                 <div className="flex justify-between gap-2">
-                  <dt>Créée le</dt>
+                  <dt>{t("conflicts.comparison.createdAt")}</dt>
                   <dd>{formatDateTime(entry.local.createdAt)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt>Modifiée le</dt>
+                  <dt>{t("conflicts.comparison.updatedAt")}</dt>
                   <dd>{formatDateTime(entry.local.updatedAt)}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <dt>Révision</dt>
+                  <dt>{t("conflicts.comparison.revision")}</dt>
                   <dd>{String(entry.local.revision ?? entry.lastSyncedRevision)}</dd>
                 </div>
               </dl>
             ) : (
-              <p className="text-xs text-muted-foreground">N&apos;existe plus localement.</p>
+              <p className="text-xs text-muted-foreground">{t("conflicts.comparison.noLongerExistsLocally")}</p>
             )}
           </div>
           <div className="rounded-xl border border-border p-3">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Version distante</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("conflicts.comparison.remoteVersion")}</span>
               {remoteIsNewer && (
                 <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  Plus récente
+                  {t("conflicts.comparison.newer")}
                 </span>
               )}
             </div>
             <dl className="flex flex-col gap-1 text-xs text-muted-foreground">
               <div className="flex justify-between gap-2">
-                <dt>Créée le</dt>
+                <dt>{t("conflicts.comparison.createdAt")}</dt>
                 <dd>{formatDateTime(entry.remote.createdAt)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt>Modifiée le</dt>
+                <dt>{t("conflicts.comparison.updatedAt")}</dt>
                 <dd>{formatDateTime(entry.remote.updatedAt)}</dd>
               </div>
               <div className="flex justify-between gap-2">
-                <dt>Révision</dt>
+                <dt>{t("conflicts.comparison.revision")}</dt>
                 <dd>{String(entry.remote.revision ?? "—")}</dd>
               </div>
             </dl>
@@ -232,7 +232,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
               onClick={() => void submit("keep_local")}
               className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              {isSubmitting && pendingChoice === "keep_local" ? "Enregistrement…" : "Conserver local"}
+              {isSubmitting && pendingChoice === "keep_local" ? t("conflicts.comparison.saving") : t("conflicts.comparison.keepLocal")}
             </button>
             <button
               type="button"
@@ -240,7 +240,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
               onClick={() => void submit("keep_remote")}
               className="flex-1 rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
             >
-              {isSubmitting && pendingChoice === "keep_remote" ? "Enregistrement…" : "Conserver distant"}
+              {isSubmitting && pendingChoice === "keep_remote" ? t("conflicts.comparison.saving") : t("conflicts.comparison.keepRemote")}
             </button>
             <button
               type="button"
@@ -248,7 +248,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
               onClick={() => setStage("merge")}
               className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Fusionner manuellement
+              {t("conflicts.comparison.mergeManually")}
             </button>
             <button
               type="button"
@@ -256,7 +256,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
               onClick={() => void submit("defer")}
               className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:underline"
             >
-              Reporter
+              {t("conflicts.comparison.defer")}
             </button>
           </div>
         )}
@@ -264,8 +264,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
         {canResolve && stage === "merge" && (
           <div className="mt-auto flex flex-col gap-3 border-t border-border pt-4">
             <p className="text-xs text-muted-foreground">
-              Sélectionnez la valeur souhaitée pour chaque champ différent ci-dessus, puis confirmez. Les deux versions
-              originales restent inchangées tant que vous n&apos;avez pas confirmé.
+              {t("conflicts.comparison.mergeHint")}
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -274,7 +273,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
                 disabled={isSubmitting}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:text-zinc-400 dark:hover:border-violet-500/30 dark:hover:bg-violet-500/10 dark:hover:text-violet-300"
               >
-                Retour
+                {t("conflicts.comparison.back")}
               </button>
               <button
                 type="button"
@@ -282,7 +281,7 @@ export function ConflictComparisonPanel({ entry: initialEntry, onClose }: Confli
                 onClick={() => void submit("merged", buildMergedRecord())}
                 className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSubmitting ? "Enregistrement…" : "Confirmer la fusion"}
+                {isSubmitting ? t("conflicts.comparison.saving") : t("conflicts.comparison.confirmMerge")}
               </button>
             </div>
           </div>
