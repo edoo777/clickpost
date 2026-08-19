@@ -3,27 +3,28 @@
 import { useState } from "react";
 import { AssistantCopilotView } from "@/components/assistant-ia/AssistantCopilotView";
 import { AssistantPreparationView } from "@/components/assistant-ia/AssistantPreparationView";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 
-const TABS = [
-  { id: "copilot", label: "Copilote éditorial" },
-  { id: "preparation", label: "Assistant de préparation" },
+const TAB_KEYS: { id: string; labelKey: TranslationKey }[] = [
+  { id: "copilot", labelKey: "assistant.page.tabCopilot" },
+  { id: "preparation", labelKey: "assistant.page.tabPreparation" },
 ];
 
 export default function AssistantIAPage() {
+  const t = useTranslations();
   const [activeTab, setActiveTab] = useState("copilot");
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 rounded-3xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Assistant IA</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t("assistant.page.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Un Copilote éditorial connecté à votre marque et à votre contenu. Passez d’un parcours de préparation
-            à une expérience conversationnelle selon vos besoins.
+            {t("assistant.page.subtitle")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {TABS.map((tab) => (
+          {TAB_KEYS.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -34,7 +35,7 @@ export default function AssistantIAPage() {
                   : "rounded-2xl border border-border bg-transparent px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
               }
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           ))}
         </div>

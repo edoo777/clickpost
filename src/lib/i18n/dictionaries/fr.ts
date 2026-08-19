@@ -194,6 +194,7 @@ const fr = {
       lastName: "Nom",
       jobTitle: "Fonction ou poste (facultatif)",
       preferredLanguage: "Langue préférée",
+      languagePlaceholder: "Français",
       timeZone: "Fuseau horaire",
     },
     workspaceName: {
@@ -1242,6 +1243,12 @@ const fr = {
     },
   },
   assistant: {
+    page: {
+      title: "Assistant IA",
+      subtitle: "Un Copilote éditorial connecté à votre marque et à votre contenu. Passez d'un parcours de préparation à une expérience conversationnelle selon vos besoins.",
+      tabCopilot: "Copilote éditorial",
+      tabPreparation: "Assistant de préparation",
+    },
     copilot: {
       subtitle:
         "Un assistant conversationnel connecté à votre contexte ClickPost : marque, calendrier, idées et publications.",
@@ -2016,6 +2023,36 @@ const fr = {
       addExampleButton: "+ Ajouter un exemple",
       noExamplesText: "Aucun exemple renseigné.",
     },
+    listPage: {
+      subtitle: "Gérez les marques de votre workspace et configurez leur identité pour guider la génération de contenu.",
+      roleUndetermined: "Rôle indéterminé — le workspace n'a pas pu être chargé.",
+      roleLoading: "Chargement de votre rôle…",
+      newBrand: "+ Nouvelle marque",
+      restrictedToOwnerAdmin: "Réservé aux rôles Propriétaire et Administrateur du workspace.",
+      loadingWorkspace: "Chargement de votre workspace et de votre rôle…",
+      readOnlyRoleNotice:
+        "Votre rôle actuel permet uniquement de consulter les marques — la création et la modification sont réservées aux rôles Propriétaire et Administrateur du workspace.",
+      searchPlaceholder: "Rechercher une marque...",
+      filterActive: "Actives",
+      filterArchived: "Archivées",
+      filterAll: "Toutes",
+      emptyTitle: "Aucune marque pour le moment",
+      emptyDescription:
+        "Une marque regroupe sa niche, ses comptes affiliés et ses thématiques éditoriales — tout ce dont le Générateur d'idées a besoin pour produire du contenu pertinent.",
+      roleUndeterminedRetry: "Rôle indéterminé — réessayez le chargement ci-dessus.",
+      createFirstBrand: "+ Créer ma première marque",
+      askOwnerAdmin: "Demandez à un Propriétaire ou Administrateur du workspace de créer la première marque.",
+      step1: "Créer la marque",
+      step2: "Préciser sa niche",
+      step3: "Ajouter ses comptes affiliés",
+      step4: "Définir ses thématiques",
+      noSearchResults: "Aucune marque ne correspond à cette recherche.",
+    },
+    detailPage: {
+      notFoundTitle: "Marque introuvable",
+      notFoundDescription: "Cette marque n'existe pas ou plus dans ce workspace.",
+      backToBrands: "Retour aux marques",
+    },
   },
   accounts: {
     card: {
@@ -2416,6 +2453,61 @@ const fr = {
       summary: "{impressions} impressions, {reach} de portée, taux d'engagement de {rate}%.",
       topPublicationPrefix: "Meilleure publication : ",
     },
+  },
+  themeSelect: {
+    ariaLabel: "Thème de l'interface",
+  },
+  workspaceError: {
+    title: "Impossible de charger votre workspace.",
+    description: "Aucun rôle n'a pu être déterminé — ceci n'est pas un statut de lecture seule confirmé.",
+  },
+  sidebarResize: {
+    ariaLabel: "Redimensionner la barre latérale",
+  },
+  legal: {
+    back: "← Retour",
+    terms: {
+      pageTitle: "Conditions d'utilisation — ClickPost",
+      title: "Conditions d'utilisation",
+      paragraph1:
+        "ClickPost est actuellement proposé en accès bêta, à des fins de test. Le service peut évoluer, être temporairement interrompu, ou voir certaines fonctionnalités modifiées sans préavis pendant cette phase. Des conditions d'utilisation complètes seront publiées avant l'ouverture publique du service.",
+      paragraph2:
+        "En utilisant la bêta, vous acceptez que certaines fonctionnalités soient encore en développement et que des ajustements puissent être apportés à votre contenu de test. Aucune donnée réelle critique ne devrait être exclusivement conservée dans ClickPost pendant cette phase.",
+    },
+    privacy: {
+      pageTitle: "Confidentialité — ClickPost",
+      title: "Confidentialité",
+      paragraph1:
+        "ClickPost est actuellement en phase bêta. Une politique de confidentialité complète sera publiée avant l'ouverture publique du service. Pour toute question sur le traitement de vos données pendant la bêta, contactez directement l'équipe ClickPost.",
+      paragraph2:
+        "En résumé dès aujourd'hui : vos données restent isolées par workspace, les secrets (clés API, jetons de connexion) ne sont jamais exposés côté navigateur, et aucune donnée n'est partagée avec un tiers en dehors des fournisseurs strictement nécessaires au fonctionnement du service (hébergement, base de données, IA générative).",
+    },
+  },
+  sync: {
+    saveFailed: "Sauvegarde impossible",
+    conflict: "Conflit de synchronisation",
+    offline: "Hors ligne",
+    syncing: "Synchronisation…",
+    permissionDenied: "Permission refusée",
+    localDataNeedsRepair: "Données locales à réparer",
+    persistentError: "Erreur persistante",
+    temporarilyInterrupted: "Synchronisation temporairement interrompue",
+    notificationFallback: "Notification de synchronisation",
+    resolve: "Résoudre",
+    conflictSummary: "{count} enregistrement{plural} en conflit — vos données locales sont conservées, aucune n'a été perdue.",
+    viewConflicts: "Voir les conflits",
+    otherTabNotice: "Sauvegarde détectée dans un autre onglet.",
+    ok: "OK",
+  },
+  loading: {
+    workspace: "Chargement de votre espace de travail…",
+  },
+  developMenu: {
+    trigger: "Développer",
+    writeManually: "Rédiger manuellement",
+    developWithAi: "Développer avec l'IA",
+    addToIdeasBank: "Ajouter à la Banque d'idées",
+    addedConfirmation: "Ajoutée à la Banque d'idées.",
   },
 } as const;
 

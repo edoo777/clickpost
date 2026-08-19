@@ -6,11 +6,13 @@ import { BrandCard } from "@/components/brands/BrandCard";
 import { CreateBrandPanel } from "@/components/brands/CreateBrandPanel";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
 import { useBrandsSession, type BrandDraft } from "@/lib/brands-store";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { useWorkspaceSession } from "@/lib/supabase/workspace-provider";
 
 type StatusFilter = "active" | "archived" | "all";
 
 export default function BrandsPage() {
+  const t = useTranslations();
   const router = useRouter();
   const { brands, activeBrandId, canManageBrands, createBrand } = useBrandsSession();
   const { isLoading: isWorkspaceLoading, workspaceError, refresh } = useWorkspaceSession();
@@ -42,9 +44,9 @@ export default function BrandsPage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">Marques</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground ">{t("pageTitle.brands")}</h1>
           <p className="text-sm text-muted-foreground ">
-            Gérez les marques de votre workspace et configurez leur identité pour guider la génération de contenu.
+            {t("brands.listPage.subtitle")}
           </p>
         </div>
         {!hasResolvedRole ? (
@@ -53,10 +55,10 @@ export default function BrandsPage() {
             disabled
             aria-disabled="true"
             aria-busy={isWorkspaceLoading}
-            title={workspaceError ? "Rôle indéterminé — le workspace n'a pas pu être chargé." : "Chargement de votre rôle…"}
+            title={workspaceError ? t("brands.listPage.roleUndetermined") : t("brands.listPage.roleLoading")}
             className="cursor-not-allowed rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
           >
-            + Nouvelle marque
+            {t("brands.listPage.newBrand")}
           </button>
         ) : canManageBrands ? (
           <button
@@ -64,24 +66,24 @@ export default function BrandsPage() {
             onClick={() => setIsCreating(true)}
             className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
           >
-            + Nouvelle marque
+            {t("brands.listPage.newBrand")}
           </button>
         ) : (
           <button
             type="button"
             disabled
-            title="Réservé aux rôles Propriétaire et Administrateur du workspace."
+            title={t("brands.listPage.restrictedToOwnerAdmin")}
             aria-disabled="true"
             className="cursor-not-allowed rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground opacity-60"
           >
-            + Nouvelle marque
+            {t("brands.listPage.newBrand")}
           </button>
         )}
       </header>
 
       {isWorkspaceLoading && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Chargement de votre workspace et de votre rôle…
+          {t("brands.listPage.loadingWorkspace")}
         </p>
       )}
 
@@ -89,8 +91,7 @@ export default function BrandsPage() {
 
       {hasResolvedRole && !canManageBrands && (
         <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-          Votre rôle actuel permet uniquement de consulter les marques — la création et la
-          modification sont réservées aux rôles Propriétaire et Administrateur du workspace.
+          {t("brands.listPage.readOnlyRoleNotice")}
         </p>
       )}
 
@@ -99,15 +100,15 @@ export default function BrandsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher une marque..."
+            placeholder={t("brands.listPage.searchPlaceholder")}
             className="w-full max-w-xs rounded-lg border border-border bg-surface px-3 py-2 text-sm text-zinc-800  dark:text-zinc-200"
           />
           <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1 ">
             {(
               [
-                { value: "active", label: "Actives" },
-                { value: "archived", label: "Archivées" },
-                { value: "all", label: "Toutes" },
+                { value: "active", label: t("brands.listPage.filterActive") },
+                { value: "archived", label: t("brands.listPage.filterArchived") },
+                { value: "all", label: t("brands.listPage.filterAll") },
               ] as const
             ).map((option) => (
               <button
@@ -130,15 +131,14 @@ export default function BrandsPage() {
       {!hasAnyBrand ? (
         <div className="flex flex-col items-center gap-5 rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-16 text-center dark:border-white/[.16] ">
           <div className="flex flex-col items-center gap-2">
-            <p className="text-base font-semibold text-foreground ">Aucune marque pour le moment</p>
+            <p className="text-base font-semibold text-foreground ">{t("brands.listPage.emptyTitle")}</p>
             <p className="max-w-sm text-sm text-muted-foreground ">
-              Une marque regroupe sa niche, ses comptes affiliés et ses thématiques éditoriales —
-              tout ce dont le Générateur d&apos;idées a besoin pour produire du contenu pertinent.
+              {t("brands.listPage.emptyDescription")}
             </p>
           </div>
           {!hasResolvedRole ? (
             <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-              {workspaceError ? "Rôle indéterminé — réessayez le chargement ci-dessus." : "Chargement de votre rôle…"}
+              {workspaceError ? t("brands.listPage.roleUndeterminedRetry") : t("brands.listPage.roleLoading")}
             </p>
           ) : canManageBrands ? (
             <button
@@ -146,35 +146,35 @@ export default function BrandsPage() {
               onClick={() => setIsCreating(true)}
               className="rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-fuchsia-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-fuchsia-500/40"
             >
-              + Créer ma première marque
+              {t("brands.listPage.createFirstBrand")}
             </button>
           ) : (
             <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-              Demandez à un Propriétaire ou Administrateur du workspace de créer la première marque.
+              {t("brands.listPage.askOwnerAdmin")}
             </p>
           )}
           <ol className="flex max-w-md flex-col gap-2 text-left text-xs text-muted-foreground ">
             <li className="flex items-center gap-2">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">1</span>
-              Créer la marque
+              {t("brands.listPage.step1")}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">2</span>
-              Préciser sa niche
+              {t("brands.listPage.step2")}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">3</span>
-              Ajouter ses comptes affiliés
+              {t("brands.listPage.step3")}
             </li>
             <li className="flex items-center gap-2">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">4</span>
-              Définir ses thématiques
+              {t("brands.listPage.step4")}
             </li>
           </ol>
         </div>
       ) : filteredBrands.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 bg-surface px-6 py-10 text-center text-sm text-muted-foreground dark:border-white/[.16] ">
-          Aucune marque ne correspond à cette recherche.
+          {t("brands.listPage.noSearchResults")}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

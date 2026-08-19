@@ -1,12 +1,13 @@
 "use client";
 
 import { IconMonitor, IconMoon, IconSun } from "@/components/icons";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { useTheme, type Theme } from "@/lib/theme-store";
 
-const OPTIONS: { value: Theme; label: string; icon: typeof IconSun }[] = [
-  { value: "light", label: "Clair", icon: IconSun },
-  { value: "dark", label: "Sombre", icon: IconMoon },
-  { value: "system", label: "Système", icon: IconMonitor },
+const OPTION_KEYS: { value: Theme; labelKey: TranslationKey; icon: typeof IconSun }[] = [
+  { value: "light", labelKey: "settings.branding.themeModeOptions.light", icon: IconSun },
+  { value: "dark", labelKey: "settings.branding.themeModeOptions.dark", icon: IconMoon },
+  { value: "system", labelKey: "settings.branding.themeModeOptions.system", icon: IconMonitor },
 ];
 
 interface ThemeSelectProps {
@@ -15,16 +16,17 @@ interface ThemeSelectProps {
 }
 
 export function ThemeSelect({ surface = "light" }: ThemeSelectProps) {
+  const t = useTranslations();
   const { theme, setTheme } = useTheme();
   const onDarkSurface = surface === "dark";
 
   return (
     <div
       role="radiogroup"
-      aria-label="Thème de l'interface"
+      aria-label={t("themeSelect.ariaLabel")}
       className={`flex items-center gap-1 rounded-full p-1 ${onDarkSurface ? "bg-white/[.06]" : "bg-muted"}`}
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {OPTION_KEYS.map(({ value, labelKey, icon: Icon }) => {
         const isActive = theme === value;
         return (
           <button
@@ -42,7 +44,7 @@ export function ThemeSelect({ surface = "light" }: ThemeSelectProps) {
             }`}
           >
             <Icon className="h-3.5 w-3.5 shrink-0" />
-            {label}
+            {t(labelKey)}
           </button>
         );
       })}

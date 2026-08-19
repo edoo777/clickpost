@@ -189,6 +189,7 @@ const en = {
       lastName: "Last name",
       jobTitle: "Job title (optional)",
       preferredLanguage: "Preferred language",
+      languagePlaceholder: "English",
       timeZone: "Time zone",
     },
     workspaceName: {
@@ -1233,6 +1234,12 @@ const en = {
     },
   },
   assistant: {
+    page: {
+      title: "AI Assistant",
+      subtitle: "An editorial Copilot connected to your brand and your content. Switch from a preparation flow to a conversational experience as needed.",
+      tabCopilot: "Editorial Copilot",
+      tabPreparation: "Preparation assistant",
+    },
     copilot: {
       subtitle:
         "A conversational assistant connected to your ClickPost context: brand, calendar, ideas and publications.",
@@ -2000,6 +2007,36 @@ const en = {
       addExampleButton: "+ Add an example",
       noExamplesText: "No example provided.",
     },
+    listPage: {
+      subtitle: "Manage your workspace's brands and configure their identity to guide content generation.",
+      roleUndetermined: "Role undetermined — the workspace could not be loaded.",
+      roleLoading: "Loading your role…",
+      newBrand: "+ New brand",
+      restrictedToOwnerAdmin: "Reserved for the Owner and Administrator roles of the workspace.",
+      loadingWorkspace: "Loading your workspace and role…",
+      readOnlyRoleNotice:
+        "Your current role only allows you to view brands — creation and editing are reserved for the Owner and Administrator roles of the workspace.",
+      searchPlaceholder: "Search for a brand...",
+      filterActive: "Active",
+      filterArchived: "Archived",
+      filterAll: "All",
+      emptyTitle: "No brand yet",
+      emptyDescription:
+        "A brand groups together its niche, affiliated accounts, and editorial themes — everything the Idea Generator needs to produce relevant content.",
+      roleUndeterminedRetry: "Role undetermined — retry loading above.",
+      createFirstBrand: "+ Create my first brand",
+      askOwnerAdmin: "Ask an Owner or Administrator of the workspace to create the first brand.",
+      step1: "Create the brand",
+      step2: "Specify its niche",
+      step3: "Add its affiliated accounts",
+      step4: "Define its themes",
+      noSearchResults: "No brand matches this search.",
+    },
+    detailPage: {
+      notFoundTitle: "Brand not found",
+      notFoundDescription: "This brand no longer exists in this workspace.",
+      backToBrands: "Back to brands",
+    },
   },
   accounts: {
     card: {
@@ -2400,6 +2437,61 @@ const en = {
       summary: "{impressions} impressions, {reach} reach, engagement rate of {rate}%.",
       topPublicationPrefix: "Top post: ",
     },
+  },
+  themeSelect: {
+    ariaLabel: "Interface theme",
+  },
+  workspaceError: {
+    title: "Unable to load your workspace.",
+    description: "No role could be determined — this is not a confirmed read-only status.",
+  },
+  sidebarResize: {
+    ariaLabel: "Resize the sidebar",
+  },
+  legal: {
+    back: "← Back",
+    terms: {
+      pageTitle: "Terms of use — ClickPost",
+      title: "Terms of use",
+      paragraph1:
+        "ClickPost is currently offered in beta access, for testing purposes. The service may evolve, be temporarily interrupted, or have certain features modified without notice during this phase. Full terms of use will be published before the service's public launch.",
+      paragraph2:
+        "By using the beta, you accept that some features are still under development and that adjustments may be made to your test content. No critical real data should be exclusively stored in ClickPost during this phase.",
+    },
+    privacy: {
+      pageTitle: "Privacy — ClickPost",
+      title: "Privacy",
+      paragraph1:
+        "ClickPost is currently in beta. A full privacy policy will be published before the service's public launch. For any questions about how your data is handled during the beta, contact the ClickPost team directly.",
+      paragraph2:
+        "In short, as of today: your data stays isolated per workspace, secrets (API keys, connection tokens) are never exposed client-side, and no data is shared with any third party outside the providers strictly necessary for the service to run (hosting, database, generative AI).",
+    },
+  },
+  sync: {
+    saveFailed: "Unable to save",
+    conflict: "Sync conflict",
+    offline: "Offline",
+    syncing: "Syncing…",
+    permissionDenied: "Permission denied",
+    localDataNeedsRepair: "Local data needs repair",
+    persistentError: "Persistent error",
+    temporarilyInterrupted: "Sync temporarily interrupted",
+    notificationFallback: "Sync notification",
+    resolve: "Resolve",
+    conflictSummary: "{count} record{plural} in conflict — your local data is preserved, none of it was lost.",
+    viewConflicts: "View conflicts",
+    otherTabNotice: "A save was detected in another tab.",
+    ok: "OK",
+  },
+  loading: {
+    workspace: "Loading your workspace…",
+  },
+  developMenu: {
+    trigger: "Develop",
+    writeManually: "Write manually",
+    developWithAi: "Develop with AI",
+    addToIdeasBank: "Add to Idea Bank",
+    addedConfirmation: "Added to the Idea Bank.",
   },
 } satisfies Dictionary;
 

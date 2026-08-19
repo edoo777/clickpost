@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import {
   dismissConflictNotice,
   flushNow,
@@ -20,10 +21,10 @@ function useSaveStatus() {
  * "saving" est intrinsèquement bref (le coordinateur repasse à "saved" quelques instants
  * après chaque sauvegarde débouncée), "error" reste jusqu'à résolution. Les états "tout va
  * bien" (idle/pending/saved) ne produisent plus aucun texte permanent dans la sidebar. */
-function localNoticeLabel(status: string): string {
-  if (status === "saving") return "Enregistrement…";
-  if (status === "error") return "Sauvegarde impossible";
-  return "";
+function localNoticeKey(status: string): TranslationKey | null {
+  if (status === "saving") return "common.saving";
+  if (status === "error") return "sync.saveFailed";
+  return null;
 }
 
 /**
@@ -36,21 +37,21 @@ function localNoticeLabel(status: string): string {
  * Conflit, Permission refusée, Données locales à réparer (au moins une opération bloquée après
  * un échec définitif confirmé), Erreur persistante (repli générique).
  */
-function syncNoticeLabel(
+function syncNoticeKey(
   status: string,
   isRetrying: boolean,
   hasPermissionError: boolean,
   hasBlockedOperations: boolean,
   isPersistentError: boolean
-): string {
-  if (status === "conflict") return "Conflit de synchronisation";
-  if (status === "offline") return "Hors ligne";
-  if (isRetrying && (status === "syncing" || status === "merging")) return "Synchronisation…";
-  if (status !== "error") return "";
-  if (hasPermissionError) return "Permission refusée";
-  if (hasBlockedOperations) return "Données locales à réparer";
-  if (isPersistentError) return "Erreur persistante";
-  return "Synchronisation temporairement interrompue";
+): TranslationKey | null {
+  if (status === "conflict") return "sync.conflict";
+  if (status === "offline") return "sync.offline";
+  if (isRetrying && (status === "syncing" || status === "merging")) return "sync.syncing";
+  if (status !== "error") return null;
+  if (hasPermissionError) return "sync.permissionDenied";
+  if (hasBlockedOperations) return "sync.localDataNeedsRepair";
+  if (isPersistentError) return "sync.persistentError";
+  return "sync.temporarilyInterrupted";
 }
 
 interface SaveStatusIndicatorProps {
@@ -65,6 +66,7 @@ interface SaveStatusIndicatorProps {
  * conditionnel, branché sur exactement les mêmes hooks/providers qu'avant.
  */
 export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorProps) {
+  const t = useTranslations();
   const { status, errorMessage, conflictNotice } = useSaveStatus();
   const syncStatus = useSyncStatus();
   const [isRetrying, setIsRetrying] = useState(false);
@@ -79,14 +81,16 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
     }
   }
 
-  const localLabel = localNoticeLabel(status);
-  const syncText = syncNoticeLabel(
+  const localLabelKey = localNoticeKey(status);
+  const syncTextKey = syncNoticeKey(
     syncStatus.status,
     isRetrying,
     syncStatus.hasPermissionError,
     syncStatus.hasBlockedOperations,
     syncStatus.isPersistentError
   );
+  const localLabel = localLabelKey ? t(localLabelKey) : "";
+  const syncText = syncTextKey ? t(syncTextKey) : "";
   const hasNotice = Boolean(localLabel || syncText || conflictNotice);
 
   if (!hasNotice) return null;
@@ -98,7 +102,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
       : syncStatus.status === "offline"
         ? "bg-muted-foreground"
         : "bg-success";
-  const combinedLabel = [localLabel, syncText].filter(Boolean).join(" · ") || "Notification de synchronisation";
+  const combinedLabel = [localLabel, syncText].filter(Boolean).join(" · ") || t("sync.notificationFallback");
   const canRetrySync = syncStatus.status === "error" && !isRetrying;
 
   if (collapsed) {
@@ -128,7 +132,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
               onClick={() => flushNow()}
               className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline"
             >
-              Réessayer
+              {t("common.retry")}
             </button>
           )}
         </div>
@@ -146,7 +150,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
               disabled={!canRetrySync}
               className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline disabled:opacity-50 disabled:hover:no-underline"
             >
-              {isRetrying ? "Synchronisation…" : "Réessayer"}
+              {isRetrying ? t("sync.syncing") : t("common.retry")}
             </button>
           )}
           {syncStatus.status === "conflict" && (
@@ -154,7 +158,7 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
               href="/conflits"
               className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold text-violet-300 hover:underline"
             >
-              Résoudre
+              {t("sync.resolve")}
             </Link>
           )}
         </div>
@@ -164,19 +168,18 @@ export function SaveStatusIndicator({ collapsed = false }: SaveStatusIndicatorPr
       )}
       {syncStatus.status === "conflict" && (
         <p className="text-[11px] text-amber-300">
-          {syncStatus.conflictCount} enregistrement{syncStatus.conflictCount > 1 ? "s" : ""} en conflit — vos données locales
-          sont conservées, aucune n&apos;a été perdue.{" "}
+          {t("sync.conflictSummary", { count: syncStatus.conflictCount, plural: syncStatus.conflictCount > 1 ? "s" : "" })}{" "}
           <Link href="/conflits" className="font-semibold underline">
-            Voir les conflits
+            {t("sync.viewConflicts")}
           </Link>
         </p>
       )}
 
       {conflictNotice && (
         <div className="flex items-center justify-between gap-2 rounded-lg bg-amber-500/10 px-2 py-1 text-[11px] text-amber-300">
-          <span>Sauvegarde détectée dans un autre onglet.</span>
+          <span>{t("sync.otherTabNotice")}</span>
           <button type="button" onClick={() => dismissConflictNotice()} className="shrink-0 font-semibold hover:underline">
-            OK
+            {t("sync.ok")}
           </button>
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import { SIDEBAR_MAX_WIDTH, SIDEBAR_MIN_WIDTH, clampSidebarWidth, setSidebarWidth } from "@/lib/sidebar-store";
 
 interface SidebarResizeHandleProps {
@@ -16,6 +17,7 @@ interface SidebarResizeHandleProps {
  * localStorage — et donc synchronisée entre onglets — qu'au relâchement du pointeur.
  */
 export function SidebarResizeHandle({ width, disabled }: SidebarResizeHandleProps) {
+  const t = useTranslations();
   const [isDragging, setIsDragging] = useState(false);
   const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
 
@@ -61,7 +63,7 @@ export function SidebarResizeHandle({ width, disabled }: SidebarResizeHandleProp
     <div
       role="separator"
       aria-orientation="vertical"
-      aria-label="Redimensionner la barre latérale"
+      aria-label={t("sidebarResize.ariaLabel")}
       aria-valuemin={SIDEBAR_MIN_WIDTH}
       aria-valuemax={SIDEBAR_MAX_WIDTH}
       aria-valuenow={Math.round(width)}

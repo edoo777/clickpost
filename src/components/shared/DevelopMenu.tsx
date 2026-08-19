@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IconWand } from "@/components/icons";
 import { useDevelopIdea } from "@/lib/develop-idea";
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { Idea } from "@/types/idea";
 import type { Topic, TopicBatch } from "@/types/topic-batch";
 
@@ -19,6 +20,7 @@ const ITEM_CLASS =
  * composant ne fait qu'afficher le menu et appeler ce hook.
  */
 export function DevelopMenu(props: DevelopMenuProps) {
+  const t = useTranslations();
   const { compact } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function DevelopMenu(props: DevelopMenuProps) {
     setIsOpen(false);
     if (props.variant !== "topic") return;
     registerTopicAsIdea(props.topic, props.batch);
-    setConfirmation("Ajoutée à la Banque d'idées.");
+    setConfirmation(t("developMenu.addedConfirmation"));
   }
 
   return (
@@ -92,24 +94,24 @@ export function DevelopMenu(props: DevelopMenuProps) {
         }`}
       >
         <IconWand className="h-3.5 w-3.5" />
-        {!compact && <span>Développer</span>}
+        {!compact && <span>{t("developMenu.trigger")}</span>}
       </button>
 
       {isOpen && (
         <div
           role="menu"
-          aria-label="Développer"
+          aria-label={t("developMenu.trigger")}
           className="absolute right-0 top-full z-50 mt-1 w-60 rounded-xl border border-border bg-surface-elevated p-1.5 shadow-xl"
         >
           <button type="button" role="menuitem" onClick={handleManual} className={ITEM_CLASS}>
-            Rédiger manuellement
+            {t("developMenu.writeManually")}
           </button>
           <button type="button" role="menuitem" onClick={handleAI} className={ITEM_CLASS}>
-            Développer avec l&apos;IA
+            {t("developMenu.developWithAi")}
           </button>
           {!isRegistered && (
             <button type="button" role="menuitem" onClick={handleRegisterOnly} className={ITEM_CLASS}>
-              Ajouter à la Banque d&apos;idées
+              {t("developMenu.addToIdeasBank")}
             </button>
           )}
         </div>

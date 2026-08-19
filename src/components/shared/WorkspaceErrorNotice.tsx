@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/lib/i18n/locale-provider";
 import type { WorkspaceLoadError } from "@/lib/supabase/workspace-provider";
 
 interface WorkspaceErrorNoticeProps {
@@ -14,13 +15,14 @@ interface WorkspaceErrorNoticeProps {
  * production.
  */
 export function WorkspaceErrorNotice({ error, onRetry }: WorkspaceErrorNoticeProps) {
+  const t = useTranslations();
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/20 dark:bg-red-500/10">
       <p className="text-sm font-medium text-red-700 dark:text-red-400">
-        Impossible de charger votre workspace.
+        {t("workspaceError.title")}
       </p>
       <p className="text-xs text-red-600/90 dark:text-red-400/80">
-        Aucun rôle n&apos;a pu être déterminé — ceci n&apos;est pas un statut de lecture seule confirmé.
+        {t("workspaceError.description")}
       </p>
       {process.env.NODE_ENV !== "production" && (
         <p className="rounded bg-red-100 px-2 py-1 font-mono text-[11px] text-red-800 dark:bg-red-500/20 dark:text-red-300">
@@ -32,7 +34,7 @@ export function WorkspaceErrorNotice({ error, onRetry }: WorkspaceErrorNoticePro
         onClick={onRetry}
         className="w-fit rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/20"
       >
-        Réessayer
+        {t("common.retry")}
       </button>
     </div>
   );

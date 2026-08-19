@@ -79,7 +79,7 @@ export function PersonalInfoStep({ profile, onProfileChange }: StepProps) {
           <input
             value={profile.language}
             onChange={(event) => onProfileChange("language", event.target.value)}
-            placeholder="Français"
+            placeholder={t("onboarding.personalInfo.languagePlaceholder")}
             className={FIELD_CLASS}
           />
         </label>
