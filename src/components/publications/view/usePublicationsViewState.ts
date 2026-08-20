@@ -16,6 +16,13 @@ import {
   type CalendarMode,
   type PublicationsViewType,
 } from "@/components/publications/view/publications-view-storage";
+import {
+  getTablePreferencesServerSnapshot,
+  getTablePreferencesSnapshot,
+  patchTablePreferences,
+  resetTablePreferences,
+  subscribeTablePreferences,
+} from "@/components/publications/view/publications-table-preferences";
 import { useContentWorkspace } from "@/lib/content-workspace-store";
 import { getScrollTop } from "@/lib/scroll-container";
 import { getCurrentWorkspaceId } from "@/lib/sync/runtime";
@@ -53,6 +60,14 @@ export function usePublicationsViewState() {
     getPublicationsViewSnapshot,
     getPublicationsViewServerSnapshot
   );
+  // Préférences de tableau (ordre/largeur/couleur des colonnes) : persistées séparément en
+  // localStorage (survit à la fermeture du navigateur), contrairement au reste de cet état qui
+  // reste volontairement limité à l'onglet — voir publications-table-preferences.ts.
+  const tablePrefs = useSyncExternalStore(
+    subscribeTablePreferences,
+    getTablePreferencesSnapshot,
+    getTablePreferencesServerSnapshot
+  );
 
   // Synchronise une seule fois depuis l'URL (lien de la sidebar, redirection /calendrier) —
   // priorité à l'intention explicite du lien sur l'état précédemment restauré.
@@ -82,11 +97,21 @@ export function usePublicationsViewState() {
   }
 
   function setVisibleProperties(visibleProperties: string[]) {
-    patchPublicationsView({ visibleProperties });
+    patchTablePreferences({ visibleProperties });
   }
 
   function setColumnWidths(columnWidths: Record<string, number>) {
-    patchPublicationsView({ columnWidths });
+    patchTablePreferences({ columnWidths });
+  }
+
+  function setColumnColors(columnColors: Record<string, string>) {
+    patchTablePreferences({ columnColors });
+  }
+
+  /** « Restaurer la configuration par défaut » — ordre/largeur/couleur des colonnes uniquement,
+   * jamais les filtres ni le tri (une action distincte, déjà disponible ailleurs). */
+  function resetTableColumns() {
+    resetTablePreferences();
   }
 
   function setCalendarMode(calendarMode: CalendarMode) {
@@ -114,6 +139,8 @@ export function usePublicationsViewState() {
         "table") as PublicationsViewType,
       filters: savedViewFiltersToFilters(view.filters),
       sorting: view.sorting,
+    });
+    patchTablePreferences({
       visibleProperties: view.visibleProperties.length > 0 ? view.visibleProperties : DEFAULT_TABLE_COLUMNS,
       columnWidths: view.columnWidths ?? {},
     });
@@ -128,8 +155,8 @@ export function usePublicationsViewState() {
       viewType: VIEW_TYPE_TO_SAVED[state.viewType],
       filters: filtersToSavedViewFilters(state.filters),
       sorting: state.sorting,
-      visibleProperties: state.visibleProperties,
-      columnWidths: state.columnWidths,
+      visibleProperties: tablePrefs.visibleProperties,
+      columnWidths: tablePrefs.columnWidths,
       hiddenGroups: [],
       isDefault: savedViews.length === 0,
       createdAt: now,
@@ -145,8 +172,8 @@ export function usePublicationsViewState() {
       viewType: VIEW_TYPE_TO_SAVED[state.viewType],
       filters: filtersToSavedViewFilters(state.filters),
       sorting: state.sorting,
-      visibleProperties: state.visibleProperties,
-      columnWidths: state.columnWidths,
+      visibleProperties: tablePrefs.visibleProperties,
+      columnWidths: tablePrefs.columnWidths,
       updatedAt: new Date().toISOString(),
     });
   }
@@ -176,8 +203,8 @@ export function usePublicationsViewState() {
     !!activeSavedView &&
     (JSON.stringify(filtersToSavedViewFilters(state.filters)) !== JSON.stringify(activeSavedView.filters) ||
       JSON.stringify(state.sorting) !== JSON.stringify(activeSavedView.sorting) ||
-      JSON.stringify(state.visibleProperties) !== JSON.stringify(activeSavedView.visibleProperties) ||
-      JSON.stringify(state.columnWidths) !== JSON.stringify(activeSavedView.columnWidths ?? {}) ||
+      JSON.stringify(tablePrefs.visibleProperties) !== JSON.stringify(activeSavedView.visibleProperties) ||
+      JSON.stringify(tablePrefs.columnWidths) !== JSON.stringify(activeSavedView.columnWidths ?? {}) ||
       VIEW_TYPE_TO_SAVED[state.viewType] !== activeSavedView.viewType);
 
   function saveScrollPosition() {
@@ -186,6 +213,7 @@ export function usePublicationsViewState() {
 
   return {
     ...state,
+    ...tablePrefs,
     savedViews,
     activeSavedView,
     isModified,
@@ -194,6 +222,8 @@ export function usePublicationsViewState() {
     setSorting,
     setVisibleProperties,
     setColumnWidths,
+    setColumnColors,
+    resetTableColumns,
     setCalendarMode,
     setCalendarAnchor,
     setShowUnplanned,

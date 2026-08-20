@@ -11,8 +11,6 @@ export interface PublicationsViewState {
   savedViewId: string | null;
   filters: PublicationsFiltersValue;
   sorting: SavedViewSort[];
-  visibleProperties: string[];
-  columnWidths: Record<string, number>;
   calendarMode: CalendarMode;
   calendarAnchor: string;
   showUnplanned: boolean;
@@ -39,8 +37,6 @@ const DEFAULT_STATE: PublicationsViewState = {
   savedViewId: null,
   filters: DEFAULT_PUBLICATIONS_FILTERS,
   sorting: [],
-  visibleProperties: DEFAULT_TABLE_COLUMNS,
-  columnWidths: {},
   calendarMode: "month",
   calendarAnchor: new Date().toISOString().slice(0, 10),
   showUnplanned: true,

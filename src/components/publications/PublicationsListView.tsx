@@ -97,6 +97,9 @@ export function PublicationsListView() {
           onChangeVisibleProperties={view.setVisibleProperties}
           columnWidths={view.columnWidths}
           onChangeColumnWidths={view.setColumnWidths}
+          columnColors={view.columnColors}
+          onChangeColumnColors={view.setColumnColors}
+          onResetColumns={view.resetTableColumns}
           sorting={view.sorting}
           onChangeSorting={view.setSorting}
           onOpen={handleOpen}

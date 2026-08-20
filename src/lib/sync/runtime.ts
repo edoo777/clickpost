@@ -216,7 +216,22 @@ export async function processSyncQueue() {
       if (isSyncableRecordId(op.recordId)) continue;
       if (op.queueId !== undefined) await queueDb.removeOperation(op.queueId);
     }
-    const operations = allOperations.filter((op) => isSyncableRecordId(op.recordId));
+    // Réparation automatique, bornée aux entités concernées par le correctif de dépendance
+    // ci-dessus (SYNC_PRIORITY, stripDanglingReferences) : une opération `topics`/`ideaNotes`/
+    // `ideas` restée bloquée AVANT ce correctif (ex. la violation `topics_idea_id_fkey` ou
+    // `ideas_publication_id_fkey` observées) mérite une vraie nouvelle chance à chaque passage
+    // normal, pas seulement au clic explicite sur « Réessayer » — sinon la bannière « Données
+    // locales à réparer » resterait affichée indéfiniment pour une situation déjà réparée côté
+    // moteur. Jamais étendu aux autres entités : un blocage réellement permanent (permission
+    // refusée, schéma incompatible) continue de n'être rejoué qu'à la demande explicite de
+    // l'utilisateur.
+    for (const op of allOperations) {
+      if (!op.blocked) continue;
+      if (op.entityType !== "topics" && op.entityType !== "ideaNotes" && op.entityType !== "ideas") continue;
+      if (op.queueId !== undefined) await queueDb.updateOperation(op.queueId, { blocked: false, blockReason: undefined });
+    }
+
+    const operations = (await queueDb.getAllOperations()).filter((op) => isSyncableRecordId(op.recordId));
 
     if (operations.length === 0) {
       const conflictCount = await queueDb.countConflicts();
@@ -351,33 +366,43 @@ async function unblockAllOperations() {
   }
 }
 
-/** Colonne portant une référence optionnelle vers une idée, par entité — les seules relations
- * connues à ce jour où une idée peut être créée puis référencée dans la même action utilisateur
- * (voir develop-idea.ts). `SYNC_PRIORITY` ci-dessus règle l'ordre normal ; ce filet de sécurité ne
- * s'applique qu'au cas résiduel où l'idée référencée reste malgré tout introuvable localement
- * (ex. opération héritée d'avant ce correctif, ou idée réellement supprimée entre-temps) — jamais
- * un cas normal. */
-const IDEA_REFERENCE_COLUMN: Partial<Record<SyncEntityType, string>> = {
-  topics: "idea_id",
-  ideaNotes: "converted_idea_id",
+/** Colonnes portant une référence optionnelle vers un autre enregistrement synchronisé, par
+ * entité — les seules relations connues à ce jour où l'enregistrement référencé peut être créé
+ * puis référencé dans la même action utilisateur : une idée référençant `topics`/`ideaNotes`
+ * (voir develop-idea.ts), et une publication référençant `ideas.publication_id` (voir
+ * IdeaWorkshopView.handleCreatePublication — violation `ideas_publication_id_fkey` observée en
+ * direct). `SYNC_PRIORITY` ci-dessus règle l'ordre normal ; ce filet de sécurité ne s'applique
+ * qu'au cas résiduel où l'enregistrement référencé reste malgré tout introuvable localement (ex.
+ * opération héritée d'avant ce correctif, ou enregistrement réellement supprimé entre-temps) —
+ * jamais un cas normal. `ideas.derived_from_id`/`theme_id`/`batch_id` ne sont volontairement pas
+ * couverts : aucune violation constatée en pratique pour ces colonnes (l'enregistrement référencé
+ * préexiste toujours à l'action qui crée l'idée), donc pas de filet nécessaire tant qu'aucun cas
+ * réel ne l'exige. */
+const DANGLING_REFERENCE_RULES: Partial<Record<SyncEntityType, { column: string; targetEntity: SyncEntityType }[]>> = {
+  topics: [{ column: "idea_id", targetEntity: "ideas" }],
+  ideaNotes: [{ column: "converted_idea_id", targetEntity: "ideas" }],
+  ideas: [{ column: "publication_id", targetEntity: "posts" }],
 };
 
 /**
- * Neutralise une référence à une idée qui n'existe nulle part localement (ni déjà synchronisée,
- * ni encore en attente d'envoi) — jamais une référence dont l'idée est simplement en cours de
- * synchronisation (celle-ci reste intacte, `SYNC_PRIORITY` garantit qu'elle partira avant). Ne
- * supprime jamais l'enregistrement porteur (topic/note) : seule la référence dangereuse est mise
- * à `null`, exactement comme `stripSeedReferences` le fait déjà pour les identifiants de
- * démonstration — même principe, cause différente (idée réellement introuvable, pas une donnée de
- * démonstration).
+ * Neutralise une référence qui n'existe nulle part localement (ni déjà synchronisée, ni encore en
+ * attente d'envoi) — jamais une référence dont la cible est simplement en cours de synchronisation
+ * (celle-ci reste intacte, `SYNC_PRIORITY` garantit qu'elle partira avant). Ne supprime jamais
+ * l'enregistrement porteur : seule la référence dangereuse est mise à `null`, exactement comme
+ * `stripSeedReferences` le fait déjà pour les identifiants de démonstration — même principe,
+ * cause différente (cible réellement introuvable, pas une donnée de démonstration).
  */
-function stripDanglingIdeaReference(entityType: SyncEntityType, row: Record<string, unknown>): Record<string, unknown> {
-  const column = IDEA_REFERENCE_COLUMN[entityType];
-  if (!column) return row;
-  const value = row[column];
-  if (typeof value !== "string" || value.length === 0) return row;
-  if (getLocalRecordById("ideas", value)) return row;
-  return { ...row, [column]: null };
+function stripDanglingReferences(entityType: SyncEntityType, row: Record<string, unknown>): Record<string, unknown> {
+  const rules = DANGLING_REFERENCE_RULES[entityType];
+  if (!rules) return row;
+  let result = row;
+  for (const rule of rules) {
+    const value = result[rule.column];
+    if (typeof value !== "string" || value.length === 0) continue;
+    if (getLocalRecordById(rule.targetEntity, value)) continue;
+    result = { ...result, [rule.column]: null };
+  }
+  return result;
 }
 
 async function processOperation(
@@ -415,7 +440,7 @@ async function processOperation(
     if (op.queueId !== undefined) await queueDb.removeOperation(op.queueId);
     return;
   }
-  const row = stripDanglingIdeaReference(op.entityType, stripSeedReferences(mapRecordToRow(op.payload)));
+  const row = stripDanglingReferences(op.entityType, stripSeedReferences(mapRecordToRow(op.payload)));
   // `scheduled_for` est un timestamptz côté Supabase mais saisi localement comme une date-heure
   // naïve (champ datetime-local) interprétée dans `time_zone` — sans cette conversion, Postgres
   // l'interpréterait dans le fuseau de session (UTC), pas celui réellement choisi.
