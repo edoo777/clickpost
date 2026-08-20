@@ -56,6 +56,10 @@ export interface SocialAccount {
   /** Dernière vérification réelle de l'état de connexion (appel à la plateforme, pas une simple
    * lecture locale). */
   lastCheckedAt?: string;
+  /** Métadonnées additionnelles propres à une plateforme, sans justifier une colonne dédiée
+   * chacune (ex. `facebookPageId` pour un compte Instagram — nécessaire pour re-dériver un jeton
+   * de Page à jour, voir src/lib/meta/oauth.ts). Jamais un jeton ni un secret. */
+  platformMetadata?: Record<string, unknown>;
 }
 
 export interface PerformanceMetric {

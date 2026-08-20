@@ -24,6 +24,14 @@ export interface OAuthStatePayload {
    * remplacement d'idempotence applicative (voir idempotency.ts pour la publication elle-même). */
   nonce: string;
   issuedAt: number;
+  /** Champ optionnel, propre à X (PKCE obligatoire même pour un client confidentiel — voir
+   * src/lib/x/oauth.ts) : transporte le `code_verifier` généré à l'étape /connect jusqu'au
+   * callback, sans nouveau mécanisme de stockage côté serveur (le `state` signé reste la seule
+   * information transmise entre les deux étapes, exactement comme pour toute autre plateforme).
+   * Absent pour toute autre plateforme — `JSON.stringify` omet les propriétés `undefined`, donc
+   * aucun changement de forme du `state` pour LinkedIn/Meta/TikTok/YouTube, qui ne le renseignent
+   * jamais. */
+  codeVerifier?: string;
 }
 
 const MAX_AGE_MS = 10 * 60 * 1000; // 10 minutes — largement suffisant pour un aller-retour OAuth réel.

@@ -50,4 +50,40 @@ describe("Social Provider registry", () => {
     const result = await provider.fetchPerformance?.({ publication: {} as never, account: {} as never });
     expect(result?.status).toBe("not_supported");
   });
+
+  describe("Instagram, Facebook, TikTok, X, YouTube — fournisseurs réels branchés", () => {
+    const newlyWiredPlatforms = ["instagram", "facebook", "tiktok", "x", "youtube"] as const;
+
+    it("déclare automaticPublish=true dans l'absolu, sans jamais se prétendre configuré sans identifiants réels", () => {
+      for (const platform of newlyWiredPlatforms) {
+        const provider = getPublishProvider(platform);
+        expect(provider.capabilities().automaticPublish).toBe(true);
+        // Aucune variable d'environnement de ces plateformes n'est définie dans cet environnement
+        // de test — isConfigured() doit refléter cette absence, jamais une valeur optimiste.
+        expect(provider.isConfigured()).toBe(false);
+      }
+    });
+
+    it("échoue toujours publish() de façon permanente et explicite tant qu'aucun identifiant réel n'est configuré", async () => {
+      for (const platform of newlyWiredPlatforms) {
+        const provider = getPublishProvider(platform);
+        const result = await provider.publish({
+          publication: { text: "", excerpt: "", media: [] } as never,
+          account: { id: "acc-1", status: "connected", externalAccountId: "ext-1" } as never,
+          workspaceId: "ws-1",
+          idempotencyKey: "key-1",
+        });
+        expect(result.status).toBe("failed");
+        expect(result.isPermanent).toBe(true);
+      }
+    });
+
+    it("renvoie fetchPerformance:not_supported pour les cinq nouvelles plateformes (jamais de métrique inventée)", async () => {
+      for (const platform of newlyWiredPlatforms) {
+        const provider = getPublishProvider(platform);
+        const result = await provider.fetchPerformance?.({ publication: {} as never, account: {} as never });
+        expect(result?.status).toBe("not_supported");
+      }
+    });
+  });
 });

@@ -1,4 +1,9 @@
+import { facebookProvider } from "@/lib/facebook/provider";
+import { instagramProvider } from "@/lib/instagram/provider";
 import { linkedInProvider } from "@/lib/linkedin/provider";
+import { tiktokProvider } from "@/lib/tiktok/provider";
+import { xProvider } from "@/lib/x/provider";
+import { youtubeProvider } from "@/lib/youtube/provider";
 import { validatePlatformConstraints } from "@/lib/publishing/platform-constraints";
 import type { SocialAccount, SocialPlatform } from "@/types/dashboard";
 import type { Publication } from "@/types/publication";
@@ -6,13 +11,15 @@ import type { PlatformCapabilities, PublishProvider, PublishReadiness } from "@/
 
 /**
  * Registre des fournisseurs de publication par plateforme — Social Provider / Adapter (voir
- * docs/social-platform-setup.md). LinkedIn est aujourd'hui la seule plateforme avec un fournisseur
- * réellement branché (`linkedInProvider`, voir src/lib/linkedin/provider.ts) ; toutes les autres
- * renvoient un fournisseur « non configuré » — `isConfigured()` y renvoie toujours `false`,
- * jamais un envoi automatique simulé. Brancher une nouvelle plateforme : implémenter
- * `PublishProvider` (voir linkedInProvider comme référence) et remplacer son entrée ci-dessous —
- * aucun autre fichier de l'application n'a besoin de changer (composants, routes, planificateur
- * consomment tous cette même interface).
+ * docs/social-platform-setup.md). LinkedIn, Instagram, Facebook, TikTok, X et YouTube ont
+ * désormais chacun un fournisseur réellement branché (code complet, `isConfigured()` reflétant
+ * les identifiants réellement présents côté serveur — voir le fournisseur de chaque plateforme
+ * sous src/lib/<plateforme>/provider.ts) ; Threads, Pinterest et "other" renvoient toujours un
+ * fournisseur « non configuré » — `isConfigured()` y renvoie toujours `false`, jamais un envoi
+ * automatique simulé. Brancher une nouvelle plateforme : implémenter `PublishProvider` (voir
+ * linkedInProvider comme référence historique) et remplacer son entrée ci-dessous — aucun autre
+ * fichier de l'application n'a besoin de changer (composants, routes, planificateur consomment
+ * tous cette même interface).
  */
 function buildUnconfiguredProvider(platform: SocialPlatform, capabilities: PlatformCapabilities): PublishProvider {
   return {
@@ -59,11 +66,17 @@ const PLATFORMS: SocialPlatform[] = [
   "other",
 ];
 
+const REAL_PROVIDERS: Partial<Record<SocialPlatform, PublishProvider>> = {
+  linkedin: linkedInProvider,
+  instagram: instagramProvider,
+  facebook: facebookProvider,
+  tiktok: tiktokProvider,
+  x: xProvider,
+  youtube: youtubeProvider,
+};
+
 const providerRegistry = new Map<SocialPlatform, PublishProvider>(
-  PLATFORMS.map((platform) => [
-    platform,
-    platform === "linkedin" ? linkedInProvider : buildUnconfiguredProvider(platform, PLATFORM_CAPABILITIES[platform]),
-  ])
+  PLATFORMS.map((platform) => [platform, REAL_PROVIDERS[platform] ?? buildUnconfiguredProvider(platform, PLATFORM_CAPABILITIES[platform])])
 );
 
 export function getPublishProvider(platform: SocialPlatform): PublishProvider {
