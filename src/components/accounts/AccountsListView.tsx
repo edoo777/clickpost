@@ -10,6 +10,7 @@ import {
   type AccountsFiltersValue,
 } from "@/components/accounts/AccountsFilters";
 import { AddAccountPanel, type NewAccountInput } from "@/components/accounts/AddAccountPanel";
+import { SocialNetworksOverview } from "@/components/accounts/SocialNetworksOverview";
 import { OAUTH_CALLBACK_PLATFORMS, describeOAuthCallbackError } from "@/lib/oauth-callback-messages";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
@@ -149,6 +150,8 @@ export function AccountsListView() {
           </button>
         </div>
       )}
+
+      <SocialNetworksOverview accounts={accounts} onOpenAccount={setSelectedAccountId} onDisconnected={handleSocialDisconnected} />
 
       <AccountsFilters value={filters} onChange={setFilters} />
 

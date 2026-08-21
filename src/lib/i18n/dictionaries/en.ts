@@ -2166,6 +2166,7 @@ const en = {
       disconnectFailed: "Unable to disconnect.",
       disconnectFailedNetwork: "Unable to disconnect (network).",
       checkingConnection: "Checking {platform} connection…",
+      checkingConnectionShort: "Checking…",
       title: "Real {platform} connection",
       notConfiguredNotice: "The {platform} integration is not yet configured on this server (missing application credentials).",
       connectButton: "Connect {platform}",
@@ -2174,6 +2175,12 @@ const en = {
       disconnectButton: "Disconnect",
       tokenValidUntil: "Token valid until {date}.",
       insufficientPermission: "Insufficient permission to publish — reconnection required.",
+      detailsLink: "Details",
+    },
+    socialNetworks: {
+      title: "Social networks",
+      description: "Connect, reconnect, or disconnect each genuinely supported network for the selected brand.",
+      brandLabel: "Brand",
     },
     linkedinConnection: {
       statusUnavailable: "LinkedIn connection status unavailable for now.",

@@ -2181,6 +2181,7 @@ const fr = {
       disconnectFailed: "Déconnexion impossible.",
       disconnectFailedNetwork: "Déconnexion impossible (réseau).",
       checkingConnection: "Vérification de la connexion {platform}…",
+      checkingConnectionShort: "Vérification…",
       title: "Connexion {platform} réelle",
       notConfiguredNotice: "L'intégration {platform} n'est pas encore configurée sur ce serveur (identifiants d'application manquants).",
       connectButton: "Connecter {platform}",
@@ -2189,6 +2190,12 @@ const fr = {
       disconnectButton: "Déconnecter",
       tokenValidUntil: "Jeton valide jusqu'au {date}.",
       insufficientPermission: "Permission insuffisante pour publier — reconnexion nécessaire.",
+      detailsLink: "Détails",
+    },
+    socialNetworks: {
+      title: "Réseaux sociaux",
+      description: "Connectez, reconnectez ou déconnectez chaque réseau réellement pris en charge, pour la marque sélectionnée.",
+      brandLabel: "Marque",
     },
     linkedinConnection: {
       statusUnavailable: "État de connexion LinkedIn indisponible pour le moment.",
