@@ -553,6 +553,31 @@ export function IconOtherNetwork(props: IconProps) {
   );
 }
 
+export function IconPlay(props: IconProps) {
+  return (
+    <Base {...props} strokeWidth={2}>
+      <path d="M7 4.5v15l13-7.5Z" fill="currentColor" stroke="none" />
+    </Base>
+  );
+}
+
+export function IconCheck(props: IconProps) {
+  return (
+    <Base {...props} strokeWidth={2.2}>
+      <path d="M5 12.5 10 17l9-10" />
+    </Base>
+  );
+}
+
+export function IconArrowRight(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M5 12h14" />
+      <path d="M13 6l6 6-6 6" />
+    </Base>
+  );
+}
+
 export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
   instagram: IconInstagram,
   facebook: IconFacebook,

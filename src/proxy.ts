@@ -11,9 +11,30 @@ const PUBLIC_PATHS = [
   "/bienvenue",
   "/conditions",
   "/confidentialite",
+  // Site public (marketing) — voir src/app/solution, src/app/prix, src/app/ressources,
+  // src/app/contact. Accessibles à tous, connectés ou non (contrairement à /connexion,
+  // /inscription, /bienvenue ci-dessous, qui redirigent un utilisateur déjà connecté).
+  "/solution",
+  "/prix",
+  "/ressources",
+  "/contact",
+  "/cookies",
+  // Fichiers techniques générés par Next.js (voir src/app/robots.ts, src/app/sitemap.ts) — un
+  // moteur de recherche ne présente jamais de session, jamais exclus par le matcher ci-dessous
+  // (seuls _next/static, _next/image, favicon.ico et les images le sont).
+  "/robots.txt",
+  "/sitemap.xml",
 ];
+// Préfixes publics — pour des routes avec segments dynamiques (`/blog/[slug]`) ou des routes API
+// destinées à un visiteur non authentifié (ex. le formulaire de contact public), où une
+// correspondance exacte de `PUBLIC_PATHS` ne suffit pas.
+const PUBLIC_PATH_PREFIXES = ["/blog", "/api/marketing/"];
 // Un utilisateur déjà connecté ne doit pas rester sur ces pages précises.
 const REDIRECT_IF_AUTHENTICATED_PATHS = ["/connexion", "/inscription", "/bienvenue"];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.includes(pathname) || PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 /**
  * Rafraîchissement de session Supabase (F1.1) + protection des routes (F1.2) pour l'App Router.
@@ -49,7 +70,7 @@ export async function proxy(request: NextRequest) {
   const isCronRoute = pathname.startsWith("/api/cron/");
 
   if (!isAuthCallback && !isCronRoute) {
-    if (!user && !PUBLIC_PATHS.includes(pathname)) {
+    if (!user && !isPublicPath(pathname)) {
       const redirectUrl = request.nextUrl.clone();
       // La racine "/" est le tableau de bord authentifié — un visiteur non connecté y voit
       // d'abord la landing page publique, jamais directement le formulaire de connexion.
