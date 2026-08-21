@@ -101,7 +101,7 @@ export function BrandAccountsSection({ brand, canManage }: BrandAccountsSectionP
             removeAccount(selectedAccount.id);
             setSelectedAccountId(null);
           }}
-          onLinkedInDisconnected={() =>
+          onSocialDisconnected={() =>
             updateAccount(selectedAccount.id, {
               status: "profile_only",
               externalAccountId: undefined,

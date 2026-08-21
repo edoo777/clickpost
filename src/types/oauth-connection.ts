@@ -17,7 +17,7 @@ export type OAuthConnectionState =
   | "persistent_error"; // Dernier appel LinkedIn en échec définitif confirmé (hors permission, ex. compte LinkedIn désactivé).
 
 export const OAUTH_CONNECTION_STATE_LABEL: Record<OAuthConnectionState, string> = {
-  not_configured: "Intégration non configurée",
+  not_configured: "Configuration requise",
   no_local_account: "Aucun compte configuré",
   local_profile_only: "Profil renseigné — non connecté",
   authorization_pending: "Autorisation en attente",

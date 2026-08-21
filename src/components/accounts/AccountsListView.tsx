@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { AccountCard } from "@/components/accounts/AccountCard";
 import { AccountDetailPanel } from "@/components/accounts/AccountDetailPanel";
 import {
@@ -9,17 +10,52 @@ import {
   type AccountsFiltersValue,
 } from "@/components/accounts/AccountsFilters";
 import { AddAccountPanel, type NewAccountInput } from "@/components/accounts/AddAccountPanel";
+import { OAUTH_CALLBACK_PLATFORMS, describeOAuthCallbackError } from "@/lib/oauth-callback-messages";
 import { useAccountsSession } from "@/lib/accounts-store";
 import { useTranslations } from "@/lib/i18n/locale-provider";
+import { usePlatformLabel } from "@/lib/post-status";
 import { usePostsSession } from "@/lib/posts-store";
 
 export function AccountsListView() {
   const t = useTranslations();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const PLATFORM_LABEL = usePlatformLabel();
   const { accounts, addAccount, updateAccount, removeAccount } = useAccountsSession();
   const { posts } = usePostsSession();
   const [filters, setFilters] = useState<AccountsFiltersValue>(DEFAULT_ACCOUNTS_FILTERS);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [callbackNotice, setCallbackNotice] = useState<{ tone: "success" | "error"; message: string } | null>(null);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      for (const platform of OAUTH_CALLBACK_PLATFORMS) {
+        const errorCode = searchParams.get(`${platform}_error`);
+        const connectedAccountId = searchParams.get(`${platform}_connected`);
+        if (errorCode) {
+          setCallbackNotice({ tone: "error", message: describeOAuthCallbackError(t, PLATFORM_LABEL[platform], errorCode, searchParams.get("ref")) });
+          router.replace("/comptes");
+          return;
+        }
+        if (connectedAccountId) {
+          const count = Number(searchParams.get("count") ?? "1");
+          setCallbackNotice({
+            tone: "success",
+            message:
+              count > 1
+                ? t("accounts.oauthCallback.connectedMultiple", { platform: PLATFORM_LABEL[platform], count })
+                : t("accounts.oauthCallback.connected", { platform: PLATFORM_LABEL[platform] }),
+          });
+          setSelectedAccountId(connectedAccountId);
+          router.replace("/comptes");
+          return;
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((account) => {
@@ -49,7 +85,7 @@ export function AccountsListView() {
     setSelectedAccountId(null);
   }
 
-  function handleLinkedInDisconnected(id: string) {
+  function handleSocialDisconnected(id: string) {
     updateAccount(id, {
       status: "profile_only",
       externalAccountId: undefined,
@@ -94,6 +130,26 @@ export function AccountsListView() {
         </button>
       </div>
 
+      {callbackNotice && (
+        <div
+          className={`flex items-start justify-between gap-3 rounded-lg px-4 py-3 text-sm font-medium ${
+            callbackNotice.tone === "success"
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+              : "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+          }`}
+        >
+          <span>{callbackNotice.message}</span>
+          <button
+            type="button"
+            onClick={() => setCallbackNotice(null)}
+            aria-label={t("accounts.oauthCallback.dismissAria")}
+            className="shrink-0 text-xs font-semibold underline opacity-80 hover:opacity-100"
+          >
+            {t("accounts.oauthCallback.dismiss")}
+          </button>
+        </div>
+      )}
+
       <AccountsFilters value={filters} onChange={setFilters} />
 
       {filteredAccounts.length === 0 ? (
@@ -121,7 +177,7 @@ export function AccountsListView() {
           onDeactivate={() => handleDeactivate(selectedAccount.id)}
           onReactivate={() => handleReactivate(selectedAccount.id)}
           onDelete={() => handleDelete(selectedAccount.id)}
-          onLinkedInDisconnected={() => handleLinkedInDisconnected(selectedAccount.id)}
+          onSocialDisconnected={() => handleSocialDisconnected(selectedAccount.id)}
         />
       )}
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LinkedInConnectionPanel } from "@/components/accounts/LinkedInConnectionPanel";
+import { SocialConnectionPanel, type WiredSocialPlatform } from "@/components/accounts/SocialConnectionPanel";
 import { platformIcons } from "@/components/icons";
 import { ACCOUNT_STATUS_STYLE, useAccountStatusLabel } from "@/lib/account-status";
 import { useTranslations } from "@/lib/i18n/locale-provider";
@@ -17,6 +18,12 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 });
 
+const WIRED_SOCIAL_PLATFORMS: WiredSocialPlatform[] = ["instagram", "facebook", "tiktok", "x", "youtube"];
+
+function isWiredSocialPlatform(platform: SocialAccount["platform"]): platform is WiredSocialPlatform {
+  return (WIRED_SOCIAL_PLATFORMS as SocialAccount["platform"][]).includes(platform);
+}
+
 interface AccountDetailPanelProps {
   account: SocialAccount;
   scheduledPostsCount: number;
@@ -24,7 +31,7 @@ interface AccountDetailPanelProps {
   onDeactivate: () => void;
   onReactivate: () => void;
   onDelete: () => void;
-  onLinkedInDisconnected: () => void;
+  onSocialDisconnected: () => void;
 }
 
 export function AccountDetailPanel({
@@ -34,7 +41,7 @@ export function AccountDetailPanel({
   onDeactivate,
   onReactivate,
   onDelete,
-  onLinkedInDisconnected,
+  onSocialDisconnected,
 }: AccountDetailPanelProps) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const color = platformColors[account.platform];
@@ -122,7 +129,9 @@ export function AccountDetailPanel({
         </dl>
 
         {account.platform === "linkedin" ? (
-          <LinkedInConnectionPanel account={account} onDisconnected={onLinkedInDisconnected} />
+          <LinkedInConnectionPanel account={account} onDisconnected={onSocialDisconnected} />
+        ) : isWiredSocialPlatform(account.platform) ? (
+          <SocialConnectionPanel platform={account.platform} account={account} onDisconnected={onSocialDisconnected} />
         ) : (
           <p className="rounded-lg bg-zinc-100 px-3 py-2 text-xs text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-400">
             {t("accounts.detailPanel.noApiConnectionNotice")}
