@@ -2,12 +2,42 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import type { ComponentType, SVGProps } from "react";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
+import {
+  IconCalendar,
+  IconChartBar,
+  IconClipboardCheck,
+  IconSparkles,
+  IconTrendingUp,
+  IconUsers,
+  IconWand,
+} from "@/components/icons";
 import { useLocale } from "@/lib/i18n/locale-provider";
 import { getBlogPosts, type BlogCategory } from "@/lib/marketing/blog-posts";
 
 const CATEGORIES: BlogCategory[] = ["strategy", "social", "creation", "calendar", "ai", "productivity", "marketing"];
+
+const CATEGORY_ICON: Record<BlogCategory, ComponentType<SVGProps<SVGSVGElement>>> = {
+  strategy: IconTrendingUp,
+  social: IconUsers,
+  creation: IconWand,
+  calendar: IconCalendar,
+  ai: IconSparkles,
+  productivity: IconClipboardCheck,
+  marketing: IconChartBar,
+};
+
+const CATEGORY_TONE: Record<BlogCategory, string> = {
+  strategy: "from-violet-600 to-blue-600",
+  social: "from-fuchsia-600 to-rose-500",
+  creation: "from-violet-600 to-fuchsia-600",
+  calendar: "from-blue-600 to-violet-600",
+  ai: "from-fuchsia-600 to-violet-600",
+  productivity: "from-emerald-500 to-blue-600",
+  marketing: "from-rose-500 to-fuchsia-600",
+};
 
 const dateFormatterCache = new Map<string, Intl.DateTimeFormat>();
 function formatDate(iso: string, locale: string): string {
@@ -35,8 +65,12 @@ export function BlogIndexView() {
 
   return (
     <MarketingShell>
-      <section className="border-b border-border bg-gradient-to-b from-violet-50/60 to-transparent px-6 py-16 dark:from-violet-500/[.06] sm:py-20">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 text-center">
+      <section className="relative overflow-hidden border-b border-border px-6 py-16 sm:py-20">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-80 [background:radial-gradient(900px_450px_at_50%_-10%,rgba(124,58,237,0.16),transparent_60%)]"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center gap-4 text-center">
           <SectionEyebrow>{t("blog.eyebrow")}</SectionEyebrow>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{t("blog.title")}</h1>
           <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">{t("blog.subtitle")}</p>
@@ -50,8 +84,12 @@ export function BlogIndexView() {
               href={`/blog/${featured.slug}`}
               className="grid grid-cols-1 gap-6 rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-violet-300 dark:hover:border-violet-500/40 sm:grid-cols-[1fr_1.2fr] sm:p-8"
             >
-              <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 text-4xl font-semibold text-violet-300 dark:from-violet-500/10 dark:to-fuchsia-500/10 dark:text-violet-500/40">
-                CP
+              <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br ${CATEGORY_TONE[featured.category]}`}>
+                <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/10 blur-xl" />
+                {(() => {
+                  const FeaturedIcon = CATEGORY_ICON[featured.category];
+                  return <FeaturedIcon className="relative h-14 w-14 text-white/85" />;
+                })()}
               </div>
               <div className="flex flex-col justify-center gap-3">
                 <div className="flex items-center gap-2">

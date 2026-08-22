@@ -313,6 +313,72 @@ html.sidebar-resizing .dashboard-main {
   animation: marketing-glow-pulse 4s ease-in-out infinite;
 }
 
+@keyframes marketing-float-slow {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-14px) translateX(4px);
+  }
+}
+
+.marketing-float-slow {
+  animation: marketing-float-slow 7s ease-in-out infinite;
+  animation-delay: 2.4s;
+}
+
+@keyframes marketing-gradient-drift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Fond "spectaculaire" sombre — réservé aux sections qui doivent marquer une rupture de rythme
+   (voir le mandat de direction artistique : blanc → dégradé léger → sombre → blanc → violet
+   immersif → humain → CTA sombre). Dégradé animé très lentement, jamais un simple aplat noir. */
+.marketing-section-dark {
+  position: relative;
+  background-color: #0a0714;
+  background-image:
+    radial-gradient(900px 500px at 15% 0%, rgba(124, 58, 237, 0.35), transparent 60%),
+    radial-gradient(700px 500px at 85% 100%, rgba(192, 38, 211, 0.28), transparent 60%),
+    radial-gradient(1000px 600px at 50% 50%, rgba(37, 99, 235, 0.12), transparent 70%);
+  color: #f5f5f7;
+}
+
+/* Fond "violet immersif" — pour la section produit la plus importante (le calendrier). Dégradé
+   riche violet → fuchsia → bleu électrique, en mouvement très lent, jamais un aplat uni. */
+.marketing-section-violet {
+  position: relative;
+  background: linear-gradient(120deg, #4c1d95, #7c3aed, #c026d3, #4338ca);
+  background-size: 200% 200%;
+  animation: marketing-gradient-drift 18s ease-in-out infinite;
+  color: #ffffff;
+}
+
+@keyframes marketing-row-pulse {
+  0%,
+  100% {
+    box-shadow: inset 3px 0 0 0 rgba(192, 38, 211, 0.7);
+    background-color: rgba(192, 38, 211, 0.05);
+  }
+  50% {
+    box-shadow: inset 3px 0 0 0 rgba(124, 58, 237, 0.35);
+    background-color: transparent;
+  }
+}
+
+/* Simule un calendrier "vivant" — une seule ligne à la fois pulse doucement, jamais toutes en
+   même temps (ce serait un gadget, pas un renforcement de la démonstration produit). */
+.marketing-row-live {
+  animation: marketing-row-pulse 3.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marketing-reveal {
     opacity: 1;
@@ -323,7 +389,15 @@ html.sidebar-resizing .dashboard-main {
   }
   .marketing-float,
   .marketing-float-delay,
+  .marketing-float-slow,
   .marketing-glow {
+    animation: none;
+  }
+  .marketing-section-violet {
+    animation: none;
+    background-position: 0% 50%;
+  }
+  .marketing-row-live {
     animation: none;
   }
 }

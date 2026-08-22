@@ -320,6 +320,7 @@ const fr = {
   },
   landing: {
     hero: {
+      kicker: "Fini Excel.",
       eyebrow: "ClickPost — le calendrier de contenu intelligent",
       titleLine: "Votre calendrier de publication devient",
       titleHighlight: "intelligent.",
@@ -327,6 +328,13 @@ const fr = {
       ctaPrimary: "Commencer gratuitement",
       ctaSecondary: "Voir ClickPost en action",
       note: "Pensé pour les créateurs, entrepreneurs et équipes qui publient régulièrement.",
+      floating: {
+        planned: "24 publications planifiées",
+        scriptReady: "Script généré",
+        tiktokSlot: "TikTok — mardi 18:00",
+        linkedinSlot: "LinkedIn — jeudi 09:00",
+        ideaSaved: "Idée sauvegardée",
+      },
     },
     heroCalendar: {
       columnTitle: "Publication",
@@ -343,20 +351,23 @@ const fr = {
       row4: "3 outils que j'utilise chaque semaine",
       row5: "Résultats du mois : ce qui a fonctionné",
       row6: "Question la plus posée par mes clients",
-      floatingIdea: "Idée générée",
-      floatingScript: "Script prêt",
-      floatingScheduled: "Planifié",
-      floatingPublished: "Publié",
-      floatingEngagement: "+24 % engagement",
     },
     excel: {
       eyebrow: "Fini le chaos",
-      title: "Votre stratégie de contenu mérite mieux qu'un fichier Excel.",
+      title: "Votre contenu n'a plus besoin de vivre dans 6 outils différents.",
       beforeLabel: "Avant ClickPost",
-      beforeItems: ["Excel pour le calendrier éditorial", "ChatGPT pour chercher des idées", "Notes / OneNote / Notion pour les stocker", "Documents séparés pour écrire", "Des plateformes différentes pour publier"],
+      beforeItems: [
+        "Excel pour le calendrier éditorial",
+        "ChatGPT pour chercher des idées",
+        "Notes / OneNote / Notion pour les stocker",
+        "Google Calendar pour les dates de publication",
+        "Documents séparés pour écrire",
+        "Des plateformes différentes pour publier",
+      ],
       afterLabel: "Après ClickPost",
       afterSteps: ["Idées", "Création", "Calendrier", "Publication", "Analyse"],
       message: "Un seul espace pour piloter toute votre production de contenu.",
+      strongMessage: "Fini Excel. Votre calendrier éditorial devient intelligent.",
     },
     calendarSection: {
       eyebrow: "La fonctionnalité centrale",
@@ -431,6 +442,7 @@ const fr = {
     },
     forWho: {
       eyebrow: "Pour qui",
+      humanTagline: "Créé pour ceux qui ont quelque chose à partager.",
       title: "ClickPost s'adapte à votre façon de créer.",
       cards: {
         creators: { title: "Créateurs", description: "Transformez vos idées en calendrier de contenu." },
@@ -461,6 +473,47 @@ const fr = {
       plan: { number: "05", title: "Planifier", description: "Utilisez votre calendrier intelligent." },
       publish: { number: "06", title: "Publier", description: "Gérez vos réseaux depuis ClickPost." },
       measure: { number: "07", title: "Mesurer", description: "Comprenez ce qui fonctionne." },
+    },
+    mockups: {
+      capture: {
+        blockTitles: ["MARKETING", "PRODUIT", "COMMUNAUTÉ"],
+        blockThemes: ["Growth & acquisition", "Nouveautés & fonctionnalités", "Coulisses & témoignages"],
+        blockTopics: ["18 sujets", "12 sujets", "9 sujets"],
+      },
+      generate: {
+        prompt: "Génère-moi 30 sujets sur l'entrepreneuriat",
+        topics: [
+          "Comment trouver sa première idée rentable",
+          "5 erreurs qui tuent une jeune entreprise",
+          "Financer son projet sans investisseur",
+          "Construire une équipe à distance",
+          "Savoir dire non aux mauvaises opportunités",
+        ],
+      },
+      create: {
+        ideaLabel: "Idée : « 3 erreurs de branding personnel »",
+        scriptTitle: "Script généré — LinkedIn",
+        creatorCaption: "Créateur en tournage",
+      },
+      organize: {
+        blockTitles: ["BUSINESS", "PERSONAL BRANDING", "PODCAST"],
+        blockThemes: ["Plan d'affaires", "Leadership", "Entrepreneuriat"],
+        blockTopics: ["30 sujets", "20 sujets", "15 sujets"],
+      },
+      plan: {
+        message: "3 mois de contenu. Un seul calendrier.",
+        columnBrand: "Marque",
+        columnMedia: "Média",
+      },
+      publish: {
+        title: "ClickPost, connecté à vos réseaux.",
+      },
+      measure: {
+        metricLabels: ["Vues", "Engagement", "Publications", "Croissance"],
+        metricValues: ["48,2 k", "6,4 %", "24", "+320"],
+        metricChanges: ["+12 %", "+2,1 pt", "+8 ce mois", "abonnés"],
+        bestContentLabel: "Meilleurs contenus",
+      },
     },
     cta: {
       title: "Prêt à réunir tout votre contenu au même endroit ?",

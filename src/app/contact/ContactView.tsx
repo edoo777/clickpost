@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { HumanPlaceholder } from "@/components/marketing/HumanPlaceholder";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { useTranslations } from "@/lib/i18n/locale-provider";
@@ -104,6 +105,13 @@ export function ContactView() {
           </form>
 
           <div className="flex flex-col gap-5">
+            <HumanPlaceholder
+              persona="socialMediaManager"
+              alt={t("contact.title")}
+              label="ClickPost"
+              suggestedPath="/marketing/social-media-manager.webp"
+              aspectClassName="aspect-[16/10]"
+            />
             <div className="rounded-2xl border border-border bg-surface p-5">
               <h3 className="text-sm font-semibold">{t("contact.sidebar.supportTitle")}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t("contact.sidebar.supportText")}</p>

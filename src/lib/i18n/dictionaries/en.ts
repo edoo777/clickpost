@@ -315,6 +315,7 @@ const en = {
   },
   landing: {
     hero: {
+      kicker: "No more spreadsheets.",
       eyebrow: "ClickPost — the intelligent content calendar",
       titleLine: "Your publishing calendar becomes",
       titleHighlight: "intelligent.",
@@ -322,6 +323,13 @@ const en = {
       ctaPrimary: "Start for free",
       ctaSecondary: "See ClickPost in action",
       note: "Built for creators, entrepreneurs and teams who publish regularly.",
+      floating: {
+        planned: "24 publications scheduled",
+        scriptReady: "Script ready",
+        tiktokSlot: "TikTok — Tuesday 6:00 PM",
+        linkedinSlot: "LinkedIn — Thursday 9:00 AM",
+        ideaSaved: "Idea saved",
+      },
     },
     heroCalendar: {
       columnTitle: "Publication",
@@ -338,20 +346,23 @@ const en = {
       row4: "3 tools I use every week",
       row5: "This month's results: what worked",
       row6: "The question my clients ask most",
-      floatingIdea: "Idea generated",
-      floatingScript: "Script ready",
-      floatingScheduled: "Scheduled",
-      floatingPublished: "Published",
-      floatingEngagement: "+24% engagement",
     },
     excel: {
       eyebrow: "No more chaos",
-      title: "Your content strategy deserves better than a spreadsheet.",
+      title: "Your content doesn't need to live in 6 different tools.",
       beforeLabel: "Before ClickPost",
-      beforeItems: ["Excel for the editorial calendar", "ChatGPT to find ideas", "Notes / OneNote / Notion to store them", "Separate documents to write", "Different platforms to publish"],
+      beforeItems: [
+        "Excel for the editorial calendar",
+        "ChatGPT to find ideas",
+        "Notes / OneNote / Notion to store them",
+        "Google Calendar for publish dates",
+        "Separate documents to write",
+        "Different platforms to publish",
+      ],
       afterLabel: "After ClickPost",
       afterSteps: ["Ideas", "Creation", "Calendar", "Publishing", "Analysis"],
       message: "One single space to run your entire content production.",
+      strongMessage: "No more spreadsheets. Your editorial calendar becomes intelligent.",
     },
     calendarSection: {
       eyebrow: "The core feature",
@@ -426,6 +437,7 @@ const en = {
     },
     forWho: {
       eyebrow: "Who it's for",
+      humanTagline: "Built for people who have something to share.",
       title: "ClickPost adapts to how you create.",
       cards: {
         creators: { title: "Creators", description: "Turn your ideas into a content calendar." },
@@ -456,6 +468,47 @@ const en = {
       plan: { number: "05", title: "Plan", description: "Use your intelligent calendar." },
       publish: { number: "06", title: "Publish", description: "Manage your networks from ClickPost." },
       measure: { number: "07", title: "Measure", description: "Understand what works." },
+    },
+    mockups: {
+      capture: {
+        blockTitles: ["MARKETING", "PRODUCT", "COMMUNITY"],
+        blockThemes: ["Growth & acquisition", "New features & updates", "Behind the scenes & stories"],
+        blockTopics: ["18 topics", "12 topics", "9 topics"],
+      },
+      generate: {
+        prompt: "Generate 30 topics about entrepreneurship",
+        topics: [
+          "How to find your first profitable idea",
+          "5 mistakes that kill a young company",
+          "Funding your project without investors",
+          "Building a remote team",
+          "Learning to say no to the wrong opportunities",
+        ],
+      },
+      create: {
+        ideaLabel: "Idea: \"3 personal branding mistakes\"",
+        scriptTitle: "Script generated — LinkedIn",
+        creatorCaption: "Creator filming",
+      },
+      organize: {
+        blockTitles: ["BUSINESS", "PERSONAL BRANDING", "PODCAST"],
+        blockThemes: ["Business plan", "Leadership", "Entrepreneurship"],
+        blockTopics: ["30 topics", "20 topics", "15 topics"],
+      },
+      plan: {
+        message: "3 months of content. One single calendar.",
+        columnBrand: "Brand",
+        columnMedia: "Media",
+      },
+      publish: {
+        title: "ClickPost, connected to your networks.",
+      },
+      measure: {
+        metricLabels: ["Views", "Engagement", "Publications", "Growth"],
+        metricValues: ["48.2k", "6.4%", "24", "+320"],
+        metricChanges: ["+12%", "+2.1 pt", "+8 this month", "followers"],
+        bestContentLabel: "Top content",
+      },
     },
     cta: {
       title: "Ready to bring all your content into one place?",

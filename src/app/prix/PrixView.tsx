@@ -19,15 +19,19 @@ export function PrixView() {
 
   return (
     <MarketingShell>
-      <section className="border-b border-border bg-gradient-to-b from-violet-50/60 to-transparent px-6 py-20 dark:from-violet-500/[.06] sm:py-24">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-4 text-center">
+      <section className="relative overflow-hidden border-b border-border px-6 py-20 sm:py-24">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-80 [background:radial-gradient(900px_450px_at_50%_-10%,rgba(124,58,237,0.16),transparent_60%),radial-gradient(600px_400px_at_100%_20%,rgba(37,99,235,0.1),transparent_60%)]"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto flex w-full max-w-3xl flex-col items-center gap-4 text-center">
           <SectionEyebrow>{t("pricing.eyebrow")}</SectionEyebrow>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{t("pricing.title")}</h1>
           <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">{t("pricing.subtitle")}</p>
         </div>
       </section>
 
-      <section className="border-b border-border px-6 py-16">
+      <section className="relative border-b border-border px-6 py-16">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PRICING_PLANS.map((plan, index) => (

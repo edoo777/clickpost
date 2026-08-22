@@ -578,6 +578,44 @@ export function IconArrowRight(props: IconProps) {
   );
 }
 
+export function IconPersonSilhouette(props: IconProps) {
+  return (
+    <Base {...props} strokeWidth={1.6}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+    </Base>
+  );
+}
+
+export function IconCamera(props: IconProps) {
+  return (
+    <Base {...props}>
+      <path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+      <circle cx="12" cy="13.5" r="3.5" />
+    </Base>
+  );
+}
+
+export function IconMicrophone(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="9" y="2.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+      <line x1="12" y1="17.5" x2="12" y2="21.5" />
+      <line x1="8.5" y1="21.5" x2="15.5" y2="21.5" />
+    </Base>
+  );
+}
+
+export function IconDeviceMobile(props: IconProps) {
+  return (
+    <Base {...props}>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" />
+      <line x1="10.5" y1="19" x2="13.5" y2="19" />
+    </Base>
+  );
+}
+
 export const platformIcons: Record<SocialPlatform, ComponentType<IconProps>> = {
   instagram: IconInstagram,
   facebook: IconFacebook,
