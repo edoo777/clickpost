@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { ComponentType, SVGProps } from "react";
-import { IconCamera, IconDeviceMobile, IconMicrophone, IconPersonSilhouette } from "@/components/icons";
+import { IconCamera, IconDeviceMobile, IconMicrophone, IconPersonSilhouette, IconTiktok } from "@/components/icons";
 
 export type HumanPersona =
   | "creatorCamera"
@@ -9,7 +9,9 @@ export type HumanPersona =
   | "entrepreneurContent"
   | "marketingTeam"
   | "socialMediaManager"
-  | "consultant";
+  | "consultant"
+  | "tiktokCreator"
+  | "creatorPhone";
 
 const PERSONA_ICON: Record<HumanPersona, ComponentType<SVGProps<SVGSVGElement>>> = {
   creatorCamera: IconCamera,
@@ -19,6 +21,8 @@ const PERSONA_ICON: Record<HumanPersona, ComponentType<SVGProps<SVGSVGElement>>>
   marketingTeam: IconPersonSilhouette,
   socialMediaManager: IconDeviceMobile,
   consultant: IconPersonSilhouette,
+  tiktokCreator: IconTiktok,
+  creatorPhone: IconDeviceMobile,
 };
 
 const PERSONA_TONE: Record<HumanPersona, string> = {
@@ -29,6 +33,8 @@ const PERSONA_TONE: Record<HumanPersona, string> = {
   marketingTeam: "from-violet-600 to-blue-600",
   socialMediaManager: "from-fuchsia-600 to-violet-600",
   consultant: "from-indigo-600 to-fuchsia-600",
+  tiktokCreator: "from-fuchsia-600 to-indigo-600",
+  creatorPhone: "from-blue-600 to-fuchsia-600",
 };
 
 interface HumanPlaceholderProps {

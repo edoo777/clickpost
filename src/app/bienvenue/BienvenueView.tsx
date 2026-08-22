@@ -6,6 +6,7 @@ import { FloatingBadge } from "@/components/marketing/FloatingBadge";
 import { HumanPlaceholder, type HumanPersona } from "@/components/marketing/HumanPlaceholder";
 import { MarketingButton } from "@/components/marketing/MarketingButton";
 import { MarketingShell } from "@/components/marketing/MarketingShell";
+import { PersonaShowcase } from "@/components/marketing/PersonaShowcase";
 import { PublishFlowMockup } from "@/components/marketing/PublishFlowMockup";
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
@@ -21,10 +22,11 @@ import {
   IconWand,
 } from "@/components/icons";
 import { useTranslations } from "@/lib/i18n/locale-provider";
+import { PRICING_PLANS } from "@/lib/marketing/pricing-config";
 
 const FOR_WHO_CARDS: { key: "creators" | "entrepreneurs" | "consultants" | "agencies" | "marketingTeams"; persona: HumanPersona }[] = [
-  { key: "creators", persona: "creatorCamera" },
-  { key: "entrepreneurs", persona: "entrepreneurContent" },
+  { key: "creators", persona: "tiktokCreator" },
+  { key: "entrepreneurs", persona: "creatorPhone" },
   { key: "consultants", persona: "consultant" },
   { key: "agencies", persona: "marketingTeam" },
   { key: "marketingTeams", persona: "socialMediaManager" },
@@ -331,6 +333,82 @@ export function BienvenueView() {
                 <p className="text-xs text-muted-foreground">{t(`landing.forWho.cards.${card.key}.description`)}</p>
               </ScrollReveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* COMPOSITIONS HUMAINES — profils en situation avec ClickPost */}
+      <section className="border-b border-border bg-muted/40 px-6 py-24">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
+          <ScrollReveal className="flex flex-col items-center gap-2 text-center">
+            <SectionEyebrow>{t("landing.showcase.eyebrow")}</SectionEyebrow>
+            <h2 className="max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">{t("landing.showcase.title")}</h2>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <ScrollReveal delayMs={0}>
+              <PersonaShowcase
+                persona="podcaster"
+                eyebrow={t("landing.showcase.podcaster.eyebrow")}
+                title={t("landing.showcase.podcaster.eyebrow")}
+                description={t("landing.showcase.podcaster.description")}
+                badges={[0, 1, 2].map((i) => t(`landing.showcase.podcaster.badges.${i}` as never))}
+                className="h-full"
+              />
+            </ScrollReveal>
+            <ScrollReveal delayMs={80}>
+              <PersonaShowcase
+                persona="creatorCamera"
+                eyebrow={t("landing.showcase.creator.eyebrow")}
+                title={t("landing.showcase.creator.eyebrow")}
+                description={t("landing.showcase.creator.description")}
+                badges={[0, 1, 2].map((i) => t(`landing.showcase.creator.badges.${i}` as never))}
+                className="h-full"
+              />
+            </ScrollReveal>
+            <ScrollReveal delayMs={160}>
+              <PersonaShowcase
+                persona="marketingTeam"
+                eyebrow={t("landing.showcase.agency.eyebrow")}
+                title={t("landing.showcase.agency.eyebrow")}
+                description={t("landing.showcase.agency.description")}
+                badges={[0, 1, 2].map((i) => t(`landing.showcase.agency.badges.${i}` as never))}
+                className="h-full"
+              />
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* TARIFS — aperçu, détails complets sur /prix */}
+      <section className="border-b border-border px-6 py-20">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+          <ScrollReveal className="flex flex-col items-center gap-2 text-center">
+            <SectionEyebrow>{t("landing.pricingTeaser.eyebrow")}</SectionEyebrow>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("landing.pricingTeaser.title")}</h2>
+            <p className="max-w-xl text-sm text-muted-foreground sm:text-base">{t("landing.pricingTeaser.subtitle")}</p>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {PRICING_PLANS.map((plan, index) => (
+              <ScrollReveal
+                key={plan.key}
+                delayMs={index * 60}
+                className={`flex flex-col gap-2 rounded-2xl border p-5 text-center transition-transform hover:-translate-y-1 ${
+                  plan.recommended
+                    ? "border-transparent bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-500/25"
+                    : "border-border bg-surface"
+                }`}
+              >
+                <span className="text-sm font-semibold">{t(plan.nameKey)}</span>
+                <span className="text-2xl font-semibold tracking-tight">
+                  {plan.priceUsdCents === null ? t("pricing.priceUnavailable") : `${(plan.priceUsdCents / 100).toFixed(0)} $`}
+                </span>
+              </ScrollReveal>
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <MarketingButton href="/prix" variant="secondary" icon={<IconArrowRight className="h-4 w-4" />}>
+              {t("landing.pricingTeaser.ctaLink")}
+            </MarketingButton>
           </div>
         </div>
       </section>

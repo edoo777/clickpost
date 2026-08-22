@@ -10,6 +10,7 @@ import { DisplayPreferencesSection } from "@/components/settings/DisplayPreferen
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { OtherSectionsLinks } from "@/components/settings/OtherSectionsLinks";
 import { ProfileSection } from "@/components/settings/ProfileSection";
+import { SubscriptionSection } from "@/components/settings/SubscriptionSection";
 import { WorkflowSection } from "@/components/settings/WorkflowSection";
 import { WorkspaceSection } from "@/components/settings/WorkspaceSection";
 import { WorkspaceErrorNotice } from "@/components/shared/WorkspaceErrorNotice";
@@ -162,6 +163,7 @@ export function SettingsView() {
         membersCount={members.length}
         accountsCount={accounts.length}
       />
+      <SubscriptionSection editable={canEdit} />
     </div>
   );
 }

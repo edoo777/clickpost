@@ -1,16 +1,11 @@
 /**
- * Configuration tarifaire du site public (`/prix`) — fichier unique, modifiable sans toucher à la
- * page. Les valeurs ci-dessous reflètent les plans réellement définis en base (voir la migration
- * `supabase/migrations/20260819000000_analytics_billing_foundations.sql`, table `plans`) — jamais
- * des limites inventées pour la page marketing. `priceUsdCents: null` signifie explicitement
- * "prix non encore déterminé" (c'est le cas réel aujourd'hui pour les plans payants) : la page
- * l'affiche honnêtement comme tel plutôt que d'inventer un montant.
+ * Configuration tarifaire du site public (`/prix` + section tarifs de l'accueil) — fichier unique,
+ * modifiable sans toucher à la page. Structure et prix fournis directement par le porteur du
+ * produit (jamais inventés côté marketing) — voir `supabase/migrations/20260822000000_beta_access_codes.sql`
+ * pour la mise à jour correspondante de la table réelle `plans` (quotas effectivement appliqués
+ * par l'application), qui doit rester cohérente avec ces valeurs si elles évoluent.
  *
- * Pour changer un prix, une limite, ou l'ordre d'affichage une fois décidés : modifier UNIQUEMENT
- * ce fichier. Si les plans réels de la base évoluent, reporter les mêmes changements ici pour
- * garder la page marketing cohérente avec l'application (aucune lecture réseau depuis cette page,
- * volontairement, pour qu'une page tarifaire publique ne dépende jamais de la disponibilité de la
- * base de données).
+ * Pour changer un prix, une limite, ou l'ordre d'affichage : modifier UNIQUEMENT ce fichier.
  */
 
 import type { TranslationKey } from "@/lib/i18n/locale-provider";
@@ -19,42 +14,97 @@ export interface PricingFeatureCategory {
   /** Clé i18n du libellé de la catégorie (ex. "pricing.category.brands"). */
   labelKey: TranslationKey;
   /** Valeur affichée par plan, dans le même ordre que `PRICING_PLANS` — `null` = illimité,
-   * `"included"`/`"unavailable"` pour une fonctionnalité binaire plutôt qu'un nombre. */
-  values: (number | null | "included" | "unavailable")[];
+   * `"included"`/`"unavailable"` pour une fonctionnalité binaire, ou une `TranslationKey` (toute
+   * autre chaîne, ex. "pricing.value.basic") pour une valeur qualitative traduite — jamais un
+   * texte brut non traduit. */
+  values: (number | null | "included" | "unavailable" | TranslationKey)[];
 }
 
 export interface PricingPlanConfig {
   key: string;
   nameKey: TranslationKey;
   descriptionKey: TranslationKey;
-  /** `null` = prix non déterminé ("Nous contacter" affiché) ; `0` = gratuit. */
+  /** `null` = prix non déterminé ("Nous contacter" affiché) ; sinon prix réel en cents USD. */
   priceUsdCents: number | null;
   /** Met en avant visuellement ce plan (bordure dégradée, étiquette "Recommandé") — un seul plan
    * à la fois, voir `getRecommendedPlanKey()`. */
   recommended?: boolean;
+  /** 4 à 5 puces courtes affichées directement sur la carte (voir le mandat : présentation
+   * premium façon Make.com, chaque plan doit se comprendre sans devoir lire le tableau
+   * comparatif plus bas). */
+  highlightKeys: TranslationKey[];
 }
 
 export const PRICING_PLANS: PricingPlanConfig[] = [
-  { key: "free", nameKey: "pricing.plan.free.name", descriptionKey: "pricing.plan.free.description", priceUsdCents: 0 },
-  { key: "starter", nameKey: "pricing.plan.starter.name", descriptionKey: "pricing.plan.starter.description", priceUsdCents: null },
-  { key: "pro", nameKey: "pricing.plan.pro.name", descriptionKey: "pricing.plan.pro.description", priceUsdCents: null, recommended: true },
-  { key: "agency", nameKey: "pricing.plan.agency.name", descriptionKey: "pricing.plan.agency.description", priceUsdCents: null },
+  {
+    key: "creator",
+    nameKey: "pricing.plan.creator.name",
+    descriptionKey: "pricing.plan.creator.description",
+    priceUsdCents: 1900,
+    highlightKeys: [
+      "pricing.highlight.creator.brands",
+      "pricing.highlight.creator.accounts",
+      "pricing.highlight.creator.calendar",
+      "pricing.highlight.creator.ideaBank",
+      "pricing.highlight.creator.ai",
+    ],
+  },
+  {
+    key: "creator_pro",
+    nameKey: "pricing.plan.creatorPro.name",
+    descriptionKey: "pricing.plan.creatorPro.description",
+    priceUsdCents: 3900,
+    recommended: true,
+    highlightKeys: [
+      "pricing.highlight.creatorPro.brands",
+      "pricing.highlight.creatorPro.accounts",
+      "pricing.highlight.creatorPro.ai",
+      "pricing.highlight.creatorPro.trends",
+      "pricing.highlight.creatorPro.reports",
+    ],
+  },
+  {
+    key: "agency",
+    nameKey: "pricing.plan.agency.name",
+    descriptionKey: "pricing.plan.agency.description",
+    priceUsdCents: 9900,
+    highlightKeys: [
+      "pricing.highlight.agency.brands",
+      "pricing.highlight.agency.accounts",
+      "pricing.highlight.agency.team",
+      "pricing.highlight.agency.approval",
+      "pricing.highlight.agency.clientSpaces",
+    ],
+  },
+  {
+    key: "agency_pro",
+    nameKey: "pricing.plan.agencyPro.name",
+    descriptionKey: "pricing.plan.agencyPro.description",
+    priceUsdCents: 19900,
+    highlightKeys: [
+      "pricing.highlight.agencyPro.brands",
+      "pricing.highlight.agencyPro.accounts",
+      "pricing.highlight.agencyPro.team",
+      "pricing.highlight.agencyPro.whiteLabel",
+      "pricing.highlight.agencyPro.support",
+    ],
+  },
 ];
 
-/** Catégories demandées par le mandat (marques, comptes sociaux, IA, calendrier intelligent,
- * banque d'idées, analytics, membres d'équipe) — limitées à ce qui existe réellement dans le
- * modèle de données (`Plan`, voir src/types/billing.ts) ou dans le produit lui-même. "Publications
- * par mois", "stockage" et un support différencié par palier ne sont PAS encore modélisés dans le
- * code (aucune colonne, aucune limite appliquée) : volontairement absents ci-dessous plutôt
- * qu'inventés — à ajouter ici dès qu'ils seront réellement définis. */
 export const PRICING_FEATURE_CATEGORIES: PricingFeatureCategory[] = [
-  { labelKey: "pricing.category.brands", values: [1, 3, 10, null] },
-  { labelKey: "pricing.category.socialAccounts", values: [2, 6, 20, null] },
-  { labelKey: "pricing.category.aiGenerations", values: [20, 150, 600, null] },
-  { labelKey: "pricing.category.teamMembers", values: [1, 3, 10, null] },
+  { labelKey: "pricing.category.brands", values: [1, 3, 10, 30] },
+  { labelKey: "pricing.category.socialAccounts", values: [3, 8, 25, 75] },
+  { labelKey: "pricing.category.aiGenerations", values: [50, 250, 750, 2000] },
+  { labelKey: "pricing.category.teamMembers", values: [1, 3, 5, 15] },
   { labelKey: "pricing.category.calendar", values: ["included", "included", "included", "included"] },
   { labelKey: "pricing.category.ideaBank", values: ["included", "included", "included", "included"] },
-  { labelKey: "pricing.category.analytics", values: ["unavailable", "included", "included", "included"] },
+  { labelKey: "pricing.category.analytics", values: ["pricing.value.basic", "pricing.value.advanced", "pricing.value.advanced", "pricing.value.advanced"] },
+  { labelKey: "pricing.category.trends", values: ["unavailable", "included", "included", "included"] },
+  { labelKey: "pricing.category.reportsPdf", values: ["unavailable", "included", "included", "included"] },
+  { labelKey: "pricing.category.approvalWorkflow", values: ["unavailable", "unavailable", "included", "included"] },
+  { labelKey: "pricing.category.clientSpaces", values: ["unavailable", "unavailable", "included", "included"] },
+  { labelKey: "pricing.category.whiteLabelReports", values: ["unavailable", "unavailable", "unavailable", "included"] },
+  { labelKey: "pricing.category.prioritySupport", values: ["unavailable", "unavailable", "included", "included"] },
 ];
 
 export function getRecommendedPlanKey(): string | undefined {

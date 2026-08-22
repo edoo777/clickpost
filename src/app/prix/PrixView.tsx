@@ -5,13 +5,17 @@ import { MarketingShell } from "@/components/marketing/MarketingShell";
 import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { IconCheck } from "@/components/icons";
-import { useTranslations } from "@/lib/i18n/locale-provider";
+import { useTranslations, type TranslationKey } from "@/lib/i18n/locale-provider";
 import { PRICING_FEATURE_CATEGORIES, PRICING_PLANS } from "@/lib/marketing/pricing-config";
 
 function formatPrice(cents: number | null, freeLabel: string, unavailableLabel: string, suffix: string): string {
   if (cents === null) return unavailableLabel;
   if (cents === 0) return freeLabel;
   return `${(cents / 100).toFixed(0)} $${suffix}`;
+}
+
+function isTranslationKey(value: unknown): value is TranslationKey {
+  return typeof value === "string" && value !== "included" && value !== "unavailable";
 }
 
 export function PrixView() {
@@ -32,16 +36,16 @@ export function PrixView() {
       </section>
 
       <section className="relative border-b border-border px-6 py-16">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {PRICING_PLANS.map((plan, index) => (
               <ScrollReveal
                 key={plan.key}
                 delayMs={index * 60}
-                className={`flex flex-col gap-4 rounded-2xl border p-6 ${
+                className={`group relative flex flex-col gap-4 rounded-2xl border p-6 transition-transform hover:-translate-y-1 ${
                   plan.recommended
-                    ? "relative border-transparent bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white shadow-xl shadow-fuchsia-500/25 lg:-translate-y-2"
-                    : "border-border bg-surface"
+                    ? "border-transparent bg-gradient-to-br from-violet-600 via-fuchsia-600 to-blue-600 text-white shadow-2xl shadow-fuchsia-500/25 lg:-translate-y-3 lg:hover:-translate-y-4"
+                    : "border-border bg-surface hover:border-violet-300 dark:hover:border-violet-500/40"
                 }`}
               >
                 {plan.recommended && (
@@ -50,28 +54,44 @@ export function PrixView() {
                   </span>
                 )}
                 <span className="text-sm font-semibold">{t(plan.nameKey)}</span>
-                <span className="text-3xl font-semibold tracking-tight">
-                  {formatPrice(plan.priceUsdCents, t("pricing.free"), t("pricing.priceUnavailable"), t("pricing.priceSuffix"))}
-                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-semibold tracking-tight">
+                    {formatPrice(plan.priceUsdCents, t("pricing.free"), t("pricing.priceUnavailable"), "")}
+                  </span>
+                  {plan.priceUsdCents !== null && plan.priceUsdCents > 0 && (
+                    <span className={`text-sm ${plan.recommended ? "text-white/70" : "text-muted-foreground"}`}>{t("pricing.priceSuffix")}</span>
+                  )}
+                </div>
                 <p className={`text-xs ${plan.recommended ? "text-white/85" : "text-muted-foreground"}`}>{t(plan.descriptionKey)}</p>
-                <MarketingButton
-                  href={plan.priceUsdCents === null && plan.key === "agency" ? "/contact" : "/inscription"}
-                  variant={plan.recommended ? "inverse" : "primary"}
-                >
-                  {plan.priceUsdCents === null && plan.key === "agency" ? t("pricing.contactSalesButton") : t("pricing.ctaButton")}
+
+                <ul className="flex flex-col gap-2 border-t border-dashed border-current/20 pt-4 text-xs">
+                  {plan.highlightKeys.map((key) => (
+                    <li key={key} className="flex items-start gap-2">
+                      <IconCheck className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${plan.recommended ? "text-white" : "text-violet-600 dark:text-violet-400"}`} />
+                      <span className={plan.recommended ? "text-white/90" : "text-foreground/85"}>{t(key)}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <MarketingButton href="/inscription" variant={plan.recommended ? "inverse" : "primary"} className="mt-auto">
+                  {t("pricing.ctaButton")}
                 </MarketingButton>
               </ScrollReveal>
             ))}
           </div>
 
+          <ScrollReveal className="flex flex-col items-center gap-1 text-center">
+            <p className="text-sm font-medium text-muted-foreground">{t("pricing.billingCycleNotice")}</p>
+          </ScrollReveal>
+
           {/* Comparaison des fonctionnalités */}
-          <div className="overflow-x-auto rounded-2xl border border-border">
+          <ScrollReveal className="overflow-x-auto rounded-2xl border border-border">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/60">
                   <th className="px-4 py-3 text-left font-semibold text-muted-foreground">&nbsp;</th>
                   {PRICING_PLANS.map((plan) => (
-                    <th key={plan.key} className="px-4 py-3 text-center font-semibold">
+                    <th key={plan.key} className={`px-4 py-3 text-center font-semibold ${plan.recommended ? "text-violet-600 dark:text-violet-400" : ""}`}>
                       {t(plan.nameKey)}
                     </th>
                   ))}
@@ -89,16 +109,18 @@ export function PrixView() {
                           <span className="text-muted-foreground">{t("pricing.valueUnavailable")}</span>
                         ) : value === null ? (
                           <span className="font-medium">{t("pricing.valueUnlimited")}</span>
-                        ) : (
+                        ) : typeof value === "number" ? (
                           <span className="font-medium">{value}</span>
-                        )}
+                        ) : isTranslationKey(value) ? (
+                          <span className="font-medium">{t(value)}</span>
+                        ) : null}
                       </td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollReveal>
 
           <p className="text-center text-xs text-muted-foreground">{t("pricing.notice")}</p>
         </div>

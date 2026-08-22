@@ -9,6 +9,10 @@ interface ScrollRevealProps {
    * utile pour échelonner une grille de cartes sans dupliquer la logique d'observation. */
   delayMs?: number;
   className?: string;
+  /** `fade` (défaut) = fondu + léger déplacement vers le haut. `pop` = léger zoom + fondu, réservé
+   * aux petits éléments (badges de numéro d'étape, pastilles) — voir `.marketing-pop` dans
+   * globals.css. */
+  variant?: "fade" | "pop";
 }
 
 /**
@@ -18,7 +22,7 @@ interface ScrollRevealProps {
  * `prefers-reduced-motion` au niveau CSS (voir globals.css) : ce composant ne fait qu'ajouter la
  * classe qui déclenche l'animation, jamais de logique de mouvement en JavaScript.
  */
-export function ScrollReveal({ children, delayMs = 0, className = "" }: ScrollRevealProps) {
+export function ScrollReveal({ children, delayMs = 0, className = "", variant = "fade" }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -41,8 +45,10 @@ export function ScrollReveal({ children, delayMs = 0, className = "" }: ScrollRe
     return () => observer.disconnect();
   }, [delayMs]);
 
+  const baseClass = variant === "pop" ? "marketing-pop" : "marketing-reveal";
+
   return (
-    <div ref={ref} className={`marketing-reveal ${isVisible ? "is-visible" : ""} ${className}`}>
+    <div ref={ref} className={`${baseClass} ${isVisible ? "is-visible" : ""} ${className}`}>
       {children}
     </div>
   );

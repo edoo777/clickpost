@@ -25,7 +25,10 @@ export function PublishFlowMockup({ className = "" }: { className?: string }) {
           const Icon = platformIcons[platform];
           const color = platformColors[platform];
           return (
-            <div key={platform} className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-3">
+            <div
+              key={platform}
+              className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-surface px-4 py-3 transition-transform duration-300 hover:-translate-y-1 hover:border-violet-300 dark:hover:border-violet-500/40"
+            >
               <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${color.bg}`}>
                 <Icon className={`h-4.5 w-4.5 ${color.text}`} />
               </span>

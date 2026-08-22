@@ -17,7 +17,7 @@ export function IdeaBankMockup({ blocks, className = "" }: { blocks: IdeaBankBlo
       {blocks.map((block, index) => (
         <div
           key={block.title}
-          className="accent-halo flex items-center gap-4 rounded-2xl border border-border bg-surface p-4"
+          className="accent-halo flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 transition-transform duration-300 hover:-translate-y-0.5 hover:border-violet-300 dark:hover:border-violet-500/40"
           style={{ marginLeft: index % 2 === 1 ? "1.5rem" : 0 }}
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600">

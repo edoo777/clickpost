@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { href: "/admin/textes", label: "Textes produit" },
   { href: "/admin/utilisateurs", label: "Utilisateurs & workspaces" },
   { href: "/admin/fonctionnalites", label: "Fonctionnalités" },
+  { href: "/admin/beta", label: "Accès bêta" },
 ];
 
 /**

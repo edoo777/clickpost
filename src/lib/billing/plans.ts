@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Plan, SubscriptionStatus, WorkspaceSubscription } from "@/types/billing";
+import type { ActiveBetaAccess, Plan, SubscriptionStatus, WorkspaceSubscription } from "@/types/billing";
 
 function mapPlanRow(row: Record<string, unknown>): Plan {
   return {
@@ -54,6 +54,9 @@ function mapSubscriptionRow(row: Record<string, unknown>): WorkspaceSubscription
     currentPeriodEnd: (row.current_period_end as string | null) ?? null,
     trialEndsAt: (row.trial_ends_at as string | null) ?? null,
     canceledAt: (row.canceled_at as string | null) ?? null,
+    betaPlanKey: (row.beta_plan_key as string | null) ?? null,
+    betaExpiresAt: (row.beta_expires_at as string | null) ?? null,
+    betaCodeId: (row.beta_code_id as string | null) ?? null,
   };
 }
 
@@ -68,18 +71,44 @@ export async function getWorkspaceSubscription(workspaceId: string): Promise<Wor
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.from("workspace_subscriptions").select("*").eq("workspace_id", workspaceId).maybeSingle();
   if (data) return mapSubscriptionRow(data as Record<string, unknown>);
-  return { workspaceId, planKey: "free", status: "none", stripeCustomerId: null, stripeSubscriptionId: null, currentPeriodEnd: null, trialEndsAt: null, canceledAt: null };
+  return {
+    workspaceId,
+    planKey: "free",
+    status: "none",
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    currentPeriodEnd: null,
+    trialEndsAt: null,
+    canceledAt: null,
+    betaPlanKey: null,
+    betaExpiresAt: null,
+    betaCodeId: null,
+  };
 }
 
 export interface WorkspacePlanContext {
   plan: Plan;
   subscription: WorkspaceSubscription;
+  /** Accès bêta actif au moment de la lecture, ou `null` si aucun (jamais expiré/inexistant). Voir
+   * src/lib/billing/beta-codes.ts pour la redemption d'un code. */
+  betaAccess: ActiveBetaAccess | null;
 }
 
 /** Combine l'abonnement et la définition de plan associée — repli sûr sur le plan gratuit codé en
- * dur si la table `plans` est temporairement inaccessible (jamais un plan illimité par défaut). */
+ * dur si la table `plans` est temporairement inaccessible (jamais un plan illimité par défaut).
+ * Si un accès bêta est actif (`betaExpiresAt` dans le futur), le plan bêta prévaut sur `planKey`
+ * pour cette lecture uniquement — `subscription.planKey`/`status` restent la source de vérité
+ * Stripe, jamais modifiés par cette résolution. */
 export async function getWorkspacePlanContext(workspaceId: string): Promise<WorkspacePlanContext> {
   const subscription = await getWorkspaceSubscription(workspaceId);
-  const plan = (await getPlan(subscription.planKey)) ?? FALLBACK_FREE_PLAN;
-  return { plan, subscription };
+
+  const betaActive =
+    subscription.betaPlanKey && subscription.betaExpiresAt && new Date(subscription.betaExpiresAt).getTime() > Date.now();
+  const betaAccess: ActiveBetaAccess | null = betaActive
+    ? { planKey: subscription.betaPlanKey as string, expiresAt: subscription.betaExpiresAt as string }
+    : null;
+
+  const effectivePlanKey = betaAccess?.planKey ?? subscription.planKey;
+  const plan = (await getPlan(effectivePlanKey)) ?? FALLBACK_FREE_PLAN;
+  return { plan, subscription, betaAccess };
 }
